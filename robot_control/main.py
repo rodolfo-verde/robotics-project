@@ -15,6 +15,10 @@ def open_daemon(*, use_sim: bool = False, ros2: bool = True) -> None:
     threading.Thread(target=os.system, args=(command,)).start()
 
 
+def degrees_to_radians(degrees: float) -> float:
+    return degrees * np.pi / 180.0
+
+
 class RobotController(InterbotixManipulatorXS):
     _max_step_size: float = 0.02  # radians (0.02 is the default)
     _moving_time: float = 0.05  # seconds (0.05 is the default)
@@ -29,10 +33,20 @@ class RobotController(InterbotixManipulatorXS):
         self._pause: bool = False
         self._forcing_stop: bool = False
         self._moving_thread: threading.Thread | None = None
+        self.grasp = self.gripper.grasp
+        self.release = self.gripper.release
+
+        # make sure the robot is in the sleep pose in case it was left in the grasp pose from a previous run
+        self.go_sleep()
+        self.release()
 
     @property
     def moving(self) -> bool:
         return self._moving
+
+    @property
+    def joint_positions(self) -> list[float]:
+        return self.arm.get_joint_commands()
 
     def await_current_movement(self) -> None:
         if self._moving_thread is not None:
@@ -64,14 +78,15 @@ class RobotController(InterbotixManipulatorXS):
         self.arm.set_trajectory_time(2.0, .3)
         # go to sleep pose to make shutdown easier (stop collision)
         self.go_sleep()
+        self.release()
         super().shutdown()
-        print("Robot shutdown")
 
     def uniformly_move(self, joint_positions: list[float], *, wait: bool = False, resume: bool = True) -> None:
         if self._moving:
             raise Exception("Robot is already moving")
         if resume:
             self.resume()
+
         self._moving = True
         # get the current joint positions
         current_joint_positions = self.arm.get_joint_commands()
@@ -79,7 +94,6 @@ class RobotController(InterbotixManipulatorXS):
         diff = np.array(joint_positions) - np.array(current_joint_positions)
         # set the steps to give the step size of _max_step_size or less and round and make sure it is at least 1
         steps = max(1, int(np.max(np.abs(diff)) / self._max_step_size))
-
         # get the step size for each joint
         step_size = diff / steps
 
@@ -111,12 +125,8 @@ def main() -> None:
     open_daemon(use_sim=True, ros2=True)
 
     controller = RobotController()
-    controller.uniformly_move([0] * 5)
-    time.sleep(1)
-    controller.pause()
-    time.sleep(2)
-    controller.resume()
-    time.sleep(2)
+    print(controller.joint_positions)
+
     controller.shutdown()
     # print(controller.arm.get_joint_commands())
 
