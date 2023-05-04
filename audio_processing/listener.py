@@ -36,7 +36,7 @@ def callback(indata, frame_count, time_info, status):
     global safe1
     safe1 = np.append(safe1, indata)
 
-
+# setting up the stream
 stream = sd.InputStream(channels=1, samplerate=44100, callback=callback, device=1)
 
 
