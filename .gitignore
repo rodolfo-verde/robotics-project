@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 # Pycharm files
 .idea/
+
+settings.json
