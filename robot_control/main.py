@@ -20,8 +20,11 @@ def degrees_to_radians(degrees: float) -> float:
 
 
 class RobotController(InterbotixManipulatorXS):
-    _max_step_size: float = 0.02  # radians (0.02 is the default)
-    _moving_time: float = 0.05  # seconds (0.05 is the default)
+    _max_step_size: float = 0.03  # radians (0.02 is the default)
+    _moving_time: float = 0.03  # seconds (0.04 is the default)
+    _SLEEP_POS = [-0.00920388475060463, -1.7993595600128174, 1.6444274187088013, 0.777728259563446, 0.0]
+    _HOME_POS = [0] * 5
+    _FINAL_POS_TOLERANCE = 1  # percent
 
     def __init__(self):
         super().__init__(
@@ -48,6 +51,10 @@ class RobotController(InterbotixManipulatorXS):
     def joint_positions(self) -> list[float]:
         return self.arm.get_joint_commands()
 
+    @property
+    def xyz_pose(self) -> list[float]:
+        return self.arm.get_ee_pose()[:3, 3]
+
     def await_current_movement(self) -> None:
         if self._moving_thread is not None:
             self._moving_thread.join()
@@ -65,10 +72,11 @@ class RobotController(InterbotixManipulatorXS):
         self._pause = False
 
     def go_home(self) -> None:
-        self.arm.go_to_home_pose()
+        self.uniformly_move(self._HOME_POS, wait=True)
 
     def go_sleep(self) -> None:
-        self.arm.go_to_sleep_pose()
+        self.uniformly_move(self._SLEEP_POS, wait=True)
+        # self.arm.go_to_sleep_pose()
         # go a bit lower to make shutdown easier (stop collision)
 
     def shutdown(self) -> None:
@@ -81,6 +89,28 @@ class RobotController(InterbotixManipulatorXS):
         self.release()
         super().shutdown()
 
+    def _get_theta_list_from_pose(self, x: float = None, y: float = None, z: float = None, roll: float = None,
+                                  pitch: float = None) -> list[float]:
+        # if none values are given, use the current pose
+        current_x, current_y, current_z, = self.xyz_pose
+        if x is None:
+            x = current_x
+        if y is None:
+            y = current_y
+        if z is None:
+            z = current_z
+        return self.arm.set_ee_pose_components(x=x, y=y, z=z, execute=False)[0]
+
+    def move_to(self, x: float = None, y: float = None, z: float = None, roll: float = None, pitch: float = None,
+                *, wait: bool = False, resume: bool = True) -> None:
+        if self._moving:
+            raise Exception("Robot is already moving")
+        if resume:
+            self.resume()
+        theta_list = self._get_theta_list_from_pose(x=x, y=y, z=z, roll=roll, pitch=pitch)
+        print(theta_list)
+        self.uniformly_move(theta_list, wait=wait)
+
     def uniformly_move(self, joint_positions: list[float], *, wait: bool = False, resume: bool = True) -> None:
         if self._moving:
             raise Exception("Robot is already moving")
@@ -88,8 +118,7 @@ class RobotController(InterbotixManipulatorXS):
             self.resume()
 
         self._moving = True
-        # get the current joint positions
-        current_joint_positions = self.arm.get_joint_commands()
+        current_joint_positions = self.joint_positions
         # get the difference between the current and desired joint positions
         diff = np.array(joint_positions) - np.array(current_joint_positions)
         # set the steps to give the step size of _max_step_size or less and round and make sure it is at least 1
@@ -113,6 +142,21 @@ class RobotController(InterbotixManipulatorXS):
                 i += 1
                 self.arm.set_joint_positions(current_joint_positions + step_size * i, moving_time=self._moving_time,
                                              accel_time=self._moving_time / 2)
+            # make sure the robot is at the final position if not printing a warning (but only if i == steps) it can
+            # be up to _FINAL_POS_TOLERANCE percent off
+            if i == steps:
+                if not np.allclose(self.joint_positions, joint_positions,
+                                   rtol=self._FINAL_POS_TOLERANCE / 100.0, atol=0.0):
+                    # add 2pi to the joint positions to make sure the difference is not zero
+                    final_join_pos = np.array(self.joint_positions) + 2 * np.pi
+                    joint_pos = np.array(joint_positions) + 2 * np.pi
+                    # get the percent off for each joint
+                    percent_off = np.abs(final_join_pos - joint_pos) / (2 * np.pi)
+                    # get the max and min percent off
+                    max_percent_off = np.max(percent_off)
+                    print(f"Warning: Robot did not reach final position. "
+                          f"Final delta max was {max_percent_off * 100:.2f}%\n"
+                          f"If it is close enough, adjust the _FINAL_POS_TOLERANCE constant in the code.")
             self._moving = False
 
         self._moving_thread = threading.Thread(target=thread_func, daemon=True)
@@ -122,13 +166,25 @@ class RobotController(InterbotixManipulatorXS):
 
 
 def main() -> None:
-    open_daemon(use_sim=True, ros2=True)
+    open_daemon(use_sim=False, ros2=True)
 
     controller = RobotController()
-    print(controller.joint_positions)
-
-    controller.shutdown()
-    # print(controller.arm.get_joint_commands())
+    time.sleep(1)
+    try:
+        # controller.move_to(z=0.2, wait=True)
+        # controller.move_to(z=0.3, wait=True)
+        controller.uniformly_move([0, 0, 0, 0, 0, 0])
+        while controller.moving:
+            input("Press enter to pause")
+            controller.pause()
+            input("Press enter to resume")
+            controller.resume()
+        pass
+    except Exception as e:
+        print(e)
+    finally:
+        print("Shutting down")
+        controller.shutdown()
 
 
 if __name__ == '__main__':
