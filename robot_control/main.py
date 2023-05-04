@@ -3,7 +3,7 @@ from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
 import numpy as np
 import threading
 import time
-
+import requests
 
 def open_daemon(*, use_sim: bool = False, ros2: bool = True) -> None:
     import os
