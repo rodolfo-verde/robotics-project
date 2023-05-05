@@ -4,6 +4,9 @@ import time
 import sounddevice as sd
 
 
+BLOCKLENGTH = 100000
+
+
 def LowpassFilter(fc, r):
     assert fc < r / 2, "violation of sampling theorem"
     LengthOfFilterInSamples = 501
@@ -37,14 +40,17 @@ def callback(indata, frame_count, time_info, status):
     safe1 = np.append(safe1, indata)
 
 # setting up the stream
+# device 6 for roman, and device 1 for jonas, depends on the system
+# check with sounddevice.query_device() for sounddevices and use the integer
+# in front of the desired device as device in the stream function
 stream = sd.InputStream(channels=1, samplerate=44100, callback=callback, device=1)
 
 
 with stream:
     global safe2
-    while len(safe1) < 100000:
+    while len(safe1) < BLOCKLENGTH:
         time.sleep(0.1)
-    safe2 = safe1[:100000]
+    safe2 = safe1[:BLOCKLENGTH]
 
 
 print("starting to safe")
