@@ -47,11 +47,11 @@ with stream:
     safe2 = safe1[:100000]
 
 
-print("starting to safe")
+print("Starting to save!")
 print(len(safe2))
 print(safe2.shape)
 print(safe2)
-h_BP_NB = BandpassFilter(300, 3400, 44100)
+h_BP_NB = BandpassFilter(300, 3400, 44100) # 300, 3400 = Narrowband filter
 z_NB = np.convolve(safe2, h_BP_NB)
 # /0.99 da es durch die syntax von dem /= mit dem anderen in eine Klammer kommt
 z_NB /= np.amax(np.abs(z_NB)) / 0.99
@@ -61,4 +61,4 @@ print(np.max(np.abs(safe2)))
 print(len(safe2))
 WaveInterface.WriteWave(safe2, 44100, 16, "TestNoFilter.wav")
 WaveInterface.WriteWave(z_NB, 44100, 16, "TestWithFilter.wav")
-print("safe finished")
+print("Save finished!")
