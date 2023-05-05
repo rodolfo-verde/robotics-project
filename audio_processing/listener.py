@@ -47,7 +47,7 @@ with stream:
     safe2 = safe1[:100000]
 
 
-print("starting to safe")
+print("starting to save")
 print(len(safe2))
 print(safe2.shape)
 print(safe2)
@@ -61,4 +61,4 @@ print(np.max(np.abs(safe2)))
 print(len(safe2))
 WaveInterface.WriteWave(safe2, 44100, 16, "TestNoFilter.wav")
 WaveInterface.WriteWave(z_NB, 44100, 16, "TestWithFilter.wav")
-print("safe finished")
+print("save finished")
