@@ -2,7 +2,10 @@ import numpy as np
 import WaveInterface
 import time
 import sounddevice as sd
+import sys
 
+# insert for Jonas
+# sys.path.insert(0, '.../speech_rex')
 
 BLOCKLENGTH = 100000
 
@@ -43,6 +46,8 @@ def callback(indata, frame_count, time_info, status):
 # device 6 for roman, and device 1 for jonas, depends on the system
 # check with sounddevice.query_device() for sounddevices and use the integer
 # in front of the desired device as device in the stream function
+
+print("Starting to listen!")
 stream = sd.InputStream(channels=1, samplerate=44100, callback=callback, device=1)
 
 
@@ -52,6 +57,7 @@ with stream:
         time.sleep(0.1)
     safe2 = safe1[:BLOCKLENGTH]
 
+print("Listening finished!")
 
 print("Starting to save!")
 print(len(safe2))
