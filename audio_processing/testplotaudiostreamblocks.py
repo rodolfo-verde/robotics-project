@@ -10,13 +10,14 @@ devices = sd.query_devices()
 print(devices)
 
 for i in devices:
-    #print(i)
+    print(i)
     if i['name'] == 'default':
         print("HIT")
-    #if i[1] == "default":
-    #    INPUTDEVICE = i[0]
+        INPUTDEVICE = i['index']
 
 print(INPUTDEVICE)
+# if you want to set the inputdevice manually just remove the "#" infront of the next line and choose your inputdevice
+# the list of all availavle inputdevices will be in the console after running once
 #INPUTDEVICE = 5 # sets inputdevice for the stream
 PLOTDURATION = 3 # plotduration in seconds
 BLOCKSPERSECOND = 4 # number of blocks processed in one second, sets the blocklength for that
@@ -54,6 +55,7 @@ def BandpassFilter(f_low, f_high, r: int):
     return ApplyFCenter(h_LP, f_center, r)
 
 
+#safe1 stores the input from the stream to be processed later
 safe1 = np.array([], dtype="float64")
 
 
@@ -70,6 +72,7 @@ def callback(indata, frame_count, time_info, status):
 stream = sd.InputStream(channels=1, samplerate=44100, callback=callback, device=INPUTDEVICE)
 
 
+# setting up all the stuff to plot the signals
 x = np.arange(PLOTLENGTH)/SAMPLERATE
 x_voice = np.arange(VOICEBLOCKSPERPLOT)/VOICEBLOCKSPERSECOND
 h_BP_NB = BandpassFilter(300, 3400, SAMPLERATE)
@@ -78,15 +81,24 @@ print(len(x_voice))
 
 plt.ion()
 fig1 = plt.figure(1)
-plt1 = fig1.add_subplot(311)
-plt2 = fig1.add_subplot(312)
-plt3 = fig1.add_subplot(313)
+plt1 = fig1.add_subplot(411)
+plt2 = fig1.add_subplot(412)
+plt3 = fig1.add_subplot(413)
+plt4 = fig1.add_subplot(414)
 plt1v = plt1.twinx()
 plt2w = plt2.twinx()
 
+plt1.set_ylabel("raw data")
+plt2.set_ylabel("filtered data")
+plt3.set_ylabel("automatic gained data")
+plt1v.set_ylabel("voice activity")
+plt2w.set_ylabel("worddetection")
+plt4.set_ylabel("words")
+
 plt1.axis([0, PLOTDURATION, -2, 2])
 plt2.axis([0, PLOTDURATION, -2, 2])
-plt3.axis([0, PLOTDURATION, -2, 2])
+plt3.axis([0, PLOTDURATION, -1, 1])
+plt4.axis([0, PLOTDURATION, -1, 1])
 plt1v.axis([0, PLOTDURATION, -90, -10])
 plt2w.axis([0, PLOTDURATION, -1, 2])
 
@@ -95,37 +107,38 @@ printblockfiltered = np.zeros(PLOTLENGTH)
 printblockgained = np.zeros(PLOTLENGTH)
 printvoiceactivity = np.zeros(VOICEBLOCKSPERPLOT)
 printworddetection = np.zeros(VOICEBLOCKSPERPLOT)
+printwords = np.zeros(PLOTLENGTH)
 
 
 linenofilter, = plt1.plot(x, printblockraw, 'b-')
 linewithfiler, = plt2.plot(x, printblockfiltered, 'b-')
 linewithgain, = plt3.plot(x, printblockgained, 'b-')
 lineactivity, = plt1v.plot(x_voice, printvoiceactivity, 'r-')
-linewords, = plt2w.plot(x_voice, printworddetection, 'r-')
+lineworddetection, = plt2w.plot(x_voice, printworddetection, 'r-')
+linewords, = plt4.plot(x, printwords, 'b-')
 
-tracker = 0
-trackertime = time.time()
 
-def printval(blockraw: np.array, blockfiltered: np.array, blockgained: np.array, voiceactivity: np.array, worddetection:np.array):
+def printval(blockraw: np.array, blockfiltered: np.array, blockgained: np.array, voiceactivity: np.array, worddetection:np.array, words: np.array):
     global printblockraw
     global printblockfiltered
     global printblockgained
     global printvoiceactivity
     global printworddetection
-    global tracker
-    global trackertime
+    global printwords
 
     printblockraw = np.append(printblockraw[len(blockraw):], blockraw)
     printblockfiltered = np.append(printblockfiltered[len(blockfiltered):], blockfiltered)
     printblockgained = np.append(printblockgained[len(blockgained):], blockgained)
     printvoiceactivity = np.append(printvoiceactivity[len(voiceactivity):], voiceactivity)
     printworddetection = np.append(printworddetection[len(worddetection):], worddetection)
+    printwords = np.append(printwords[len(words):], words)
 
     linenofilter.set_ydata(printblockraw)
     linewithfiler.set_ydata(printblockfiltered)
     linewithgain.set_ydata(printblockgained)
     lineactivity.set_ydata(printvoiceactivity)
-    linewords.set_ydata(printworddetection)
+    lineworddetection.set_ydata(printworddetection)
+    linewords.set_ydata(printwords)
 
     fig1.canvas.draw()
     fig1.canvas.flush_events()
@@ -133,7 +146,6 @@ def printval(blockraw: np.array, blockfiltered: np.array, blockgained: np.array,
 def processdata(workblock: np.array) -> list[np.array, np.array, np.array]:
 
     filteredworkblock = np.convolve(workblock, h_BP_NB)[:-500]
-    #[startx, endx] = [0, 1]
     #print("bin da")
 
     """
@@ -143,8 +155,8 @@ def processdata(workblock: np.array) -> list[np.array, np.array, np.array]:
     """
 
     # maximum magnitude of a typical soundsignal after AD-Conversion
-    A = 1
-    targetlevel = -30
+    A = 2
+    targetlevel = -45
 
 
     #levelbeforegain = 10*np.log10(2*np.mean(filteredworkblock**2) / (A**2))
@@ -195,10 +207,16 @@ def getvoiceactivity(gainedworkblock: np.array) -> np.array:
     return L
 
 
-def worddetection(voiceactivity: np.array) -> list([np.array, np.array]):
+# needs an array from the voiceactivity and the the audiostream from which you want the words (raw/filtered/gained)
+# returns two arrays, the first with the start and endpoint of words
+# the first value is the start of the first words, the second the end the third the start of the second word an so on
+# the second array contains zeros and ones, zero means that at this point there is no word, and one means that there is a word
+# mostly for plotting the wordareas
+def worddetection(voiceactivity: np.array, audioinput: np.array) -> list([np.array, np.array, np.array]):
     isword = False
     lenstuff = BLOCKLENGTH // (LENGTHOFVOICEACTIVITYBLOCK*SAMPLERATE//1000)
-    words = np.array([])
+    wordfactortodata = voiceactivity.shape[0]*SAMPLERATE//VOICEBLOCKSPERSECOND
+    worddetection = np.array([])
     
     #print("-------------------------------------------")
     #print(voiceactivity.shape[0])
@@ -207,40 +225,43 @@ def worddetection(voiceactivity: np.array) -> list([np.array, np.array]):
         if voiceactivity[i] > -45:
             #print("hit")
             if not isword:
-                words = np.append(words, int(i))
+                worddetection = np.append(worddetection, int(i))
                 isword = True
         else:
             if isword:
-                words = np.append(words, int(i))
+                worddetection = np.append(worddetection, int(i))
                 isword = False
     
     wordmarkers = np.zeros(lenstuff)
     #print(words)
-    for i in range(len(words)//2):
-        if i == len(words)-1:
+    
+    words = np.array([])
+    #print(voiceactivity.shape[0])
+    #print(audioinput.shape[0])
+    #print(SAMPLERATE//VOICEBLOCKSPERSECOND)
+    #print(voiceactivity.shape[0]*SAMPLERATE//VOICEBLOCKSPERSECOND)
+    #print("-------------------------------")
+    for i in range(len(worddetection)//2):
+        if i == len(worddetection)-1:
             wordmarkers[i] += 1
         #print(int(a))
         #print(b)
-        wordmarkers[int(words[i]):int(words[i+1])] += 1
+        
+        [startx, endx] = [int(worddetection[i]), int(worddetection[i+1])]
+        wordmarkers[startx:endx] += 1
+        words = np.append(words, audioinput[startx*wordfactortodata:(((endx+1)*wordfactortodata)-1)])
 
-    return [words, wordmarkers]
+    return [words, worddetection, wordmarkers]
 
 
 # kinda working, only for testint stuff - roman :D
 # the automatic gain gaines to much noice, so the voice activity always detects
 # this decreases with bigger blocksizes
 # this only shows that i have to work on gaining properly (in the blocks) :D
+# fixed it with having a minimum mean when gaining so that if noonetalks, it doesnt push the noice up
+# the printing of the words in the fourth plot is not working properly i think, will take care of that later
+# and i cant test it with the microphone yet, will annoy jonas with that soonish :)
 with stream:
-
-    
-    """
-    while(len(safe1)<SAMPLERATE):
-        time.sleep(0.1)
-    workblock = safe1[:BLOCKLENGTH]
-    safe1 = safe1[BLOCKLENGTH:]
-    [a, b, c] = processdata(workblock)
-    printval(a, b, c)
-    """
 
     while True:
         while(len(safe1)<BLOCKLENGTH):
@@ -248,49 +269,7 @@ with stream:
         workblock = safe1[:BLOCKLENGTH]
         safe1 = safe1[BLOCKLENGTH:]
 
-        [a, b, c] = processdata(workblock)
-        voiceblocks = getvoiceactivity(c)
-        [e, f] = worddetection(voiceblocks)
-        printval(a, b, c, voiceblocks, f)
-
-        """
-        filteredworkblock = np.convolve(workblock, h_BP_NB)[:-500]
-        #[startx, endx] = [0, 1]
-        #print("bin da")
-
-        if not np.max(np.abs(filteredworkblock))/0.99 < 0:
-            workblock /= np.max(np.abs(workblock))/0.99
-            filteredworkblock /= np.max(np.abs(filteredworkblock))/0.99
-
-        # maximum magnitude of a typical soundsignal after AD-Conversion
-        A = 2
-        targetlevel = -30
-
-
-        levelbeforegain = 10*np.log10(2*np.mean(filteredworkblock**2) / (A**2))
-        
-        block_mean = np.mean(filteredworkblock)
-        block_variance = np.mean(filteredworkblock**2)
-
-        gainedworkblock = np.sqrt(A*A/2*(10**(targetlevel / 10))/(block_variance - block_mean**2))*(filteredworkblock-block_mean)
-        print(gainedworkblock)
-
-        levelaftergain = 10*np.log10(2*np.mean(gainedworkblock**2) / (A**2))
-        print("------Levels befor and aftergain -------")
-        print(levelbeforegain)
-        print(levelaftergain)
-        print("----------------------------------------")
-
-        print(np.max(np.abs(workblock))/0.99)
-        linenofilter.set_ydata(workblock)
-        linewithfiler.set_ydata(filteredworkblock)
-        linewithgain.set_ydata(gainedworkblock)
-
-        fig1.canvas.draw()
-        fig1.canvas.flush_events()
-        
-        # why the f is the filter generating 500 values, independent of the length of the input
-        #plt.plot(x, filteredworkblock[:-500])
-        #plt.show()
-        #plt.axis([startx, endx])
-        """
+        [raw, filtered, gained] = processdata(workblock)
+        voiceblocks = getvoiceactivity(gained)
+        [words, wordstartsandends, wordblocks] = worddetection(voiceblocks, gained)
+        printval(raw, filtered, gained, voiceblocks, wordblocks, words)
