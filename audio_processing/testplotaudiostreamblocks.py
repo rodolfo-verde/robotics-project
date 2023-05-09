@@ -155,8 +155,8 @@ def processdata(workblock: np.array) -> list[np.array, np.array, np.array]:
     """
 
     # maximum magnitude of a typical soundsignal after AD-Conversion
-    A = 2
-    targetlevel = -45
+    A = 2 # should this not be 1?
+    targetlevel = -45 # test it with multiple range values
 
 
     #levelbeforegain = 10*np.log10(2*np.mean(filteredworkblock**2) / (A**2))
