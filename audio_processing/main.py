@@ -17,4 +17,10 @@ import scipy.fftpack as fft
 import scipy.io as sio
 import scipy
 
+# this could be our AudioProcessing class
+# it should contain all the functions we need to process the audio
+# it should also contain the variables we need to store the data
+# it should also contain the functions to save and load the data
 
+# class AudioProcessing: ................
+    
