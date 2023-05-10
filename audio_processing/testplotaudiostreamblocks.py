@@ -164,28 +164,8 @@ def processdata(workblock: np.array) -> list[np.array, np.array, np.array]:
 
     # maximum magnitude of a typical soundsignal after AD-Conversion
     A = 2
-    targetlevel = -30
-    """gainedworkblock = np.array([])
-    c = 0.9
-    x_mean = 0.0
-    x_variance = 0.0
-    blocksizeinms = LENGTHOFVOICEACTIVITYBLOCK
-    blocksizeinsamples = int(blocksizeinms*SAMPLERATE/1000)
-    numberofblocks = filteredworkblock.shape[0] // blocksizeinsamples
-    L = np.zeros((numberofblocks))
-    for n in range(numberofblocks):
-        idx1 = n * blocksizeinsamples
-        idx2 = idx1 + blocksizeinsamples
-        x_Block = filteredworkblock[idx1:idx2]
-        x_mean     = c * x_mean     + (1-c) * np.mean(x_Block)
-        x_variance = c * x_variance + (1-c) * np.mean(x_Block**2)
-        a = x_mean
-        b = np.sqrt(A*A/2*(10**(targetlevel / 10))/(x_variance - x_mean**2))
-        print("--------------------------")
-        print(b)
-        print(x_Block)
-        print(a)
-        gainedworkblock = np.append(gainedworkblock, b * (x_Block - a))"""
+    targetlevel = -45
+
 
     #levelbeforegain = 10*np.log10(2*np.mean(filteredworkblock**2) / (A**2))
     
