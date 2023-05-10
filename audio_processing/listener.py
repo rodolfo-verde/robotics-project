@@ -7,7 +7,7 @@ import sys
 # insert for Jonas
 # sys.path.insert(0, '.../speech_rex')
 
-BLOCKLENGTH = 100000
+BLOCKLENGTH = 44100 * 2
 
 
 def LowpassFilter(fc, r):
@@ -71,6 +71,6 @@ safe2 /= np.amax(np.abs(safe2)) / 0.99
 print(np.max(np.abs(z_NB)))
 print(np.max(np.abs(safe2)))
 print(len(safe2))
-WaveInterface.WriteWave(safe2, 44100, 16, "TestNoFilter.wav")
-WaveInterface.WriteWave(z_NB, 44100, 16, "TestWithFilter.wav")
+WaveInterface.WriteWave(safe2, 44100, 16, "audio_processing/TestNoFilter.wav")
+WaveInterface.WriteWave(z_NB, 44100, 16, "audio_processing/TestWithFilter.wav")
 print("Save finished!")
