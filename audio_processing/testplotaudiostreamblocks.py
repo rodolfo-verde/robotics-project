@@ -254,7 +254,7 @@ def worddetection(voiceactivity: np.array, audioinput: np.array) -> list([np.arr
 
     for i in range(lenstuff):
         if voiceactivity[i]>-45:
-            wordmarkers2[i*wordfactortodata:(i+1)*wordfactortodata-1] +=1
+            wordmarkers2[i*wordfactortodata:((i+1)*wordfactortodata)] +=1
 
     words = np.array([])
     #print(voiceactivity.shape[0])
