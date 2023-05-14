@@ -8,8 +8,8 @@ from signalplotter import signalplotter
 from dataprocessor import dataprocessor
 
 SAMPLERATE = 44100
-TARGETLVL = -35
-VOICETHRESHHOLD = -45
+TARGETLVL = -30
+VOICETHRESHHOLD = -40
 LENGTHOFVOICEACTIVITY = 10
 
 

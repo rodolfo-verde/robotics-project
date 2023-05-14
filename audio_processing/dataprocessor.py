@@ -16,6 +16,7 @@ class dataprocessor:
 
     _filter: int
 
+
     def LowpassFilter(self, fc, r: int):
         assert fc < r / 2, "violation of sampling theorem"
         LengthOfFilterInSamples = 501
@@ -40,6 +41,8 @@ class dataprocessor:
         f_center = (f_low + f_high) / 2
         return self.ApplyFCenter(h_LP, f_center, r)
     
+
+    # setting up the processor
     def __init__(self, samplerate: int, targetlvl: int, voicethreshhold:int, lengthvoiceactivity: int):
 
         self.samplerate = samplerate
@@ -48,14 +51,17 @@ class dataprocessor:
         self.lengthvoiceactivity = lengthvoiceactivity
         self._filter = self.BandpassFilter(300, 3400, self.samplerate)
 
+    
+    # processing data
     def processdata(self, data: np.array):
 
         self.raw = np.array(data)
         self.filtered = np.array(np.convolve(self.raw, self._filter)[250:-250])
 
         A = 1
-        block_mean = np.max([np.mean(self.filtered), 0.0001])
-        block_variance = np.max([np.mean(self.filtered**2), 0.01])
+        block_mean = np.max([np.mean(self.filtered), 0])
+        block_variance = np.max([np.mean(self.filtered**2), 0.00016])
+        print(f"mean {block_mean} and variance {block_variance}")
 
         self.gained = np.array(np.sqrt(A*A/2*(10**(self.targetlvl / 10))/(block_variance - block_mean**2))*(self.filtered-block_mean))
 
@@ -81,5 +87,6 @@ class dataprocessor:
         return np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained], [self.words]], dtype=object)
     
     
+    # gives back the shape of the returned values
     def get_shape_info(self):
         return np.array([2, 2, 1, 1])

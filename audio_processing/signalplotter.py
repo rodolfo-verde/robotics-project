@@ -21,6 +21,8 @@ class signalplotter:
 
     fig1: plt.figure
 
+
+    # setting up the plotter
     def __init__(self, plotduration: int, samplerate: int, voiceblocksperplot: int, voiceblockspersecond: int, plotinfos: np.array, fig:plt.figure) -> np.array:
         print("Initializing plotter")
         self.plotduration = plotduration
@@ -34,6 +36,7 @@ class signalplotter:
         print("Plotter rdy")
         
     
+    # setting up hte plots
     def setup_plots(self):
         print("Setting up the plots")
         x = np.arange(self.plotduration*self.samplerate)/self.samplerate
@@ -88,6 +91,7 @@ class signalplotter:
         print("Plots are rdy to go")
 
     
+    # updating the plots
     def update_lines(self, data: np.array):
         print("uptdating lines")
         for i in range(self.plotinfos.shape[0]):
