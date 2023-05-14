@@ -3,6 +3,8 @@ import WaveInterface
 import time
 import sounddevice as sd
 import matplotlib.pyplot as plt
+from signalplotter import signalplotter
+from dataprocessor import dataprocessor
 
 INPUTDEVICE = 6
 
@@ -20,7 +22,7 @@ print(INPUTDEVICE)
 # the list of all availavle inputdevices will be in the console after running once
 #INPUTDEVICE = 5 # sets inputdevice for the stream
 PLOTDURATION = 3 # plotduration in seconds
-BLOCKSPERSECOND = 5 # number of blocks processed in one second, sets the blocklength for that
+BLOCKSPERSECOND = 2 # number of blocks processed in one second, sets the blocklength for that
 SAMPLERATE = 44100 # samplerate from the input
 BLOCKLENGTH = SAMPLERATE//BLOCKSPERSECOND # sets the blocklength, dependend on blockspersecond
 LENGTHOFVOICEACTIVITYBLOCK = 10 # sets the length in "ms" of the blocklength for the voice activity
@@ -28,7 +30,8 @@ VOICEBLOCKSPERPLOT = 1000//LENGTHOFVOICEACTIVITYBLOCK*PLOTDURATION # sets the nu
 VOICEBLOCKSPERSECOND = 1000//LENGTHOFVOICEACTIVITYBLOCK
 VOICEBLOCKSPERBLOCK = VOICEBLOCKSPERSECOND//BLOCKSPERSECOND
 PLOTLENGTH = SAMPLERATE*PLOTDURATION # sets the length of the arrays to plot
-
+TARGETLEVEL = -35
+VOICETHRESHHOLD = -45
 
 
 def LowpassFilter(fc, r: int):
@@ -164,8 +167,6 @@ def processdata(workblock: np.array) -> list[np.array, np.array, np.array]:
 
     # maximum magnitude of a typical soundsignal after AD-Conversion
     A = 2
-    targetlevel = -45
-
 
     #levelbeforegain = 10*np.log10(2*np.mean(filteredworkblock**2) / (A**2))
     
@@ -174,15 +175,15 @@ def processdata(workblock: np.array) -> list[np.array, np.array, np.array]:
     #print(np.mean(filteredworkblock**2))
     #print("--------------------------------------------------------------")
 
-    block_mean = np.max([np.mean(filteredworkblock), 0.00000000000000001])
-    block_variance = np.max([np.mean(filteredworkblock**2), 0.00000000000001])
+    block_mean = np.max([np.mean(filteredworkblock), 0.0001])
+    block_variance = np.max([np.mean(filteredworkblock**2), 0.01])
     
     #print("------------blockmean and blockvariance-------")
     #print(block_mean)
     #print(block_variance)
     #print("----------------------------------------------")
     if block_variance>0.00001:
-        gainedworkblock = np.sqrt(A*A/2*(10**(targetlevel / 10))/(block_variance - block_mean**2))*(filteredworkblock-block_mean)
+        gainedworkblock = np.sqrt(A*A/2*(10**(TARGETLEVEL / 10))/(block_variance - block_mean**2))*(filteredworkblock-block_mean)
     else:
         gainedworkblock = np.zeros(len(filteredworkblock))
     
@@ -237,7 +238,7 @@ def worddetection(voiceactivity: np.array, audioinput: np.array) -> list([np.arr
 
     # so apperently this loop is shit and not working properly :/
     for i in range(lenstuff):
-        if voiceactivity[i] > -45:
+        if voiceactivity[i] > VOICETHRESHHOLD:
             #print("hit")
             if not isword:
                 worddetection = np.append(worddetection, int(i))
@@ -253,7 +254,7 @@ def worddetection(voiceactivity: np.array, audioinput: np.array) -> list([np.arr
     wordmarkers2 = np.zeros(audioinput.shape[0])
 
     for i in range(lenstuff):
-        if voiceactivity[i]>-45:
+        if voiceactivity[i]> VOICETHRESHHOLD:
             wordmarkers2[i*wordfactortodata:((i+1)*wordfactortodata)] +=1
 
     words = np.array([])
@@ -282,6 +283,10 @@ def worddetection(voiceactivity: np.array, audioinput: np.array) -> list([np.arr
 # fixed it with having a minimum mean when gaining so that if noonetalks, it doesnt push the noice up
 # the printing of the words in the fourth plot is not working properly i think, will take care of that later
 # and i cant test it with the microphone yet, will annoy jonas with that soonish :)
+
+#dp = dataprocessor(SAMPLERATE, TARGETLEVEL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITYBLOCK)
+#sp = signalplotter(PLOTDURATION, SAMPLERATE, VOICEBLOCKSPERPLOT, VOICEBLOCKSPERSECOND, np.array([2, 2, 1, 1]), fig1)
+
 with stream:
 
     while True:
@@ -293,4 +298,6 @@ with stream:
         [raw, filtered, gained] = processdata(workblock)
         voiceblocks = getvoiceactivity(gained)
         [words, wordstartsandends, wordblocks, wordblocks2] = worddetection(voiceblocks, gained)
+        #sp.update_lines(dp.processdata(raw))
         printval(raw, filtered, gained, voiceblocks, wordblocks, wordblocks2, words)
+        #sp.update_lines(np.array([[raw, voiceblocks], [filtered, wordblocks], [gained, wordblocks2], [words]], dtype=object))
