@@ -44,5 +44,6 @@ if choice == 1:
     VOICEBLOCKSPERPLOT = 1000//LENGTHOFVOICEACTIVITY*PLOTDURATION
 
     sp = signalplotter(PLOTDURATION, SAMPLERATE, VOICEBLOCKSPERPLOT, VOICEBLOCKSPERSECOND, PLOTINFOS, fig1)
-    sp.update_lines(dp.processdata(x))
+    words, plots = dp.processdata(x)
+    sp.update_lines(plots)
     oink = input()

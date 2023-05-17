@@ -8,6 +8,7 @@ class dataprocessor:
     voiceactivity: np.array
     wordmarkers: np.array
     words: np.array
+    wordlist: np.array
 
     samplerate: int
     targetlvl: int
@@ -83,8 +84,22 @@ class dataprocessor:
                 self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] += 1
         
         self.words = np.array(self.gained*self.wordmarkers)
+
+        self.wordlist = np.ndarray([])
+        wordbool = False
+        wordtemp = np.array([])
+        for i in range(self.words.shape[0]):
+            if self.words[i]!=0:
+                wordbool =  True
+                wordtemp = np.append(wordtemp, self.words[i])
+            else:
+                if wordbool:
+                    self.wordlist = np.append(self.wordlist, wordtemp)
+                    wordtemp = np.array([])
+                    print(f"word detected nr{self.wordlist.shape[0]}")
+                wordbool = False
         
-        return np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained], [self.words]], dtype=object)
+        return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained], [self.words]], dtype=object)], dtype=object)
     
     
     # gives back the shape of the returned values
