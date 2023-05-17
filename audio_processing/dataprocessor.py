@@ -83,20 +83,31 @@ class dataprocessor:
             if self.voiceactivity[n] > self.voicethreshhold:
                 self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] += 1
         
+        self.flatten_wordmarker(5000)
+
         self.words = np.array(self.gained*self.wordmarkers)
 
-        self.wordlist = np.ndarray([])
+        #self.wordlist = np.array([[0, 0]], ndmin=2)
+
+        #self.wordlist = np.append(self.wordlist, np.array([[0, 0]]), axis=0)
+
+        self.wordlist = list()
+
+        #print(self.wordlist)
+
         wordbool = False
         wordtemp = np.array([])
-        for i in range(self.words.shape[0]):
-            if self.words[i]!=0:
+        for i in range(self.wordmarkers.shape[0]):
+            if self.wordmarkers[i]!=0:
                 wordbool =  True
                 wordtemp = np.append(wordtemp, self.words[i])
             else:
                 if wordbool:
-                    self.wordlist = np.append(self.wordlist, wordtemp)
+                    #print(f"{self.wordlist} and {wordtemp}")
+                    #self.wordlist = np.append(self.wordlist, wordtemp, axis=0)
+                    self.wordlist.append(wordtemp)
                     wordtemp = np.array([])
-                    print(f"word detected nr{self.wordlist.shape[0]}")
+                    print(f"word detected nr{len(self.wordlist)}")
                 wordbool = False
         
         return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained], [self.words]], dtype=object)], dtype=object)
@@ -105,3 +116,23 @@ class dataprocessor:
     # gives back the shape of the returned values
     def get_shape_info(self):
         return np.array([2, 2, 1, 1])
+    
+
+    def flatten_wordmarker(self, length: int):
+
+        counter0 = 0
+        counter1 = 0
+
+        for i in range(self.wordmarkers.shape[0]):
+            if self.wordmarkers[i]==1:
+                counter1 += 1
+                if (counter0 < length) and (counter0 > 0):
+                    self.wordmarkers[(i-counter0):i] = 1
+                    print(f"cutted a pause out")
+                counter0 = 0
+            else:
+                counter0 += 1
+                if (counter1 < length) and (counter1 > 0):
+                    #self.wordmarkers[(i-counter1):i] = 0
+                    print(f"cutted a word out")
+                counter1 = 0
