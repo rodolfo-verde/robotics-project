@@ -7,6 +7,7 @@ class dataprocessor:
     gained: np.array
     voiceactivity: np.array
     wordmarkers: np.array
+    convolved_wordmarkers: np.array
     words: np.array
     wordlist: np.array
 
@@ -81,13 +82,25 @@ class dataprocessor:
             P = np.mean(self.gained[idx1:idx2]**2)
             self.voiceactivity[n] = 10*np.log10(2*P/(A**2))
             if self.voiceactivity[n] > self.voicethreshhold:
-                self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] += 1
+                self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] = 1
+
+        testpattern = np.array([1, 0, -1])
+
+        self.convolved_wordmarkers = np.convolve(self.wordmarkers, testpattern, 'same')
+        self.fix_convolved()
+        self.flatten_convolved(5000)
+        self.extend_convolved(300)
+        self.flatten_convolved(5000)
+
+        print(self.convolved_wordmarkers)
         
         self.flatten_wordmarker(5000)
-        self.extend_words(5000)
+        #self.extend_words(2)
         self.flatten_wordmarker(5000)
 
         self.words = np.array(self.gained*self.wordmarkers)
+
+        print("words are set")
 
         #self.wordlist = np.array([[0, 0]], ndmin=2)
 
@@ -97,22 +110,29 @@ class dataprocessor:
 
         #print(self.wordlist)
 
-        wordbool = False
-        wordtemp = np.array([])
+        wordstart = 0
+        wordend = 0
+        prev = 0
+        print("entering word extraction")
         for i in range(self.wordmarkers.shape[0]):
-            if self.wordmarkers[i]!=0:
-                wordbool =  True
-                wordtemp = np.append(wordtemp, self.words[i])
-            else:
-                if wordbool:
-                    #print(f"{self.wordlist} and {wordtemp}")
-                    #self.wordlist = np.append(self.wordlist, wordtemp, axis=0)
-                    self.wordlist.append(wordtemp)
-                    wordtemp = np.array([])
-                    print(f"word detected nr{len(self.wordlist)}")
-                wordbool = False
+            if self.wordmarkers[i]==1 and prev == 0:
+                wordstart = i
+                print(f"got a start at {i}")
+            if self.convolved_wordmarkers[i] == 1:
+                print(f"got wordstart via convolve at {i}")
+
+            if self.wordmarkers[i]==0 and prev == 1:
+                wordend = i
+                self.wordlist.append(self.gained[wordstart:wordend])
+                print(f"got a word at {i}")
+            if self.convolved_wordmarkers[i] == -1:
+                print(f"got wordend via convolve at {i}")
+            #print(f"{self.wordmarkers[i]} and {prev}")
+            prev = self.wordmarkers[i]
+        print("words stored in array")
+        print(len(self.wordlist))
         
-        return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained], [self.words]], dtype=object)], dtype=object)
+        return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained, self.convolved_wordmarkers], [self.words]], dtype=object)], dtype=object)
     
     
     # gives back the shape of the returned values
@@ -120,8 +140,58 @@ class dataprocessor:
         return np.array([2, 2, 1, 1])
     
 
-    def flatten_wordmarker(self, length: int):
+    def fix_convolved(self):
+        
+        for i in range(self.convolved_wordmarkers.shape[0]):
+            if self.convolved_wordmarkers[i] == 1:
+                if self.convolved_wordmarkers[i+1] == 1:
+                    self.convolved_wordmarkers[i+1] = 0
+            if self.convolved_wordmarkers[i] == -1:
+                if self.convolved_wordmarkers[i+1] == -1:
+                    self.convolved_wordmarkers[i+1] = 0
 
+
+    def flatten_convolved(self, length: int):
+        print("entered flatten convolved")
+        lastup = -(length+1)
+        lastdown = -(length+1)
+        
+        for i in range(self.convolved_wordmarkers.shape[0]):
+            if self.convolved_wordmarkers[i] == 1:
+                lastup = i
+                if i-lastdown < length:
+                    self.convolved_wordmarkers[lastdown] = 0
+                    self.convolved_wordmarkers[i] = 0
+            
+            if self.convolved_wordmarkers[i] == -1:
+                lastdown = i
+                if i-lastup < length:
+                    self.convolved_wordmarkers[lastup] = 0
+                    self.convolved_wordmarkers[i] = 0
+    
+
+    def extend_convolved(self, length: int):
+
+        for i in range(self.wordmarkers.shape[0]):
+            if self.wordmarkers[i] == 1:
+                if length < i:
+                    self.wordmarkers[0] = 1
+                    self.wordmarkers[i] = 0
+                self.wordmarkers[i-length] = 1
+                self.wordmarkers[i] = 0
+            
+            if self.wordmarkers[self.wordmarkers.shape[0]-i-1] == -1:
+                if length < i:
+                    self.wordmarkers[self.wordmarkers.shape[0]-i-1] = -1
+                    self.wordmarkers[self.wordmarkers.shape[0]-i-1] = 0
+                self.wordmarkers[self.wordmarkers.shape[0]-i-1+length] = -1
+                self.wordmarkers[self.wordmarkers.shape[0]-i-1] = 0
+        
+
+
+    def flatten_wordmarker(self, length: int):
+        
+        print("entered flatten")
         counter0 = 0
         counter1 = 0
 
@@ -130,14 +200,15 @@ class dataprocessor:
                 counter1 += 1
                 if (counter0 < length) and (counter0 > 0):
                     self.wordmarkers[(i-counter0):i] = 1
-                    print(f"cutted a pause out")
+                    #print(f"cutted a pause out")
                 counter0 = 0
             else:
                 counter0 += 1
                 if (counter1 < length) and (counter1 > 0):
-                    #self.wordmarkers[(i-counter1):i] = 0
-                    print(f"cutted a word out")
+                    self.wordmarkers[(i-counter1):i] = 0
+                    #print(f"cutted a word out")
                 counter1 = 0
+        print("exiting flatten")
     
 
     def extend_words(self, length: int):
@@ -146,8 +217,12 @@ class dataprocessor:
 
         for i in range(self.wordmarkers.shape[0]):
             activ = self.wordmarkers[i]
-            if activ > prev:
+            if activ ==1 and  prev==0:
+                print("added front")
                 self.wordmarkers[i-length:i] = 1
-            if activ < prev:
+            if activ ==0 and prev==1:
+                print("added end")
                 self.wordmarkers[i:i+length] = 1
-        prev = activ
+                i+=length
+            prev = activ
+        print("getting out of extend")
