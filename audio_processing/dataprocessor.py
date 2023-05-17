@@ -10,6 +10,7 @@ class dataprocessor:
     convolved_wordmarkers: np.array
     words: np.array
     wordlist: np.array
+    wordindeces: np.array
 
     samplerate: int
     targetlvl: int
@@ -62,7 +63,7 @@ class dataprocessor:
 
         A = 1
         block_mean = np.max([np.mean(self.filtered), 0])
-        block_variance = np.max([np.mean(self.filtered**2), 0.00016])
+        block_variance = np.max([np.mean(self.filtered**2), 0.00016]) # 0.00016 is the variance of the raw_distance_commands_testt.wav
         print(f"mean {block_mean} and variance {block_variance}")
 
         self.gained = np.array(np.sqrt(A*A/2*(10**(self.targetlvl / 10))/(block_variance - block_mean**2))*(self.filtered-block_mean))
@@ -85,11 +86,13 @@ class dataprocessor:
                 self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] = 1
 
         testpattern = np.array([1, 0, -1])
+        testpattern2 = np.array([1, -1])
 
-        self.convolved_wordmarkers = np.convolve(self.wordmarkers, testpattern, 'same')
+        self.convolved_wordmarkers = np.convolve(self.wordmarkers, testpattern2, 'same')
+        self.convolved_to_indeces()
         self.fix_convolved()
         self.flatten_convolved(5000)
-        self.extend_convolved(300)
+        #self.extend_convolved(300)
         self.flatten_convolved(5000)
 
         print(self.convolved_wordmarkers)
@@ -139,6 +142,29 @@ class dataprocessor:
     def get_shape_info(self):
         return np.array([2, 2, 1, 1])
     
+
+    def convolved_to_indeces(self):
+
+        words = np.array([[0, 0]], ndmin=2)
+
+        start = 0
+        for i in range(self.convolved_wordmarkers.shape[0]):
+            active = self.convolved_wordmarkers[i]
+            if active == 1:
+                start = i
+            if active == -1:
+                words = np.append(words, [[start, i]], axis=0)
+        
+        print(words)
+
+        self.wordindeces = words[1:]
+
+
+    def expand_words(self, lengthof):
+        for i in range(self.wordindeces.shape[0]):
+            a = self.wordindeces[0]
+            
+
 
     def fix_convolved(self):
         
