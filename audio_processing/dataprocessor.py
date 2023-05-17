@@ -84,6 +84,8 @@ class dataprocessor:
                 self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] += 1
         
         self.flatten_wordmarker(5000)
+        self.extend_words(5000)
+        self.flatten_wordmarker(5000)
 
         self.words = np.array(self.gained*self.wordmarkers)
 
@@ -136,3 +138,16 @@ class dataprocessor:
                     #self.wordmarkers[(i-counter1):i] = 0
                     print(f"cutted a word out")
                 counter1 = 0
+    
+
+    def extend_words(self, length: int):
+
+        prev = 0
+
+        for i in range(self.wordmarkers.shape[0]):
+            activ = self.wordmarkers[i]
+            if activ > prev:
+                self.wordmarkers[i-length:i] = 1
+            if activ < prev:
+                self.wordmarkers[i:i+length] = 1
+        prev = activ

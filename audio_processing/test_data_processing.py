@@ -6,6 +6,7 @@ import sounddevice as sd
 import matplotlib.pyplot as plt
 from signalplotter import signalplotter
 from dataprocessor import dataprocessor
+from wordprocessor import wordprocessor
 
 SAMPLERATE = 44100
 TARGETLVL = -30
@@ -46,4 +47,11 @@ if choice == 1:
     sp = signalplotter(PLOTDURATION, SAMPLERATE, VOICEBLOCKSPERPLOT, VOICEBLOCKSPERSECOND, PLOTINFOS, fig1)
     words, plots = dp.processdata(x)
     sp.update_lines(plots)
+
+    wp = wordprocessor(SAMPLERATE)
+
     oink = input()
+    for i in words[0]:
+        doink = input("to play next word press enter")
+        print(i)
+        wp.playsound(np.array(i))
