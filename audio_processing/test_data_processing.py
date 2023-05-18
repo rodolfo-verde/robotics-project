@@ -55,3 +55,5 @@ if choice == 1:
         doink = input("to play next word press enter")
         print(i)
         wp.playsound(np.array(i))
+    
+    fnok = input()
