@@ -151,6 +151,9 @@ class dataprocessor:
     # works pretty good without so far
     def expand_words(self, lengthofexpand: int, lengthofcombine: int):
 
+        if self.wordindeces.shape[0] == 0:
+            return
+
         # expanding the first word backwards if it is not in the range
         # if it is in the range it will set the startword of the first word to 0
         if self.wordindeces[0][0] < lengthofcombine+lengthofexpand:

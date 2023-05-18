@@ -74,3 +74,53 @@ if choice == 1:
         wp.playsound(np.array(i))
     
     fnok = input()
+
+
+if choice==3:
+
+    BLOCKLENGTH = SAMPLERATE//int(input(f"Enter how many blocks should be processed per second"))
+    PLOTDURATION = int(input(f"Enter how many seconds should ne plotted"))
+
+    devices = sd.query_devices()
+
+    #safe1 stores the input from the stream to be processed later
+    safe1 = np.array([], dtype="float64")
+
+
+    # function used from stream to get the sound input
+    def callback(indata, frame_count, time_info, status):
+        global safe1
+        safe1 = np.append(safe1, indata)
+
+    for i in devices:
+        print(i)
+        if i['name'] == 'default':
+            print("HIT")
+            INPUTDEVICE = i['index']
+
+    stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
+    dp = dataprocessor(SAMPLERATE, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
+    time.sleep(0.1)
+    PLOTINFOS = dp.get_shape_info()
+
+    fig1 = plt.figure()
+    fig1.show()
+
+    wp = wordprocessor(SAMPLERATE)
+
+    #PLOTDURATION = PLOTDURATION*SAMPLERATE
+    VOICEBLOCKSPERPLOT = 1000//LENGTHOFVOICEACTIVITY*PLOTDURATION
+
+    sp = signalplotter(PLOTDURATION, SAMPLERATE, VOICEBLOCKSPERPLOT, VOICEBLOCKSPERSECOND, PLOTINFOS, fig1)
+
+    with stream:
+        while True:
+            while(len(safe1)<BLOCKLENGTH):
+                time.sleep(0.1)
+            workblock = safe1[:BLOCKLENGTH]
+            safe1 = safe1[BLOCKLENGTH:]
+
+            words, plots = dp.processdata(workblock)
+            sp.update_lines(plots)
+            for i in words[0]:
+                wp.playsound(i)
