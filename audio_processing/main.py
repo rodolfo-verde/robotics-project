@@ -91,7 +91,7 @@ if choice==3:
     def callback(indata, frame_count, time_info, status):
         global safe1
         safe1 = np.append(safe1, indata)
-
+    INPUTDEVICE = 1
     for i in devices:
         print(i)
         if i['name'] == 'default':
