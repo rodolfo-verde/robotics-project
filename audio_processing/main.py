@@ -72,6 +72,7 @@ if choice == 1:
         doink = input("to play next word press enter")
         print(i)
         data = wp.phasevocode_data(np.array(i))
+        wp.playsound(data)
     
     fnok = input()
 
