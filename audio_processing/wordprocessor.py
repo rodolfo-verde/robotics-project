@@ -138,10 +138,11 @@ class wordprocessor:
     ASpectralMasking: CSpectralMasking
     TemporalMaskingDamping: float
     PitchshiftFactor: float
+    TargetHopSize: int
 
     def __init__(self, samplerate: int) -> None:
 
-        Fs = samplerate
+        self.Fs = samplerate
 
         # define Parameters for the Vocoder
         self.NumberOfBandsPerBark = 1.0 # 1-24
@@ -160,18 +161,18 @@ class wordprocessor:
         self.ASpectralMasking = CSpectralMasking()
 
         # derived parameters and classes
-        self.hs = int(Fs * HopSizeInMilliseconds / 1000)
+        self.hs = int(self.Fs * HopSizeInMilliseconds / 1000)
         self.ws = OverlappingFactor*self.hs
         w_Rectangular = np.ones(self.ws)
         self.w_Hann = 0.5 - 0.5 * np.cos(2*np.pi*(np.arange(self.ws)+0.5)/self.ws)
-        self.FFTLen = int(Fs / MinimumFrequencyResolutionInHertz)
+        self.FFTLen = int(self.Fs / MinimumFrequencyResolutionInHertz)
         if self.FFTLen < self.ws: self.FFTLen = self.ws
         self.FFTLen = 2*int(2**np.ceil(np.log2(self.FFTLen)))
         assert self.FFTLen > 2*self.ws, 'the algorithm assumes at least a zero padding of factor 2'
 
-        TargetHopSize = int(self.hs * self.TimeStretchFactor)
+        self.TargetHopSize = int(self.hs * self.TimeStretchFactor)
 
-        self.ARTISI = RTISI.CRTISI(TargetHopSize, w_Rectangular, self.w_Hann)
+        self.ARTISI = RTISI.CRTISI(self.TargetHopSize, w_Rectangular, self.w_Hann)
 
 
     def phasevocode_data(self, data: np.array) -> np.array:
