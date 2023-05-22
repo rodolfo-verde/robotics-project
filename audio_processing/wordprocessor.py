@@ -2,6 +2,7 @@ import numpy as np
 import sounddevice as sd
 from scipy.signal import argrelextrema
 import WaveInterface
+import time
 
 class CTransformPitchshift(object):
     
@@ -176,6 +177,7 @@ class wordprocessor:
 
 
     def phasevocode_data(self, data: np.array) -> np.array:
+        start = time.time()
         voco = np.zeros((int(data.shape[0] * self.TimeStretchFactor * 1.0)))
         for NumberOfBlocks in range(int((data.shape[0] - self.ws) / self.hs)):
             # block analysis
@@ -198,6 +200,10 @@ class wordprocessor:
             idx2 = idx1 + self.ws
             voco[idx1:idx2] += BlockSynthesis
         
+        end = time.time()
+        time_used = end-start
+        print(f"vocoded the word in {time_used} seconds")
+
         return voco
 
     
