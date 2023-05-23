@@ -132,9 +132,9 @@ def launch_gui(con: Controller) -> None:
     close_button.pack()
     resume()
 
-    # add 5 float entry boxes for the pose (x, y, z, roll, pitch) add them inside a frame so they are grouped together
+    # add 5 float entry boxes for the pose (x, y, z, roll, pitch) add them inside a frame they are grouped together
     # and add a button to add the pose to the queue
-    # pack them 3 and then 2 so they are in 2 rows (x, y, z) and (roll, pitch) add a label to the left of each entry
+    # pack them 3 and then 2 they are in 2 rows (x, y, z) and (roll, pitch) add a label to the left of each entry
     # box to say what it is
     pose_frame_xyz = tk.Frame(root)
     pose_frame_xyz.pack()
@@ -161,7 +161,7 @@ def launch_gui(con: Controller) -> None:
     pitch_entry = tk.Entry(pose_frame_r_p)
     pitch_entry.pack(side=tk.LEFT)
 
-    # add a butoon to update the entry boxes with the current pose
+    # add a button to update the entry boxes with the current pose
     def update_pose() -> None:
         # update the Entry boxes with the pose
         x, y, z, roll, pitch = con.translation_rotation_pose
@@ -198,7 +198,7 @@ def launch_gui(con: Controller) -> None:
 
 
 def full_demo(con: Controller) -> None:
-    pass
+    con = con
 
 
 def save_join_pos(con: Controller) -> None:
