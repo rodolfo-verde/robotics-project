@@ -11,6 +11,7 @@ class dataprocessor:
     words: np.array
     wordlist: np.array
     wordindeces: np.array
+    wordfrompastblock: np.array
 
     samplerate: int
     targetlvl: int
@@ -52,6 +53,7 @@ class dataprocessor:
         self.targetlvl = targetlvl
         self.voicethreshhold = voicethreshhold
         self.lengthvoiceactivity = lengthvoiceactivity
+        self.wordfrompastblock = np.array([])
         self._filter = self.BandpassFilter(300, 3400, self.samplerate)
 
     
@@ -59,7 +61,7 @@ class dataprocessor:
     def processdata(self, data: np.array):
 
         # storing raw data and then filtering it
-        self.raw = np.array(data)
+        self.raw = np.append(self.wordfrompastblock, data)
         self.filtered = np.array(np.convolve(self.raw, self._filter)[250:-250])
 
         # applying the automatic gain
@@ -183,7 +185,16 @@ class dataprocessor:
         
         # checkin if the end of the last word is in range of the end of the data array, if so, it expands the word till the end
         if self.wordindeces[self.wordindeces.shape[0]-1][1]+lengthofcombine+lengthofexpand > self.wordmarkers.shape[0]:
-            self.wordindeces[self.wordindeces.shape[0]-1][1] = self.wordmarkers.shape[0]-1
+            if self.wordfrompastblock.shape[0] < 22050:
+                self.wordfrompastblock = self.raw[self.wordindeces[self.wordindeces.shape[0]-1][0]:]
+                toremove = np.append(toremove, self.wordindeces.shape[0]-1)
+                print("word pushed back one block _______________-------------------------__________________------------___---___--___--____-____________-----------")
+            else:
+                self.wordindeces[self.wordindeces.shape[0]-1][1] = self.wordmarkers.shape[0]-1
+                self.wordfrompastblock = np.array([])
+        else:
+            self.wordfrompastblock = np.array([])
+
         
         # deletes marked words which would be double by now
         self.wordindeces = np.delete(self.wordindeces, toremove, axis=0)

@@ -64,7 +64,7 @@ def launch_gui(con: Controller) -> None:
     # plus a context menu to run different demos
     root = tk.Tk()
     root.title("Robot Control")
-    root.geometry("300x200")
+    root.geometry("600x350")
 
     def stop() -> None:
         con.clear_queue()
@@ -131,13 +131,74 @@ def launch_gui(con: Controller) -> None:
     close_button = tk.Button(root, text="Close", command=close)
     close_button.pack()
     resume()
-    update_label()
 
+    # add 5 float entry boxes for the pose (x, y, z, roll, pitch) add them inside a frame they are grouped together
+    # and add a button to add the pose to the queue
+    # pack them 3 and then 2 they are in 2 rows (x, y, z) and (roll, pitch) add a label to the left of each entry
+    # box to say what it is
+    pose_frame_xyz = tk.Frame(root)
+    pose_frame_xyz.pack()
+    pose_frame_r_p = tk.Frame(root)
+    pose_frame_r_p.pack()
+    x_label = tk.Label(pose_frame_xyz, text="X: ")
+    x_label.pack(side=tk.LEFT)
+    x_entry = tk.Entry(pose_frame_xyz)
+    x_entry.pack(side=tk.LEFT)
+    y_label = tk.Label(pose_frame_xyz, text="Y: ")
+    y_label.pack(side=tk.LEFT)
+    y_entry = tk.Entry(pose_frame_xyz)
+    y_entry.pack(side=tk.LEFT)
+    z_label = tk.Label(pose_frame_xyz, text="Z: ")
+    z_label.pack(side=tk.LEFT)
+    z_entry = tk.Entry(pose_frame_xyz)
+    z_entry.pack(side=tk.LEFT)
+    roll_label = tk.Label(pose_frame_r_p, text="Roll: ")
+    roll_label.pack(side=tk.LEFT)
+    roll_entry = tk.Entry(pose_frame_r_p)
+    roll_entry.pack(side=tk.LEFT)
+    pitch_label = tk.Label(pose_frame_r_p, text="Pitch: ")
+    pitch_label.pack(side=tk.LEFT)
+    pitch_entry = tk.Entry(pose_frame_r_p)
+    pitch_entry.pack(side=tk.LEFT)
+
+    # add a button to update the entry boxes with the current pose
+    def update_pose() -> None:
+        # update the Entry boxes with the pose
+        x, y, z, roll, pitch = con.translation_rotation_pose
+        x_entry.delete(0, tk.END)
+        x_entry.insert(0, str(x))
+        y_entry.delete(0, tk.END)
+        y_entry.insert(0, str(y))
+        z_entry.delete(0, tk.END)
+        z_entry.insert(0, str(z))
+        roll_entry.delete(0, tk.END)
+        roll_entry.insert(0, str(roll))
+        pitch_entry.delete(0, tk.END)
+        pitch_entry.insert(0, str(pitch))
+
+    update_pose_button = tk.Button(root, text="Update Entry with Current Pose", command=update_pose)
+    update_pose_button.pack()
+
+    def add_pose() -> None:
+        try:
+            x = round(float(x_entry.get()), 5)
+            y = round(float(y_entry.get()), 5)
+            z = round(float(z_entry.get()), 5)
+            roll = round(float(roll_entry.get()), 5)
+            pitch = round(float(pitch_entry.get()), 5)
+            con.add_to_queue(final_pose=FinalPose(x, y, z, roll, pitch))
+        except ValueError:
+            print("Invalid pose")
+
+    add_pose_button = tk.Button(root, text="Add Pose", command=add_pose)
+    add_pose_button.pack()
+
+    update_label()
     root.mainloop()
 
 
 def full_demo(con: Controller) -> None:
-    pass
+    con = con
 
 
 def save_join_pos(con: Controller) -> None:

@@ -1,13 +1,14 @@
 from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
+from rclpy.logging import LoggingSeverity
 import numpy as np
 import threading
 import time
 import queue
 from dataclasses import dataclass
 
-_MAX_STEP_SIZE: float = np.deg2rad(0.1)  # radians
-_MOVING_TIME: float = 2 / 1000  # seconds
-_FINAL_POS_TOLERANCE: float = np.deg2rad(0.4)  # radians
+_MAX_STEP_SIZE: float = np.deg2rad(0.1)  # radians Default: 0.1
+_MOVING_TIME: float = 2 / 1000  # seconds Default: 2ms
+_FINAL_POS_TOLERANCE: float = np.deg2rad(0.4)  # radians Default: 0.4
 _DEFAULT_SLEEP_POS: list[float] = [0.0, -1.7999999523162842, 1.5499999523162842, 0.800000011920929, 0.0]
 _SLEEP_POS: list[float] = [-0.00920388475060463, -1.7993595600128174, 1.6444274187088013, 0.777728259563446, 0.0]
 _HOME_POS: list[float] = [0] * 5
@@ -44,7 +45,8 @@ class Controller:
         self._con = InterbotixManipulatorXS(
             robot_model='rx150',
             group_name='arm',
-            gripper_name='gripper'
+            gripper_name='gripper',
+            logging_level=LoggingSeverity.FATAL
         )
         self._moving: bool = False
         self._pause: bool = False
