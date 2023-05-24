@@ -52,6 +52,7 @@ class signalplotter:
         plt1v = plt1.twinx()
         plt2w = plt2.twinx()
         plt3w = plt3.twinx()
+        plt4v = plt4.twinx()
 
         plt1.set_ylabel("raw data")
         plt2.set_ylabel("filtered data")
@@ -60,6 +61,7 @@ class signalplotter:
         plt2w.set_ylabel("worddetection")
         plt4.set_ylabel("words")
         plt3w.set_ylabel("convolved worddetection")
+        plt4v.set_ylabel("vocoded words")
 
         plt1.axis([0, self.plotduration, -2, 2])
         plt2.axis([0, self.plotduration, -2, 2])
@@ -68,6 +70,7 @@ class signalplotter:
         plt1v.axis([0, self.plotduration, -90, -10])
         plt2w.axis([0, self.plotduration, -1, 2])
         plt3w.axis([0, self.plotduration, -1, 2])
+        plt4v.axis([0, self.plotduration, -1, 1])
 
         printblockraw = np.zeros(self.plotlength)
         printblockfiltered = np.zeros(self.plotlength)
@@ -76,8 +79,9 @@ class signalplotter:
         printworddetection = np.zeros(self.plotlength)
         printwords = np.zeros(self.plotlength)
         printworddetection2 = np.zeros(self.plotlength)
+        printvocoded = np.zeros(self.plotlength)
 
-        self.plotvalues = np.array([[printblockraw, printvoiceactivity], [printblockfiltered, printworddetection], [printblockgained, printworddetection2], [printwords]], dtype=object)
+        self.plotvalues = np.array([[printblockraw, printvoiceactivity], [printblockfiltered, printworddetection], [printblockgained, printworddetection2], [printwords, printvocoded]], dtype=object)
 
         linenofilter, = plt1.plot(x, printblockraw, 'b-')
         linewithfiler, = plt2.plot(x, printblockfiltered, 'b-')
@@ -86,8 +90,9 @@ class signalplotter:
         lineworddetection, = plt2w.plot(x, printworddetection, 'r-')
         linewords, = plt4.plot(x, printwords, 'b-')
         lineworddetection2, = plt3w.plot(x, printworddetection2, 'r-')
+        linevocoded, = plt4v.plot(x, printvocoded, 'r-')
 
-        self.plotlines = np.array([[linenofilter, lineactivity], [linewithfiler, lineworddetection], [linewithgain, lineworddetection2], [linewords]], dtype=object)
+        self.plotlines = np.array([[linenofilter, lineactivity], [linewithfiler, lineworddetection], [linewithgain, lineworddetection2], [linewords, linevocoded]], dtype=object)
         print("Plots are rdy to go")
 
     

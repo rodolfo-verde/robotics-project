@@ -127,7 +127,7 @@ class dataprocessor:
     
     # gives back the shape of the returned values
     def get_shape_info(self):
-        return np.array([2, 2, 2, 1])
+        return np.array([2, 2, 2, 2])
     
 
     # cheking the convolved array for 1 and -1

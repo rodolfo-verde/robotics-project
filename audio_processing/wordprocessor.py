@@ -207,6 +207,10 @@ class wordprocessor:
         return voco
 
     
+    def phasevocode_data_array(self, dataarray: np.array):
+        print("dostuff")
+
+
     def playsound(self, data: np.array):
 
         print(data.shape)

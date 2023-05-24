@@ -61,11 +61,20 @@ if choice == 1:
     PLOTDURATION = x.shape[0]/SAMPLERATE
     VOICEBLOCKSPERPLOT = 1000//LENGTHOFVOICEACTIVITY*PLOTDURATION
 
+    wp = wordprocessor(SAMPLERATE)
+
     sp = signalplotter(PLOTDURATION, SAMPLERATE, VOICEBLOCKSPERPLOT, VOICEBLOCKSPERSECOND, PLOTINFOS, fig1)
     words, plots = dp.processdata(x)
-    sp.update_lines(plots)
 
-    wp = wordprocessor(SAMPLERATE)
+    plotshitty = np.zeros(x.shape[0])
+
+    for i in range(len(words[0])):
+        plotshitty[dp.wordindeces[i][0]:dp.wordindeces[i][1]] += np.array(wp.phasevocode_data(np.array(words[0][i])))
+    
+    plots = np.array([[plots[0][0], plots[0][1]], [plots[1][0], plots[1][1]], [plots[2][0], plots[2][1]], [plots[3][0], plotshitty]], dtype=object)
+    print(plots.shape)
+
+    sp.update_lines(plots)
 
     oink = input()
     for i in words[0]:
