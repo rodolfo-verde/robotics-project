@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-# sys.path.insert(0, '../audio_processing/')
 import WaveInterface
 
 # Mel Frequency Cepstral Coefficients
@@ -15,10 +14,10 @@ import WaveInterface
 # 5. Optionally, the output of the DCT is multiplied with a set of weighting. This process is called Liftering. Liftering is currently not used in the MOPS.
 
 
-y, Fs, bits = WaveInterface.ReadWave('audio_processing/noise_filter_commands_test.wav')
+y, Fs, bits = WaveInterface.ReadWave('audio_processing/noise_filter_commands_test.wav') # read the wave file --> we can choose the file and then create training data from it
 
 # Defining parameters
-HopsizeInMilliseconds = 25 # in milliseconds, Spiertz = 10
+HopsizeInMilliseconds = 25 # in milliseconds, Spiertz = 10 --> wordprocessor.py uses 25 I think
 hs = int(HopsizeInMilliseconds * Fs / 1000)
 ws = 4*hs
 w = np.hanning(ws)
@@ -105,3 +104,4 @@ plt.show()
 print(NormalizationGain)
 
 # MFCC_normalized = the data which is used for the neural network --> Classification
+# We should save the data in a file and then use it for the neural network --> training data --> Huge array with all saved data --> then split into traint and test in CNN
