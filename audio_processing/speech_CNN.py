@@ -31,6 +31,7 @@ def CTCLoss(y_true, y_pred):
 # CNN
 model = Sequential()
 
+
 model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(28, 28, 1))) # input shape is ???
 model.add(Flatten())
 model.add(BatchNormalization())

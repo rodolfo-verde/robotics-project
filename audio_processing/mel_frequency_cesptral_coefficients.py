@@ -19,7 +19,7 @@ y, Fs, bits = WaveInterface.ReadWave('audio_processing/noise_filter_commands_tes
 
 start = time.time()
 # Defining parameters
-HopsizeInMilliseconds = 25 # in milliseconds, Spiertz = 10 --> wordprocessor.py uses 25 I think
+HopsizeInMilliseconds = 10 # in milliseconds, Spiertz = 10 --> wordprocessor.py uses 25 I think
 hs = int(HopsizeInMilliseconds * Fs / 1000)
 ws = 4*hs
 w = np.hanning(ws)
@@ -58,6 +58,7 @@ for b in range(T_Hertz2Bark.shape[0]):
 # Defining the DCT --> Discrete Cosine Transform
 K = T_Hertz2Bark.shape[0]
 T_DCT = np.zeros((K, K))
+
 for n in range(K):
     for k in range(K):
         T_DCT[k, n] = np.cos(np.pi * (n+0.5) * k / K)
