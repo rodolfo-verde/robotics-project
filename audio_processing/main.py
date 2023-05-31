@@ -107,7 +107,9 @@ if choice==3:
         print(i)
         if i['name'] == 'default':
             print("HIT")
-            #INPUTDEVICE = i['index']
+            INPUTDEVICE = i['index']
+    
+    INPUTDEVICE = 7
 
     stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
     dp = dataprocessor(SAMPLERATE, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
