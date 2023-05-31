@@ -113,6 +113,7 @@ if choice==3:
     dp = dataprocessor(SAMPLERATE, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
     time.sleep(0.1)
     PLOTINFOS = dp.get_shape_info()
+    PLOTINFOS = np.array([2, 2, 2, 1])
 
     if plotbool: fig1 = plt.figure()
     if plotbool: fig1.show()
