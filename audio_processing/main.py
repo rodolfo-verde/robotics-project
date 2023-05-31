@@ -24,6 +24,7 @@ import scipy
 from signalplotter import signalplotter
 from dataprocessor import dataprocessor
 from wordprocessor import wordprocessor
+from mfcc_processor import mfcc_dataprocessor
 
 SAMPLERATE = 44100
 TARGETLVL = -30
@@ -63,25 +64,43 @@ if choice == 1:
 
     wp = wordprocessor(SAMPLERATE)
 
+    mf = mfcc_dataprocessor(SAMPLERATE)
+
     sp = signalplotter(PLOTDURATION, SAMPLERATE, VOICEBLOCKSPERPLOT, VOICEBLOCKSPERSECOND, PLOTINFOS, fig1)
     words, plots = dp.processdata(x)
 
-    plotshitty = np.zeros(x.shape[0])
+    #plotshitty = np.zeros(x.shape[0])
 
-    for i in range(len(words[0])):
+    """for i in range(len(words[0])):
         plotshitty[dp.wordindeces[i][0]:dp.wordindeces[i][1]] += np.array(wp.phasevocode_data(np.array(words[0][i])))
     
     plots = np.array([[plots[0][0], plots[0][1]], [plots[1][0], plots[1][1]], [plots[2][0], plots[2][1]], [plots[3][0], plotshitty]], dtype=object)
-    print(plots.shape)
+    print(plots.shape)"""
+
+    mfccdata = list()
+
+    for i in words[0]:
+        mfccdata.append(mf.mfcc_process(i))
+        print(mf.mfcc_process(i))
+        plt.matshow(mf.mfcc_process(i), interpolation='nearest', aspect='auto')
+        plt.xlabel('time [s]')
+        plt.ylabel('MFCC')
+        plt.show()
 
     sp.update_lines(plots)
 
     oink = input()
+
+    plt.figure(2)
+    plt.matshow(mf.mfcc_process(words[0][0]), interpolation='nearest', aspect='auto')
+    plt.xlabel('time [s]')
+    plt.ylabel('MFCC')
+    plt.show()
+
     for i in words[0]:
         doink = input("to play next word press enter")
         print(i)
-        data = wp.phasevocode_data(np.array(i))
-        wp.playsound(data)
+        wp.playsound(i)
     
     fnok = input()
 
@@ -121,6 +140,7 @@ if choice==3:
     if plotbool: fig1.show()
 
     wp = wordprocessor(SAMPLERATE)
+    mf = mfcc_dataprocessor(SAMPLERATE)
 
     #PLOTDURATION = PLOTDURATION*SAMPLERATE
     VOICEBLOCKSPERPLOT = 1000//LENGTHOFVOICEACTIVITY*PLOTDURATION
@@ -138,3 +158,7 @@ if choice==3:
             if plotbool: sp.update_lines(plots)
             for i in words[0]:
                 wp.playsound(i)
+                plt.matshow(mf.mfcc_process(i), interpolation='nearest', aspect='auto')
+                plt.xlabel('time [s]')
+                plt.ylabel('MFCC')
+                plt.show()
