@@ -66,8 +66,8 @@ class dataprocessor:
 
         # applying the automatic gain
         A = 1
-        block_mean = np.max([np.mean(self.filtered), 0])
-        block_variance = np.max([np.mean(self.filtered**2), 0.00016]) # 0.00016 is the variance of the raw_distance_commands_testt.wav
+        block_mean = np.max([np.mean(self.filtered), 0.0002])
+        block_variance = np.max([np.mean(self.filtered**2), 0.003016]) # 0.00016 is the variance of the raw_distance_commands_testt.wav
         print(f"mean {block_mean} and variance {block_variance}")
 
         self.gained = np.array(np.sqrt(A*A/2*(10**(self.targetlvl / 10))/(block_variance - block_mean**2))*(self.filtered-block_mean))
@@ -183,7 +183,7 @@ class dataprocessor:
             # expanding wordend
             self.wordindeces[i][1] += lengthofexpand
         
-        # checkin if the end of the last word is in range of the end of the data array, if so, it expands the word till the end
+        """# checkin if the end of the last word is in range of the end of the data array, if so, it expands the word till the end
         if self.wordindeces[self.wordindeces.shape[0]-1][1]+lengthofcombine+lengthofexpand > self.wordmarkers.shape[0]:
             if self.wordfrompastblock.shape[0] < 22050:
                 self.wordfrompastblock = self.raw[self.wordindeces[self.wordindeces.shape[0]-1][0]:]
@@ -193,7 +193,7 @@ class dataprocessor:
                 self.wordindeces[self.wordindeces.shape[0]-1][1] = self.wordmarkers.shape[0]-1
                 self.wordfrompastblock = np.array([])
         else:
-            self.wordfrompastblock = np.array([])
+            self.wordfrompastblock = np.array([])"""
 
         
         # deletes marked words which would be double by now
