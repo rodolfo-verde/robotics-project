@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import WaveInterface
+import time
 
 # Mel Frequency Cepstral Coefficients
 #The standard audio feature for speech processing and word detection are the Mel Frequency Cepstral Coefficients (MFCC):
@@ -16,6 +17,7 @@ import WaveInterface
 
 y, Fs, bits = WaveInterface.ReadWave('audio_processing/noise_filter_commands_test.wav') # read the wave file --> we can choose the file and then create training data from it
 
+start = time.time()
 # Defining parameters
 HopsizeInMilliseconds = 25 # in milliseconds, Spiertz = 10 --> wordprocessor.py uses 25 I think
 hs = int(HopsizeInMilliseconds * Fs / 1000)
@@ -75,7 +77,7 @@ for col in range(NumberOfColumns):
     Y_log = np.log(1e10*Y_mel+1)
     Y_dct = np.matmul(T_DCT, Y_log)
     MFCC[:, col] = Y_dct[1:NumberOfOutputFeatures+1]
-    
+print('MFCC calculation took ' + str(time.time() - start) + ' seconds')    
 # Liftering after MFCC
 NormalizationGain = np.zeros((MFCC.shape[0]))
 rows = 11
@@ -88,20 +90,24 @@ for r in range(rows):
 
 # Visualization
 # MFCC without normalization --> without liftering
-plt.matshow(MFCC, interpolation='nearest', aspect=2)
+plt.matshow(MFCC, interpolation='nearest', aspect='auto')
 plt.xlabel('time [s]')
 plt.ylabel('MFCC')
 plt.show()
 
 #MFCC with normalization --> with liftering
-plt.matshow(MFCC_normalized, interpolation='nearest', aspect=2)
+plt.matshow(MFCC_normalized, interpolation='nearest', aspect='auto')
 plt.xlabel('time [s]')
 plt.ylabel('MFCC (normalized)')
 plt.show()
+
+# Normalization gain
 plt.plot(NormalizationGain)
 plt.ylabel('Normalizaion gain')
 plt.show()
 print(NormalizationGain)
+
+
 
 # MFCC_normalized = the data which is used for the neural network --> Classification
 # We should save the data in a file and then use it for the neural network --> training data --> Huge array with all saved data --> then split into traint and test in CNN
