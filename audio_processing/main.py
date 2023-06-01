@@ -128,7 +128,7 @@ if choice==3:
             print("HIT")
             INPUTDEVICE = i['index']
     
-    INPUTDEVICE = 7
+    INPUTDEVICE = 7 # 1 for jonas usb mic
 
     stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
     dp = dataprocessor(SAMPLERATE, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
