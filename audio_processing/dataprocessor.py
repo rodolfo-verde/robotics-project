@@ -12,6 +12,7 @@ class dataprocessor:
     wordlist: np.array
     wordindeces: np.array
     wordfrompastblock: np.array
+    wordsblocks: np.array
 
     samplerate: int
     targetlvl: int
@@ -54,6 +55,7 @@ class dataprocessor:
         self.voicethreshhold = voicethreshhold
         self.lengthvoiceactivity = lengthvoiceactivity
         self.wordfrompastblock = np.array([])
+        self.wordsblocks = np.array([])
         self._filter = self.BandpassFilter(300, 3400, self.samplerate)
 
     
@@ -101,6 +103,8 @@ class dataprocessor:
         # expanding words
         self.expand_words(5000, 0)
 
+        self.wordfrompastblock = self.words_in_blocks()
+
         #print(self.wordindeces/44100)
 
         # marking the array for words to plot them
@@ -115,7 +119,7 @@ class dataprocessor:
         self.convolved_wordmarkers = np.zeros(self.wordmarkers.shape[0])
 
         # saving all words from the list of indeces
-        for i in self.wordindeces:
+        for i in self.wordsblocks:
             self.wordlist.append(self.gained[i[0]:i[1]])
             self.convolved_wordmarkers[i[0]:i[1]] = 1
 
@@ -200,3 +204,27 @@ class dataprocessor:
         self.wordindeces = np.delete(self.wordindeces, toremove, axis=0)
 
         print(self.wordindeces.shape[0])
+
+    
+    def words_in_blocks(self, blocklength: int = 32500):
+
+        words = np.array([[0, 0]], ndmin=2)
+
+        skip = False
+        for i in range(self.wordindeces.shape[0]):
+
+            if not skip: start = self.wordindeces[i][0]
+
+            while start<self.wordindeces[i][1]:
+                if start+blocklength > self.raw.shape[0]:
+                    self.wordsblocks = words[1:]
+                    return self.raw[start:]
+                words = np.append(words, [[start, start+blocklength]], axis=0)
+                start += blocklength
+                if i < self.wordindeces.shape[0]-1:
+                    if start>self.wordindeces[i+1][0]:
+                        skip=True
+                    else:
+                        skip=False
+        self.wordsblocks = words[1:]
+        print(self.wordsblocks)

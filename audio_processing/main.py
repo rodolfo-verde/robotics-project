@@ -81,7 +81,9 @@ if choice == 1:
 
     for i in words[0]:
         mfccdata.append(mf.mfcc_process(i))
-        print(mf.mfcc_process(i))
+        print(mf.mfcc_process(i).shape)
+        print(i.shape)
+        print("_________________________________----------------_---__________--")
         plt.matshow(mf.mfcc_process(i), interpolation='nearest', aspect='auto')
         plt.xlabel('time [s]')
         plt.ylabel('MFCC')
