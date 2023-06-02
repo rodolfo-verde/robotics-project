@@ -64,6 +64,7 @@ class dataprocessor:
 
         # storing raw data and then filtering it
         self.raw = np.append(self.wordfrompastblock, data)
+        print(self.raw.shape)
         self.filtered = np.array(np.convolve(self.raw, self._filter)[250:-250])
 
         # applying the automatic gain
@@ -228,3 +229,4 @@ class dataprocessor:
                         skip=False
         self.wordsblocks = words[1:]
         print(self.wordsblocks)
+        return np.array([])

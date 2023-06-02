@@ -160,7 +160,8 @@ if choice==3:
             if plotbool: sp.update_lines(plots)
             for i in words[0]:
                 wp.playsound(i)
-                plt.matshow(mf.mfcc_process(i), interpolation='nearest', aspect='auto')
-                plt.xlabel('time [s]')
-                plt.ylabel('MFCC')
-                plt.show()
+                print(f"playing sound of length {i.shape[0]}")
+                #plt.matshow(mf.mfcc_process(i), interpolation='nearest', aspect='auto')
+                #plt.xlabel('time [s]')
+                #plt.ylabel('MFCC')
+                #plt.show()
