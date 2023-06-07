@@ -113,7 +113,7 @@ class train_data_generator:
         return self.stored_mfcc
     
 
-    def get_labe(self):
+    def get_label(self):
         return self.stored_label
 
 
