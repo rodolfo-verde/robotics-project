@@ -11,7 +11,8 @@ from mfcc_processor import mfcc_dataprocessor
 
 class train_data_generator:
 
-    stored_data: np.array
+    stored_mfcc: np.array
+    storefd_label: np.array
     length_of_one_block: int
     data_file: str
 
@@ -25,12 +26,16 @@ class train_data_generator:
 
     def __init__(self, length_of_one_block: int, data_file: str) -> None:
         self.length_of_one_block = length_of_one_block
-        self.data_file = data_file
+        self.data_file_mfcc = f"{data_file}_mfcc"
+        self.data_file_label = f"{data_file}_label"
 
-        self.stored_data = np.array([[[]]], ndmin=3)
+        self.stored_mfcc = np.array([[[]]], ndmin=3)
+        self.stored_label = np.array([[]], ndmin=2)
 
-        if path.exists(f"{self.data_file}.npy"):
-            self.stored_data = np.load(f"{self.data_file}.npy", allow_pickle=True)
+        if path.exists(f"{self.data_file_mfcc}.npy"):
+            self.stored_mfcc = np.load(f"{self.data_file_mfcc}.npy")
+        if path.exists(f"{self.data_file_label}.npy"):
+            self.stored_label = np.load(f"{self.data_file_label}.npy")
         
         self.dp = dataprocessor(self.SAMPLERATE, self.TARGETLVL, self.VOICETHRESHHOLD, self.LENGTHOFVOICEACTIVITY)
         self.mp = mfcc_dataprocessor(self.SAMPLERATE)
@@ -68,14 +73,18 @@ class train_data_generator:
                 
 
             mfcc = self.mp.mfcc_process(i)
-            to_store = np.array([[[mfcc], [labels]]], dtype=object)
+            to_store_mfcc = np.array([mfcc[1:]])
+            to_store_label = np.array([labels])
+            print(to_store_mfcc.shape)
             #print(f"{to_store.shape} and {self.stored_data.shape}")
-            if self.stored_data.shape == (1, 1, 0):
+            if self.stored_mfcc.shape == (1, 1, 0):
                 print("hit")
-                self.stored_data = to_store
+                self.stored_mfcc = to_store_mfcc
+                self.stored_label = to_store_label
             else:
-                self.stored_data = np.append(self.stored_data, to_store, axis=0)
-            print(self.stored_data.shape)
+                self.stored_mfcc = np.append(self.stored_mfcc, to_store_mfcc, axis=0)
+                self.stored_label = np.append(self.stored_label, to_store_label, axis=0)
+            print(self.stored_mfcc.shape)
     
 
     def select_file_to_label(self):
@@ -88,7 +97,7 @@ class train_data_generator:
         for i in range(len(selectedfiles)):
             print(f"enter {i} if you want to label {selectedfiles[i]}")
         choice = int(input())
-        self.label_data_from_file(selectedfiles[choice])
+        self.label_data_from_file(f"audio_processing/{selectedfiles[choice]}")
     
 
     #def label_from_stream(self):
@@ -96,16 +105,23 @@ class train_data_generator:
 
     
     def save_data(self):
-        np.save(self.data_file, self.stored_data)
+        np.save(self.data_file_mfcc, self.stored_mfcc)
+        np.save(self.data_file_label, self.stored_label)
 
 
-    def get_data(self):
-        return self.stored_data
+    def get_mfcc(self):
+        return self.stored_mfcc
+    
+
+    def get_labe(self):
+        return self.stored_label
 
 
 tg = train_data_generator(32500, "audio_processing/Train_Data/set1")
 #tg.select_file_to_label()
-#print(tg.get_data().shape)
+#a = tg.get_data()[:,0,0]
+#a.reshape(a.shape[0],11,70)
+#print(a.shape)
 tg.label_data_from_file("audio_processing/raw_commands_test.wav")
 #tg.label_data_from_file("audio_processing/raw_noise_distance_commands_testt.wav")
 tg.save_data()
