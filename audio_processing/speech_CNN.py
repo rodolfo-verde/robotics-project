@@ -67,7 +67,7 @@ model.add(Flatten())
 model.add(BatchNormalization())
 model.add(Dense(9, activation="softmax"))
 
-model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"])
+model.compile(optimizer="rmsprop", loss=CTCLoss, metrics=["accuracy"]) # categorical_crossentropy, CTCLoss
 
 model.fit(
     X_train.reshape(-1, 11, 70, 1), 
