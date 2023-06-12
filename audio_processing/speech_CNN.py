@@ -58,6 +58,18 @@ def CTCLoss(y_true, y_pred):
     ctc_loss = keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)
     return ctc_loss
 
+#tf.nn.ctc_loss(
+#    labels,
+#    logits,
+#    label_length,
+#    logit_length,
+#    logits_time_major=True,
+#   unique=None,
+#    blank_index=None,
+#    name=None
+#)
+#ctc_loss = tf.nn.ctc_loss(y_train, X_train, label_length=y_train.shape, logit_length=X_train.shape, logits_time_major=True, unique=None, blank_index=None, name="ctc_loss_dense")
+
 # CNN
 model = Sequential()
 
