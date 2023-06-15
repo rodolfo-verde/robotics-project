@@ -28,23 +28,6 @@ print(f"X_test shape: {X_test.shape}")
 print(f"y_train shape: {y_train.shape}")
 print(f"y_test shape: {y_test.shape}")
 
-"""y_one_hot = tf.one_hot(y_train, 9) # one hot encoding of labels
-y_test_one_hot = tf.one_hot(y_test, 9) # one hot encoding of labels
-
-print(f"y_train shape one hot: {y_one_hot.shape}")
-print(f"y_test shape one hot: {y_test_one_hot.shape}")"""
-
-"""# reshape data
-X_train = X_train[0].reshape(12,70,len(X_train[0]))
-X_test = X_test[0].reshape(12,70,len(X_test[0]))
-y_train = y_train[0].reshape(9,1,len(y_train[0]))
-y_test = y_test[0].reshape(9,1,len(y_test[0]))
-
-print(f"X_train shape: {X_train.shape}")
-print(f"X_test shape: {X_test.shape}")
-print(f"y_train shape: {y_train.shape}")
-print(f"y_test shape: {y_test.shape}")
-"""
 # CTC loss function	not implemented in Keras
 def CTCLoss(y_true, y_pred):
     # Compute the training-time loss value
@@ -74,12 +57,16 @@ def CTCLoss(y_true, y_pred):
 model = Sequential()
 
 
-model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) # input shape is ???
+model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) 
 model.add(Flatten())
 model.add(BatchNormalization())
+model.add(Dropout(0.02))
+model.add(Dense(10, activation="sigmoid"))
+model.add(BatchNormalization())
+model.add(Flatten())
 model.add(Dense(9, activation="softmax"))
 
-model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"]) # categorical_crossentropy, CTCLoss
+model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"]) # loss = categorical_crossentropy, CTCLoss
 
 model.fit(
     X_train.reshape(-1, 11, 70, 1), 
