@@ -74,3 +74,5 @@ model.fit(
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
     epochs=30, 
     batch_size=1)
+
+model.summary()
