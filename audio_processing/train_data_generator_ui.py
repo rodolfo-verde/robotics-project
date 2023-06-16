@@ -1,6 +1,7 @@
 import random
 import tkinter as tk
 from os import listdir
+from os import path
 import WaveInterface
 import sounddevice as sd
 import time
@@ -90,7 +91,7 @@ def label_data(x):
         j.destroy()
     
     print(f"{len(rawlist)} and {len(mfcclist)} and {len(labellist)}")
-    save_data_set()
+    select_save_data_set_name()
 
 
 def set_labels(x, butlab):
@@ -108,12 +109,12 @@ def set_labels(x, butlab):
         if butlab[i].get()==1:
             labels[i] = 1
     
-    safe(raw, mfcc, labels)
+    save(raw, mfcc, labels)
 
     buttonpressed.set(True)
 
 
-def safe(raw, mfcc, labels):
+def save(raw, mfcc, labels):
     global rawlist
     global mfcclist
     global labellist
@@ -133,11 +134,64 @@ def skip():
     buttonpressed.set(True)
 
 
-def save_data_set():
+def select_save_data_set_name():
+
+    infile = listdir("audio_processing/Train_Data/")
+    stored = list()
+
+    for i in infile:
+        if i[len(i)-9:]=="label.npy":
+            stored.append(f"{i[:-10]}")
     
-    sd.play(rawlist[5])
-    print(labellist[5])
-    print("JÖÖÖÖÖLK")
+    nameentry = tk.Entry(master=root_tk)
+    nameentry.place(relx=0.7, rely=0.4, anchor=tk.CENTER)
+    buttons.append(nameentry)
+    savebut = tk.Button(master=root_tk, command=lambda: save_data_set(nameentry.get()), text=f"Save to file")
+    savebut.place(relx=0.7, rely=0.6, anchor=tk.CENTER)
+    buttons.append(savebut)
+
+    for i in range(len(stored)):
+        but = tk.Button(master=root_tk, command=lambda i=stored[i]: set_text(i, nameentry), text=f"{i+1}. {stored[i]}")
+        but.place(relx=0.2, rely=(i+1)/(len(stored)+1), anchor=tk.CENTER)
+        buttons.append(but)
+
+
+def set_text(text, label):
+    label.delete(0, tk.END)
+    label.insert(0, text)
+
+
+def save_data_set(setname):
+    
+    for i in buttons:
+        i.destroy()
+    
+    data_file_raw = f"audio_processing/Train_Data/{setname}_raw"
+    data_file_mfcc = f"audio_processing/Train_Data/{setname}_mfcc"
+    data_file_label = f"audio_processing/Train_Data/{setname}_label"
+
+    if rawlist.shape[0]==1:
+        return
+
+    if path.exists(f"{data_file_raw}.npy"):
+        stored_raw = np.load(f"{data_file_raw}.npy")
+        stored_raw = np.append(stored_raw, rawlist[1:])
+    else:
+        stored_raw = rawlist[1:]
+    if path.exists(f"{data_file_mfcc}.npy"):
+        stored_mfcc = np.load(f"{data_file_mfcc}.npy")
+        stored_mfcc = np.append(stored_mfcc, mfcclist[1:])
+    else:
+        stored_mfcc = mfcclist[1:]
+    if path.exists(f"{data_file_label}.npy"):
+        stored_label = np.load(f"{data_file_label}.npy")
+        stored_label = np.append(stored_label, labellist[1:])
+    else:
+        stored_label = labellist[1:]
+
+    np.save(data_file_raw, stored_raw)    
+    np.save(data_file_mfcc, stored_mfcc)    
+    np.save(data_file_label, stored_label)    
 
 
 def button_label_from_stream():
