@@ -175,17 +175,17 @@ def save_data_set(setname):
 
     if path.exists(f"{data_file_raw}.npy"):
         stored_raw = np.load(f"{data_file_raw}.npy")
-        stored_raw = np.append(stored_raw, rawlist[1:])
+        stored_raw = np.append(stored_raw, rawlist[1:], axis=0)
     else:
         stored_raw = rawlist[1:]
     if path.exists(f"{data_file_mfcc}.npy"):
         stored_mfcc = np.load(f"{data_file_mfcc}.npy")
-        stored_mfcc = np.append(stored_mfcc, mfcclist[1:])
+        stored_mfcc = np.append(stored_mfcc, mfcclist[1:], axis=0)
     else:
         stored_mfcc = mfcclist[1:]
     if path.exists(f"{data_file_label}.npy"):
         stored_label = np.load(f"{data_file_label}.npy")
-        stored_label = np.append(stored_label, labellist[1:])
+        stored_label = np.append(stored_label, labellist[1:], axis=0)
     else:
         stored_label = labellist[1:]
 
