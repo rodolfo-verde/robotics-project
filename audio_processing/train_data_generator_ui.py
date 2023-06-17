@@ -23,9 +23,8 @@ labellist = np.array([[]], ndmin=2)
 
 
 def button_label_from_file():
-    global button_label_file
-    button_label_file.destroy()
-    button_label_stream.destroy()
+    for i in buttons:
+        i.destroy()
     select_file_to_label()
 
 
@@ -121,11 +120,11 @@ def save(raw, mfcc, labels):
 
     if rawlist[0, 0]=="a":
         rawlist = np.array([raw], ndmin = 2)
-        mfcclist = np.array([mfcc], ndmin = 2)
+        mfcclist = np.array([mfcc[1:]], ndmin = 2)
         labellist = np.array([labels], ndmin = 2)
     else:
         rawlist = np.append(rawlist, [raw], axis=0)
-        mfcclist = np.append(mfcclist, [mfcc], axis=0)
+        mfcclist = np.append(mfcclist, [mfcc[1:]], axis=0)
         labellist = np.append(labellist, [labels], axis=0)
 
 
@@ -191,17 +190,30 @@ def save_data_set(setname):
 
     np.save(data_file_raw, stored_raw)    
     np.save(data_file_mfcc, stored_mfcc)    
-    np.save(data_file_label, stored_label)    
+    np.save(data_file_label, stored_label)
+
+    data_mfcc = np.load(f"audio_processing/Train_Data/set2_mfcc.npy",allow_pickle=True) # load data
+    data_labels = np.load(f"audio_processing/Train_Data/set2_label.npy",allow_pickle=True) # load data
+
+    print(f"Data shape: {data_mfcc.shape}")
+    print(f"Labels shape: {data_labels.shape}")
+
+    set_start_buttons()
 
 
 def button_label_from_stream():
     print("ÖÖÖÖLK")
 
 
-button_label_file = tk.Button(master=root_tk, command=button_label_from_file, text="Label data from file")
-button_label_file.place(relx=0.3, rely=0.5, anchor=tk.CENTER)
+def set_start_buttons():
+    button_label_file = tk.Button(master=root_tk, command=button_label_from_file, text="Label data from file")
+    button_label_file.place(relx=0.3, rely=0.5, anchor=tk.CENTER)
+    buttons.append(button_label_file)
 
-button_label_stream = tk.Button(master=root_tk, command=button_label_from_stream, text="Label data from stream")
-button_label_stream.place(relx=0.7, rely=0.5, anchor=tk.CENTER)
+    button_label_stream = tk.Button(master=root_tk, command=button_label_from_stream, text="Label data from stream")
+    button_label_stream.place(relx=0.7, rely=0.5, anchor=tk.CENTER)
+    buttons.append(button_label_stream)
 
+
+set_start_buttons()
 root_tk.mainloop()
