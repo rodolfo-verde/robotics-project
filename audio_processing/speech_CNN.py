@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras import layers
 from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, MaxPooling2D
+
 #test 
 #print(f"Tesorflow version {tf.__version__}")
 
 # load data and split into trainings and test data
-data_mfcc = np.load(f"audio_processing\Train_Data\set1_mfcc.npy",allow_pickle=True) # load data
-data_labels = np.load(f"audio_processing\Train_Data\set1_label.npy",allow_pickle=True) # load data
+data_mfcc = np.load(f"audio_processing\Train_Data\set3_mfcc.npy",allow_pickle=True) # load data
+data_labels = np.load(f"audio_processing\Train_Data\set3_label.npy",allow_pickle=True) # load data
 
 print(f"Data shape: {data_mfcc.shape}")
 print(f"Labels shape: {data_labels.shape}")
@@ -58,15 +59,15 @@ model = Sequential()
 
 
 model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) 
-model.add(Flatten())
-model.add(BatchNormalization())
-model.add(Dropout(0.02))
-model.add(Dense(10, activation="sigmoid"))
-model.add(BatchNormalization())
+#model.add(Flatten())
+#model.add(BatchNormalization())
+#model.add(Dropout(0.02))
+#model.add(Dense(10, activation="sigmoid"))
+#model.add(BatchNormalization())
 model.add(Flatten())
 model.add(Dense(9, activation="softmax"))
 
-model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"]) # loss = categorical_crossentropy, CTCLoss
+model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam         loss = categorical_crossentropy, CTCLoss
 
 model.fit(
     X_train.reshape(-1, 11, 70, 1), 
@@ -76,3 +77,20 @@ model.fit(
     batch_size=1)
 
 model.summary()
+
+# evaluate model
+test_loss, test_acc = model.evaluate(X_test.reshape(-1, 11, 70, 1), y_test, verbose=2)
+print(f"Test accuracy: {test_acc}")
+
+# predict
+class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
+predict_mfcc = np.load(f"audio_processing\Train_Data\set_a_1_mfcc.npy",allow_pickle=True) # load data
+predict_labels = np.load(f"audio_processing\Train_Data\set_a_1_label.npy",allow_pickle=True) # load data
+print(f"Predict shape: {predict_mfcc.shape}")
+print(f"Labels shape: {predict_labels.shape}")
+predict = predict_mfcc[0]
+prediction = model.predict(predict.reshape(-1, 11, 70, 1))
+index_pred = np.argmax(prediction) #tf.argmax geht auch
+index_label = np.argmax(predict_labels)
+print(f"Prediction: {class_names[index_pred]}")
+print(f"Label: {class_names[index_label]}")
