@@ -206,13 +206,82 @@ def button_label_from_stream():
 
 
 def set_start_buttons():
+
+    for i in buttons:
+        i.destroy()
+
     button_label_file = tk.Button(master=root_tk, command=button_label_from_file, text="Label data from file")
-    button_label_file.place(relx=0.3, rely=0.5, anchor=tk.CENTER)
+    button_label_file.place(relx=0.3, rely=0.3, anchor=tk.CENTER)
     buttons.append(button_label_file)
 
     button_label_stream = tk.Button(master=root_tk, command=button_label_from_stream, text="Label data from stream")
-    button_label_stream.place(relx=0.7, rely=0.5, anchor=tk.CENTER)
+    button_label_stream.place(relx=0.7, rely=0.3, anchor=tk.CENTER)
     buttons.append(button_label_stream)
+
+    button_check_data = tk.Button(master=root_tk, command=check_data_button, text="check existing data")
+    button_check_data.place(relx=0.3, rely=0.7, anchor=tk.CENTER)
+    buttons.append(button_check_data)
+
+
+def check_data_button():
+    for i in buttons:
+        i.destroy()
+    
+    infile = listdir("audio_processing/Train_Data/")
+    stored = list()
+
+    for i in infile:
+        if i[len(i)-9:]=="label.npy":
+            stored.append(f"{i[:-10]}")
+    
+    for i in range(len(stored)):
+        but = tk.Button(master=root_tk, command=lambda i=stored[i]: load_data_to_check(i), text=f"{i+1}. {stored[i]}")
+        but.place(relx=0.2, rely=(i+1)/(len(stored)+1), anchor=tk.CENTER)
+        buttons.append(but)
+
+
+def load_data_to_check(setname):
+    
+    data_raw = np.load(f"audio_processing/Train_Data/{setname}_raw.npy")
+    data_label = np.load(f"audio_processing/Train_Data/{setname}_label.npy")
+
+    labels = np.zeros(9)
+
+    for i in data_label:
+        labels += i
+
+    lab = tk.Label(master=root_tk, text="")
+    lab.place(relx=0.6, rely=0.6)
+    buttons.append(lab)
+
+    butplayback = tk.Button(master=root_tk, command=lambda dr=data_raw, dl = data_label, lab = lab: randdata(dr, dl, lab), text=f"{setname}")
+    butplayback.place(relx=0.6, rely=0.4, anchor=tk.CENTER)
+    buttons.append(butplayback)
+
+    labelgeneral = tk.Label(master=root_tk, text=f"overall datasamples: {data_label.shape[0]}")
+    labelgeneral.place(relx=0.8, rely=0.1, anchor=tk.CENTER)
+    buttons.append(labelgeneral)
+
+    labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other"]
+    data_label = np.sum(data_label)
+
+    for j in range(len(labellistnames)):
+            a = tk.Label(master=root_tk, text=f"{labellistnames[j]}: {int(labels[j])}")
+            a.place(relx=(0.8), rely=(0.2+j/(len(labellistnames)+2)), anchor=tk.CENTER)
+            buttons.append(a)
+
+
+def randdata(data_raw, data_label, lab):
+
+    i = random.randint(0, data_raw.shape[0]-1)
+    sd.play(data_raw[i])
+    labels = data_label[i]
+    text = ""
+    labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other"]
+    for i in range(len(labellistnames)):
+        if labels[i] == 1:
+            text += labellistnames[i]
+    lab.config(text=text)
 
 
 set_start_buttons()
