@@ -167,7 +167,7 @@ def save_data_set(setname):
     data_file_mfcc = f"audio_processing/Train_Data/{setname}_mfcc"
     data_file_label = f"audio_processing/Train_Data/{setname}_label"
 
-    if rawlist.shape[0]==1:
+    if mfcclist.shape[0]==1:
         return
     """
     if path.exists(f"{data_file_raw}.npy"):
@@ -248,7 +248,7 @@ def load_data_to_check(setname):
 
     for i in data_label:
         labels += i
-        
+
     labelgeneral = tk.Label(master=root_tk, text=f"overall datasamples: {data_label.shape[0]}")
     labelgeneral.place(relx=0.8, rely=0.1, anchor=tk.CENTER)
     buttons.append(labelgeneral)
