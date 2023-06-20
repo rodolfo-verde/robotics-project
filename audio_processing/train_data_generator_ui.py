@@ -17,8 +17,8 @@ root_tk.title("generate and laber data")
 
 
 buttons = list()
-rawlist = np.array([["a"]], ndmin=2)
-mfcclist = np.array([[]], ndmin=2)
+#rawlist = np.array([["a"]], ndmin=2)
+mfcclist = np.array([["a"]], ndmin=2)
 labellist = np.array([[]], ndmin=2)
 
 
@@ -89,7 +89,7 @@ def label_data(x):
     for j in buttons:
         j.destroy()
     
-    print(f"{len(rawlist)} and {len(mfcclist)} and {len(labellist)}")
+    print(f"{len(mfcclist)} and {len(labellist)}")
     select_save_data_set_name()
 
 
@@ -108,22 +108,20 @@ def set_labels(x, butlab):
         if butlab[i].get()==1:
             labels[i] = 1
     
-    save(raw, mfcc, labels)
+    save(mfcc, labels)
 
     buttonpressed.set(True)
 
 
-def save(raw, mfcc, labels):
-    global rawlist
+def save(mfcc, labels):
     global mfcclist
     global labellist
 
-    if rawlist[0, 0]=="a":
-        rawlist = np.array([raw], ndmin = 2)
+    if mfcclist[0, 0]=="a":
+        
         mfcclist = np.array([mfcc[1:]], ndmin = 2)
         labellist = np.array([labels], ndmin = 2)
     else:
-        rawlist = np.append(rawlist, [raw], axis=0)
         mfcclist = np.append(mfcclist, [mfcc[1:]], axis=0)
         labellist = np.append(labellist, [labels], axis=0)
 
@@ -165,30 +163,31 @@ def save_data_set(setname):
     for i in buttons:
         i.destroy()
     
-    data_file_raw = f"audio_processing/Train_Data/{setname}_raw"
+    #data_file_raw = f"audio_processing/Train_Data/{setname}_raw"
     data_file_mfcc = f"audio_processing/Train_Data/{setname}_mfcc"
     data_file_label = f"audio_processing/Train_Data/{setname}_label"
 
     if rawlist.shape[0]==1:
         return
-
+    """
     if path.exists(f"{data_file_raw}.npy"):
         stored_raw = np.load(f"{data_file_raw}.npy")
-        stored_raw = np.append(stored_raw, rawlist[1:], axis=0)
+        stored_raw = np.append(stored_raw, rawlist, axis=0)
     else:
-        stored_raw = rawlist[1:]
+        stored_raw = rawlist
+    """
     if path.exists(f"{data_file_mfcc}.npy"):
         stored_mfcc = np.load(f"{data_file_mfcc}.npy")
-        stored_mfcc = np.append(stored_mfcc, mfcclist[1:], axis=0)
+        stored_mfcc = np.append(stored_mfcc, mfcclist, axis=0)
     else:
-        stored_mfcc = mfcclist[1:]
+        stored_mfcc = mfcclist
     if path.exists(f"{data_file_label}.npy"):
         stored_label = np.load(f"{data_file_label}.npy")
-        stored_label = np.append(stored_label, labellist[1:], axis=0)
+        stored_label = np.append(stored_label, labellist, axis=0)
     else:
-        stored_label = labellist[1:]
+        stored_label = labellist
 
-    np.save(data_file_raw, stored_raw)    
+    #np.save(data_file_raw, stored_raw)    
     np.save(data_file_mfcc, stored_mfcc)    
     np.save(data_file_label, stored_label)
 
@@ -242,22 +241,14 @@ def check_data_button():
 
 def load_data_to_check(setname):
     
-    data_raw = np.load(f"audio_processing/Train_Data/{setname}_raw.npy")
+    #data_raw = np.load(f"audio_processing/Train_Data/{setname}_raw.npy")
     data_label = np.load(f"audio_processing/Train_Data/{setname}_label.npy")
 
     labels = np.zeros(9)
 
     for i in data_label:
         labels += i
-
-    lab = tk.Label(master=root_tk, text="")
-    lab.place(relx=0.6, rely=0.6)
-    buttons.append(lab)
-
-    butplayback = tk.Button(master=root_tk, command=lambda dr=data_raw, dl = data_label, lab = lab: randdata(dr, dl, lab), text=f"{setname}")
-    butplayback.place(relx=0.6, rely=0.4, anchor=tk.CENTER)
-    buttons.append(butplayback)
-
+        
     labelgeneral = tk.Label(master=root_tk, text=f"overall datasamples: {data_label.shape[0]}")
     labelgeneral.place(relx=0.8, rely=0.1, anchor=tk.CENTER)
     buttons.append(labelgeneral)
@@ -269,20 +260,6 @@ def load_data_to_check(setname):
             a = tk.Label(master=root_tk, text=f"{labellistnames[j]}: {int(labels[j])}")
             a.place(relx=(0.8), rely=(0.2+j/(len(labellistnames)+2)), anchor=tk.CENTER)
             buttons.append(a)
-
-
-def randdata(data_raw, data_label, lab):
-
-    i = random.randint(0, data_raw.shape[0]-1)
-    sd.play(data_raw[i])
-    labels = data_label[i]
-    text = ""
-    labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other"]
-    for i in range(len(labellistnames)):
-        if labels[i] == 1:
-            text += labellistnames[i]
-    lab.config(text=text)
-
 
 set_start_buttons()
 root_tk.mainloop()
