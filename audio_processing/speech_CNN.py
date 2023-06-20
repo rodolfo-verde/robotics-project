@@ -84,8 +84,8 @@ print(f"Test accuracy: {test_acc}")
 
 # predict
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
-predict_mfcc = np.load(f"audio_processing\Train_Data\set_a_1_mfcc.npy",allow_pickle=True) # load data
-predict_labels = np.load(f"audio_processing\Train_Data\set_a_1_label.npy",allow_pickle=True) # load data
+predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
+predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
 print(f"Predict shape: {predict_mfcc.shape}")
 print(f"Labels shape: {predict_labels.shape}")
 predict = predict_mfcc[0]
