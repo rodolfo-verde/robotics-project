@@ -88,7 +88,7 @@ predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow
 predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
 print(f"Predict shape: {predict_mfcc.shape}")
 print(f"Labels shape: {predict_labels.shape}")
-predict = predict_mfcc[0]
+predict = predict_mfcc[1]
 prediction = model.predict(predict.reshape(-1, 11, 70, 1))
 index_pred = np.argmax(prediction) #tf.argmax geht auch
 index_label = np.argmax(predict_labels)
