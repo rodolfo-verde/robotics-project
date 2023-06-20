@@ -191,12 +191,6 @@ def save_data_set(setname):
     np.save(data_file_mfcc, stored_mfcc)    
     np.save(data_file_label, stored_label)
 
-    data_mfcc = np.load(f"audio_processing/Train_Data/set2_mfcc.npy",allow_pickle=True) # load data
-    data_labels = np.load(f"audio_processing/Train_Data/set2_label.npy",allow_pickle=True) # load data
-
-    print(f"Data shape: {data_mfcc.shape}")
-    print(f"Labels shape: {data_labels.shape}")
-
     set_start_buttons()
 
 
