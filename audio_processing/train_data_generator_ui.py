@@ -341,7 +341,6 @@ def combine_sets():
 
 
 def save_combine_data_set(name, datasets):
-    print(datasets[0].get())
     infile = listdir("audio_processing/Train_Data/")
 
     stored = list()
@@ -351,8 +350,7 @@ def save_combine_data_set(name, datasets):
             stored.append(f"{i[:-10]}")
 
     datatocombine = list()
-    print(len(datasets))
-    print(len(stored))
+
 
     for i in range(len(stored)):
         if datasets[i].get() == 1:
@@ -368,7 +366,7 @@ def save_combine_data_set(name, datasets):
     np.save(f"audio_processing/Train_Data/{name}_mfcc.npy", datamfcc)
     np.save(f"audio_processing/Train_Data/{name}_label.npy", datalabel)
 
-    set_start_buttons
+    set_start_buttons()
 
 
 set_start_buttons()
