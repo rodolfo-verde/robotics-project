@@ -64,14 +64,14 @@ class dataprocessor:
 
         # storing raw data and then filtering it
         self.raw = np.append(self.wordfrompastblock, data)
-        print(self.raw.shape)
+        #print(self.raw.shape)
         self.filtered = np.array(np.convolve(self.raw, self._filter)[250:-250])
 
         # applying the automatic gain
         A = 1
         block_mean = np.max([np.mean(self.filtered), 0.0002])
         block_variance = np.max([np.mean(self.filtered**2), 0.003016]) # 0.00016 is the variance of the raw_distance_commands_testt.wav
-        print(f"mean {block_mean} and variance {block_variance}")
+        #print(f"mean {block_mean} and variance {block_variance}")
 
         self.gained = np.array(np.sqrt(A*A/2*(10**(self.targetlvl / 10))/(block_variance - block_mean**2))*(self.filtered-block_mean))
 
@@ -111,11 +111,11 @@ class dataprocessor:
         # marking the array for words to plot them
         self.words = np.array(self.gained*self.wordmarkers)
 
-        print("words are set")
+        #print("words are set")
 
         self.wordlist = list()
 
-        print("entering word extraction")
+        #print("entering word extraction")
 
         self.convolved_wordmarkers = np.zeros(self.wordmarkers.shape[0])
 
@@ -124,8 +124,8 @@ class dataprocessor:
             self.wordlist.append(self.gained[i[0]:i[1]])
             self.convolved_wordmarkers[i[0]:i[1]] = 1
 
-        print("words stored in array")
-        print(len(self.wordlist))
+        #print("words stored in array")
+        #print(len(self.wordlist))
         
         return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained, self.convolved_wordmarkers], [self.words]], dtype=object)], dtype=object)
     
@@ -204,7 +204,7 @@ class dataprocessor:
         # deletes marked words which would be double by now
         self.wordindeces = np.delete(self.wordindeces, toremove, axis=0)
 
-        print(self.wordindeces.shape[0])
+        #print(self.wordindeces.shape[0])
 
     
     def words_in_blocks(self, blocklength: int = 32500):
@@ -228,5 +228,5 @@ class dataprocessor:
                     else:
                         skip=False
         self.wordsblocks = words[1:]
-        print(self.wordsblocks)
+        #print(self.wordsblocks)
         return np.array([])
