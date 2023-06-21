@@ -53,6 +53,10 @@ def playagain(x):
 
 
 def label_data(x):
+
+    for i in buttons:
+        i.destroy()
+
     global buttonpressed
     SAMPLERATE = 44100
     TARGETLVL = -30
@@ -194,10 +198,57 @@ def save_data_set(setname):
     set_start_buttons()
 
 
+def callback(indata, frame_count, time_info, status):
+    global save1
+    save1 = np.append(save1, indata)
+
+
 def button_label_from_stream():
-    print("ÖÖÖÖLK")
 
+    global save1
 
+    for i in buttons:
+        i.destroy()
+
+    devices = sd.query_devices()
+
+    for i in devices:
+        if i['name'] == 'default':
+            INPUTDEVICE = i['index']
+    
+    stream = sd.InputStream(channels=1, samplerate=44100, callback=callback, device=INPUTDEVICE)
+
+    streamend = tk.BooleanVar()
+    streamend.set(False)
+    streamstart = tk.BooleanVar()
+    streamstart.set(False)
+
+    butstart = tk.Button(master=root_tk, command=lambda: streamstart.set(True), text=f"Start input stream")
+    butstart.place(relx=0.2, rely=0.4, anchor=tk.CENTER)
+    buttons.append(butstart)
+
+    butend = tk.Button(master=root_tk, command=lambda: streamend.set(True), text=f"End input stream")
+    butend.place(relx=0.2, rely=0.6, anchor=tk.CENTER)
+    buttons.append(butend)
+
+    save1 = np.array([])
+
+    butstart.wait_variable(streamstart)
+    stream.start()
+    print("recording")
+    butend.wait_variable(streamend)
+    stream.close()
+
+    data = save1[1:]
+    print(data.shape)
+    #sd.play(data)
+    print("Finished")
+
+    butlabel = tk.Button(master=root_tk, command=lambda: label_data(data), text=f"Start label the data")
+    butlabel.place(relx=0.7, rely=0.4, anchor=tk.CENTER)
+    buttons.append(butlabel)
+
+    
 def set_start_buttons():
 
     for i in buttons:
@@ -214,6 +265,10 @@ def set_start_buttons():
     button_check_data = tk.Button(master=root_tk, command=check_data_button, text="check existing data")
     button_check_data.place(relx=0.3, rely=0.7, anchor=tk.CENTER)
     buttons.append(button_check_data)
+
+    button_combine_data = tk.Button(master=root_tk, command=combine_sets, text="combine existing data")
+    button_combine_data.place(relx=0.7, rely=0.7, anchor=tk.CENTER)
+    buttons.append(button_combine_data)
 
 
 def check_data_button():
@@ -254,6 +309,67 @@ def load_data_to_check(setname):
             a = tk.Label(master=root_tk, text=f"{labellistnames[j]}: {int(labels[j])}")
             a.place(relx=(0.8), rely=(0.2+j/(len(labellistnames)+2)), anchor=tk.CENTER)
             buttons.append(a)
+
+
+def combine_sets():
+
+    for i in buttons:
+        i.destroy()
+    
+    infile = listdir("audio_processing/Train_Data/")
+    stored = list()
+
+    for i in infile:
+        if i[len(i)-9:]=="label.npy":
+            stored.append(f"{i[:-10]}")
+    
+    checks = list()
+
+    for i in range(len(stored)):
+        bv = tk.IntVar()
+        checks.append(bv)
+        but = tk.Checkbutton(master=root_tk, variable = bv, onvalue=1, offvalue=0, bd=1, text=f"{i+1}. {stored[i]}")
+        but.place(relx=0.2, rely=(i+1)/(len(stored)+1), anchor=tk.CENTER)
+        buttons.append(but)
+    
+    nameentry = tk.Entry(master=root_tk)
+    nameentry.place(relx=0.7, rely=0.4, anchor=tk.CENTER)
+    buttons.append(nameentry)
+    savebut = tk.Button(master=root_tk, command=lambda: save_combine_data_set(nameentry.get(), checks), text=f"Save to file")
+    savebut.place(relx=0.7, rely=0.6, anchor=tk.CENTER)
+    buttons.append(savebut)
+
+
+def save_combine_data_set(name, datasets):
+    print(datasets[0].get())
+    infile = listdir("audio_processing/Train_Data/")
+
+    stored = list()
+
+    for i in infile:
+        if i[len(i)-9:]=="label.npy":
+            stored.append(f"{i[:-10]}")
+
+    datatocombine = list()
+    print(len(datasets))
+    print(len(stored))
+
+    for i in range(len(stored)):
+        if datasets[i].get() == 1:
+            datatocombine.append(stored[i])
+
+    datamfcc = np.load(f"audio_processing/Train_Data/{datatocombine[0]}_mfcc.npy")
+    datalabel = np.load(f"audio_processing/Train_Data/{datatocombine[0]}_label.npy")
+
+    for i in datatocombine[1:]:
+        datamfcc = np.append(datamfcc, np.load(f"audio_processing/Train_Data/{i}_mfcc.npy"), axis=0)
+        datalabel = np.append(datalabel, np.load(f"audio_processing/Train_Data/{i}_label.npy"), axis=0)
+    
+    np.save(f"audio_processing/Train_Data/{name}_mfcc.npy", datamfcc)
+    np.save(f"audio_processing/Train_Data/{name}_label.npy", datalabel)
+
+    set_start_buttons
+
 
 set_start_buttons()
 root_tk.mainloop()
