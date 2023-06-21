@@ -87,7 +87,7 @@ model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam         loss = categorical_crossentropy, CTCLoss
 
-model.fit(
+result = model.fit(
     X_train.reshape(-1, 11, 70, 1), 
     y_train, 
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
@@ -100,18 +100,24 @@ model.summary()
 test_loss, test_acc = model.evaluate(X_test.reshape(-1, 11, 70, 1), y_test, verbose=2)
 print(f"Test accuracy: {test_acc}")
 
-# predict
-class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
-predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
-predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
-index = 0
-print(f"Predict shape: {predict_mfcc.shape}")
-print(f"Labels shape: {predict_labels.shape}")
-predict = predict_mfcc[index]
-print(predict_labels[index])
-#print(predict_labels[0])
-prediction = model.predict(predict.reshape(-1, 11, 70, 1))
-index_pred = np.argmax(prediction) #tf.argmax geht auch
-index_label = np.argmax(predict_labels[index])
-print(f"Prediction: {class_names[index_pred]}")
-print(f"Label: {class_names[index_label]}")
+# plot accuracy and loss
+plt.figure(1)
+plt.subplot(121)
+plt.plot(result.history["accuracy"])
+plt.plot(result.history["val_accuracy"])
+plt.title("Model accuracy")
+plt.ylabel("Accuracy")
+plt.xlabel("Epoch")
+plt.legend(["Train", "Test"], loc="upper left")
+plt.subplot(122)
+plt.plot(result.history["loss"])
+plt.plot(result.history["val_loss"])
+plt.title("Model loss")
+plt.ylabel("Loss")
+plt.xlabel("Epoch")
+plt.legend(["Train", "Test"], loc="upper left")
+plt.show()
+
+
+#save model
+model.save("speech_CNN_model.h5", include_optimizer=True)
