@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras import layers
 from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, MaxPooling2D
+from keras.optimizers import SGD
+from keras.regularizers import L2 
 
 #test 
 #print(f"Tesorflow version {tf.__version__}")
@@ -54,6 +56,22 @@ def CTCLoss(y_true, y_pred):
 #)
 #ctc_loss = tf.nn.ctc_loss(y_train, X_train, label_length=y_train.shape, logit_length=X_train.shape, logits_time_major=True, unique=None, blank_index=None, name="ctc_loss_dense")
 
+# Regularization
+"""from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.regularizers import L2 
+model = Sequential([
+      Dropout(rate=0.1, input_shape=(784,)),
+      Dense(512, activation='relu', kernel_regularizer=L2(0.1)),
+      Dense(512, activation='relu', kernel_regularizer=L2(0.1)),
+      Dropout(rate=0.1, input_shape=(784,)),
+      Dense(10, activation="softmax")
+      ])"""
+
+#model.compile(optimizer=SGD(learning_rate=0.001), loss="categorical_crossentropy", metrics=['accuracy'])
+
+
+
+
 # CNN
 model = Sequential()
 
@@ -86,13 +104,14 @@ print(f"Test accuracy: {test_acc}")
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
 predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
 predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
+index = 0
 print(f"Predict shape: {predict_mfcc.shape}")
 print(f"Labels shape: {predict_labels.shape}")
-predict = predict_mfcc[1]
-print(predict_labels[1])
+predict = predict_mfcc[index]
+print(predict_labels[index])
 #print(predict_labels[0])
 prediction = model.predict(predict.reshape(-1, 11, 70, 1))
 index_pred = np.argmax(prediction) #tf.argmax geht auch
-index_label = np.argmax(predict_labels[1])
+index_label = np.argmax(predict_labels[index])
 print(f"Prediction: {class_names[index_pred]}")
 print(f"Label: {class_names[index_label]}")
