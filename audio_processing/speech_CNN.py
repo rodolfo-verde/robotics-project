@@ -13,8 +13,8 @@ from keras.regularizers import L2
 #print(f"Tesorflow version {tf.__version__}")
 
 # load data and split into trainings and test data
-data_mfcc = np.load(f"audio_processing\Train_Data\set3_mfcc.npy",allow_pickle=True) # load data
-data_labels = np.load(f"audio_processing\Train_Data\set3_label.npy",allow_pickle=True) # load data
+data_mfcc = np.load(f"audio_processing\Train_Data\mixed_test_mfcc.npy",allow_pickle=True) # load data
+data_labels = np.load(f"audio_processing\Train_Data\mixed_test_label.npy",allow_pickle=True) # load data
 
 print(f"Data shape: {data_mfcc.shape}")
 print(f"Labels shape: {data_labels.shape}")
@@ -77,11 +77,11 @@ model = Sequential()
 
 
 model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) 
-#model.add(Flatten())
-#model.add(BatchNormalization())
-#model.add(Dropout(0.02))
-#model.add(Dense(10, activation="sigmoid"))
-#model.add(BatchNormalization())
+model.add(Flatten())
+model.add(BatchNormalization())
+model.add(Dropout(0.02))
+model.add(Dense(10, activation="sigmoid"))
+model.add(BatchNormalization())
 model.add(Flatten())
 model.add(Dense(9, activation="softmax"))
 
@@ -91,8 +91,8 @@ result = model.fit(
     X_train.reshape(-1, 11, 70, 1), 
     y_train, 
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
-    epochs=30, 
-    batch_size=1)
+    epochs=60, 
+    batch_size=10)
 
 model.summary()
 
@@ -123,7 +123,7 @@ plt.show()
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
 predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
 predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
-index = 0
+index = 1
 print(f"Predict shape: {predict_mfcc.shape}")
 print(f"Labels shape: {predict_labels.shape}")
 predict = predict_mfcc[index]
@@ -136,4 +136,5 @@ print(f"Prediction: {class_names[index_pred]}")
 print(f"Label: {class_names[index_label]}")
 
 #save model
-model.save("speech_CNN_model.h5", include_optimizer=True)
+model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
+model.save_weights("audio_processing\speech_CNN_weights.h5")

@@ -12,10 +12,8 @@ from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, Ma
 from keras.optimizers import SGD
 from keras.regularizers import L2 
 
-#import model
-model = keras.models.load_model("speech_CNN_model.h5")
-model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam         loss = categorical_crossentropy, CTCLoss
-
+#import weights
+model = model.load_weights("speech_CNN_weights.h5")
 
 # predict
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
