@@ -70,18 +70,24 @@ stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, de
 
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
 
+
 with stream:
     while True:
         while(len(safe1)<BLOCKLENGTH):
             time.sleep(0.1)
+            continue
         workblock = safe1[:BLOCKLENGTH]
         safe1 = safe1[BLOCKLENGTH:]
+        starttime = time.time()
 
         words, plots = dp.processdata(workblock)
-        
+
         for i in words[0]:
+
             mfcc = mp.mfcc_process(i)
             prediction = model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
             index_pred = np.argmax(prediction) #tf.argmax geht auch
             print(f"Prediction: {class_names[index_pred]}")
+        
+        print(time.time()-starttime)
 
