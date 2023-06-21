@@ -1,4 +1,3 @@
-from speech_CNN import model
 import os
 import sys
 import pandas as pd
@@ -12,8 +11,22 @@ from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, Ma
 from keras.optimizers import SGD
 from keras.regularizers import L2 
 
+
+model = Sequential()
+model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) 
+model.add(Flatten())
+model.add(BatchNormalization())
+model.add(Dropout(0.02))
+model.add(Dense(10, activation="sigmoid"))
+model.add(BatchNormalization())
+model.add(Flatten())
+model.add(Dense(9, activation="softmax"))
+
+model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam         loss = categorical_crossentropy, CTCLoss
+
 #import weights
-model = model.load_weights("speech_CNN_weights.h5")
+model.load_weights("audio_processing\speech_CNN_weights.h5")
+
 
 # predict
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
