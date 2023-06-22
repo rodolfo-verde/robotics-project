@@ -362,7 +362,20 @@ def save_combine_data_set(name, datasets):
     for i in datatocombine[1:]:
         datamfcc = np.append(datamfcc, np.load(f"audio_processing/Train_Data/{i}_mfcc.npy"), axis=0)
         datalabel = np.append(datalabel, np.load(f"audio_processing/Train_Data/{i}_label.npy"), axis=0)
+
+    rand_data_mfcc = np.array([np.zeros((11, 70))], ndmin=3)
+    rand_data_label = np.array([np.zeros(9)], ndmin=2)
+
+    for i in range(datamfcc.shape[0]):
+        rand = random.randint(0, datamfcc.shape[0]-1)
+        rand_data_mfcc = np.append(rand_data_mfcc, [datamfcc[rand]], axis=0)
+        rand_data_label = np.append(rand_data_label, [datalabel[rand]], axis=0)
+        
+        datamfcc = np.delete(datamfcc, rand, axis=0)
     
+    rand_data_mfcc = rand_data_mfcc[1:]
+    rand_data_label = rand_data_label[1:]
+
     np.save(f"audio_processing/Train_Data/{name}_mfcc.npy", datamfcc)
     np.save(f"audio_processing/Train_Data/{name}_label.npy", datalabel)
 
