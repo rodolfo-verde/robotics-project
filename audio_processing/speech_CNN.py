@@ -81,22 +81,6 @@ plt.legend(["Train", "Test"], loc="upper left")
 plt.show()
 
 
-# predict
-class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
-predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
-predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
-index = 1
-print(f"Predict shape: {predict_mfcc.shape}")
-print(f"Labels shape: {predict_labels.shape}")
-predict = predict_mfcc[index]
-print(predict_labels[index])
-#print(predict_labels[0])
-prediction = model.predict(predict.reshape(-1, 11, 70, 1))
-index_pred = np.argmax(prediction) #tf.argmax geht auch
-index_label = np.argmax(predict_labels[index])
-print(f"Prediction: {class_names[index_pred]}")
-print(f"Label: {class_names[index_label]}")
-
 #save model
 model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
 model.save_weights("audio_processing\speech_CNN_weights.h5")
