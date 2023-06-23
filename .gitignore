@@ -402,4 +402,4 @@ FodyWeavers.xsd
 
 settings.json
 
-audio_processing/Test_Data/*raw.npy
+*/*raw.npy
