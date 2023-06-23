@@ -401,3 +401,5 @@ FodyWeavers.xsd
 .idea/
 
 settings.json
+
+audio_processing/Test_Data/*raw.npy

@@ -20,6 +20,7 @@ buttons = list()
 #rawlist = np.array([["a"]], ndmin=2)
 mfcclist = np.array([["a"]], ndmin=2)
 labellist = np.array([[]], ndmin=2)
+first = True
 
 
 def button_label_from_file():
@@ -120,14 +121,17 @@ def set_labels(x, butlab):
 def save(mfcc, labels):
     global mfcclist
     global labellist
+    global first
 
-    if mfcclist[0, 0]=="a":
-        
+    if first:
+        first = False
         mfcclist = np.array([mfcc[1:]], ndmin = 2)
         labellist = np.array([labels], ndmin = 2)
     else:
         mfcclist = np.append(mfcclist, [mfcc[1:]], axis=0)
         labellist = np.append(labellist, [labels], axis=0)
+    
+    print(f"{mfcclist.shape} and {labellist.shape}")
 
 
 def skip():
@@ -292,6 +296,9 @@ def load_data_to_check(setname):
     
     #data_raw = np.load(f"audio_processing/Train_Data/{setname}_raw.npy")
     data_label = np.load(f"audio_processing/Train_Data/{setname}_label.npy")
+    data_mfcc = np.load(f"audio_processing/Train_Data/{setname}_mfcc.npy")
+
+    print(f"{data_mfcc.shape} and {data_label.shape}")
 
     labels = np.zeros(9)
 
@@ -372,12 +379,15 @@ def save_combine_data_set(name, datasets):
         rand_data_label = np.append(rand_data_label, [datalabel[rand]], axis=0)
         
         datamfcc = np.delete(datamfcc, rand, axis=0)
+        datalabel = np.delete(datalabel, rand, axis=0)
     
     rand_data_mfcc = rand_data_mfcc[1:]
     rand_data_label = rand_data_label[1:]
 
-    np.save(f"audio_processing/Train_Data/{name}_mfcc.npy", datamfcc)
-    np.save(f"audio_processing/Train_Data/{name}_label.npy", datalabel)
+    print(f"{rand_data_mfcc.shape} and {rand_data_label.shape}")
+
+    np.save(f"audio_processing/Train_Data/{name}_mfcc.npy", rand_data_mfcc)
+    np.save(f"audio_processing/Train_Data/{name}_label.npy", rand_data_label)
 
     set_start_buttons()
 
