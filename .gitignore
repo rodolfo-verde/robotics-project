@@ -402,4 +402,4 @@ FodyWeavers.xsd
 
 settings.json
 
-*/*raw.npy
+*raw.npy
