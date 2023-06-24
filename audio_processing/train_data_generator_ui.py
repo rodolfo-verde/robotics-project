@@ -17,7 +17,7 @@ root_tk.title("generate and laber data")
 
 
 buttons = list()
-#rawlist = np.array([["a"]], ndmin=2)
+rawlist = np.array([["a"]], ndmin=2)
 mfcclist = np.array([["a"]], ndmin=2)
 labellist = np.array([[]], ndmin=2)
 first = True
@@ -64,35 +64,44 @@ def label_data(x):
     VOICETHRESHHOLD = -40
     LENGTHOFVOICEACTIVITY = 10
 
+    keepvar = tk.BooleanVar()
+    keepvar.set(False)
+
+    keep = tk.Checkbutton(master=root_tk, variable=keepvar, text="safe labelboxes between data", onvalue=True, offvalue=False, bd=4)
+    keep.place(relx=0.8, rely=0.1, anchor=tk.CENTER)
+
     dp = dataprocessor(SAMPLERATE, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
     words = dp.processdata(x)[0][0]
     for i in words:
         sd.play(i)
-        for j in buttons:
-            j.destroy()
-        labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other"]
-        la, lb, lc, l1, l2, l3, ls, lr, lo = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
-        labels = [la, lb, lc, l1, l2, l3, ls, lr, lo]
-        again = tk.Button(master=root_tk, command=lambda: playagain(i), text=f"Play the sequence again")
-        again.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
-        buttons.append(again)
-        for j in range(len(labellistnames)):
-            a = tk.Checkbutton(master=root_tk, variable=labels[j], text=labellistnames[j], onvalue=1, offvalue=0, bd=4)
-            a.place(relx=((j%3)/(len(labellistnames)/3)+0.1), rely=(0.3+((j//3)*0.2)), anchor=tk.CENTER)
-            buttons.append(a)
-        buttonpressed = tk.BooleanVar()
-        setlabel = tk.Button(master=root_tk, command=lambda: set_labels(i, labels), text=f"Set the labels")
-        setlabel.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
-        buttons.append(setlabel)
 
-        skipbut = tk.Button(master=root_tk, command=skip, text=f"Skip this")
-        skipbut.place(relx=0.7, rely=0.9, anchor=tk.CENTER)
-        buttons.append(skipbut)
+        if not keepvar.get():
+            for j in buttons:
+                j.destroy()
+            labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other"]
+            la, lb, lc, l1, l2, l3, ls, lr, lo = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
+            labels = [la, lb, lc, l1, l2, l3, ls, lr, lo]
+            again = tk.Button(master=root_tk, command=lambda: playagain(i), text=f"Play the sequence again")
+            again.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+            buttons.append(again)
+            for j in range(len(labellistnames)):
+                a = tk.Checkbutton(master=root_tk, variable=labels[j], text=labellistnames[j], onvalue=1, offvalue=0, bd=4)
+                a.place(relx=((j%3)/(len(labellistnames)/3)+0.1), rely=(0.3+((j//3)*0.2)), anchor=tk.CENTER)
+                buttons.append(a)
+            buttonpressed = tk.BooleanVar()
+            setlabel = tk.Button(master=root_tk, command=lambda: set_labels(i, labels), text=f"Set the labels")
+            setlabel.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+            buttons.append(setlabel)
+
+            skipbut = tk.Button(master=root_tk, command=skip, text=f"Skip this")
+            skipbut.place(relx=0.7, rely=0.9, anchor=tk.CENTER)
+            buttons.append(skipbut)
 
         setlabel.wait_variable(buttonpressed)
     
     for j in buttons:
         j.destroy()
+    keep.destroy()
     
     print(f"{len(mfcclist)} and {len(labellist)}")
     select_save_data_set_name()
@@ -113,23 +122,26 @@ def set_labels(x, butlab):
         if butlab[i].get()==1:
             labels[i] = 1
     
-    save(mfcc, labels)
+    save(mfcc, labels, raw)
 
     buttonpressed.set(True)
 
 
-def save(mfcc, labels):
+def save(mfcc, labels, raw):
     global mfcclist
     global labellist
+    global rawlist
     global first
 
     if first:
         first = False
+        rawlist = np.array([raw], ndmin=2)
         mfcclist = np.array([mfcc[1:]], ndmin = 2)
         labellist = np.array([labels], ndmin = 2)
     else:
         mfcclist = np.append(mfcclist, [mfcc[1:]], axis=0)
         labellist = np.append(labellist, [labels], axis=0)
+        rawlist = np.append(rawlist, [raw], axis=0)
     
     print(f"{mfcclist.shape} and {labellist.shape}")
 
@@ -171,19 +183,19 @@ def save_data_set(setname):
     for i in buttons:
         i.destroy()
     
-    #data_file_raw = f"audio_processing/Train_Data/{setname}_raw"
+    data_file_raw = f"audio_processing/Train_Data/{setname}_raw"
     data_file_mfcc = f"audio_processing/Train_Data/{setname}_mfcc"
     data_file_label = f"audio_processing/Train_Data/{setname}_label"
 
     if mfcclist.shape[0]==1:
         return
-    """
+    
     if path.exists(f"{data_file_raw}.npy"):
         stored_raw = np.load(f"{data_file_raw}.npy")
         stored_raw = np.append(stored_raw, rawlist, axis=0)
     else:
         stored_raw = rawlist
-    """
+    
     if path.exists(f"{data_file_mfcc}.npy"):
         stored_mfcc = np.load(f"{data_file_mfcc}.npy")
         stored_mfcc = np.append(stored_mfcc, mfcclist, axis=0)
@@ -195,7 +207,7 @@ def save_data_set(setname):
     else:
         stored_label = labellist
 
-    #np.save(data_file_raw, stored_raw)    
+    np.save(data_file_raw, stored_raw)    
     np.save(data_file_mfcc, stored_mfcc)    
     np.save(data_file_label, stored_label)
 
@@ -363,29 +375,59 @@ def save_combine_data_set(name, datasets):
         if datasets[i].get() == 1:
             datatocombine.append(stored[i])
 
+    with_raw = True
+
+
+    if not path.exists(f"audio_processing/Train_Data/{datatocombine[0]}_raw.npy"):
+        with_raw = False
+        print(f"{datatocombine[0]}_raw.npy does not exist")
+    
+
+    if with_raw:
+        dataraw = np.load(f"audio_processing/Train_Data/{datatocombine[0]}_raw.npy")
     datamfcc = np.load(f"audio_processing/Train_Data/{datatocombine[0]}_mfcc.npy")
     datalabel = np.load(f"audio_processing/Train_Data/{datatocombine[0]}_label.npy")
 
+    
+
     for i in datatocombine[1:]:
+        if not path.exists(f"audio_processing/Train_Data/{i}_raw.npy"):
+            with_raw = False
+        if with_raw:
+            dataraw = np.append(dataraw, np.load(f"audio_processing/Train_Data/{i}_raw.npy"), axis=0)
         datamfcc = np.append(datamfcc, np.load(f"audio_processing/Train_Data/{i}_mfcc.npy"), axis=0)
         datalabel = np.append(datalabel, np.load(f"audio_processing/Train_Data/{i}_label.npy"), axis=0)
 
+
+    if with_raw:
+        rand_data_raw = np.array([np.zeros(32500)], ndmin = 2)
     rand_data_mfcc = np.array([np.zeros((11, 70))], ndmin=3)
     rand_data_label = np.array([np.zeros(9)], ndmin=2)
 
     for i in range(datamfcc.shape[0]):
         rand = random.randint(0, datamfcc.shape[0]-1)
+        if with_raw:
+            rand_data_raw = np.append(rand_data_raw, [dataraw[rand]], axis=0)
         rand_data_mfcc = np.append(rand_data_mfcc, [datamfcc[rand]], axis=0)
         rand_data_label = np.append(rand_data_label, [datalabel[rand]], axis=0)
         
+        if with_raw:
+            dataraw = np.delete(dataraw, rand, axis=0)
         datamfcc = np.delete(datamfcc, rand, axis=0)
         datalabel = np.delete(datalabel, rand, axis=0)
     
+    if with_raw:
+        rand_data_raw = rand_data_raw[1:]    
     rand_data_mfcc = rand_data_mfcc[1:]
     rand_data_label = rand_data_label[1:]
 
+
+    if with_raw:
+        print(f"{rand_data_raw.shape}")
     print(f"{rand_data_mfcc.shape} and {rand_data_label.shape}")
 
+    if with_raw:
+        np.save(f"audio_processing/Train_Data/{name}_raw.npy", rand_data_raw)
     np.save(f"audio_processing/Train_Data/{name}_mfcc.npy", rand_data_mfcc)
     np.save(f"audio_processing/Train_Data/{name}_label.npy", rand_data_label)
 
