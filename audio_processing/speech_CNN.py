@@ -40,7 +40,7 @@ model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,7
 model.add(Dropout(0.1))
 model.add(BatchNormalization())
 model.add(Flatten())
-model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.1)))
+model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.1))) 
 model.add(Dropout(0.1))
 model.add(Dense(9, activation="softmax"))
 
