@@ -13,8 +13,8 @@ from keras.regularizers import L2
 #print(f"Tesorflow version {tf.__version__}")
 
 # load data and split into trainings and test data
-data_mfcc = np.load(f"audio_processing\Train_Data\mixed_test_mfcc.npy",allow_pickle=True) # load data
-data_labels = np.load(f"audio_processing\Train_Data\mixed_test_label.npy",allow_pickle=True) # load data
+data_mfcc = np.load(f"audio_processing\Train_Data\set_big_test_0_mfcc.npy",allow_pickle=True) # load data
+data_labels = np.load(f"audio_processing\Train_Data\set_big_test_0_label.npy",allow_pickle=True) # load data
 
 print(f"Data shape: {data_mfcc.shape}")
 print(f"Labels shape: {data_labels.shape}")
@@ -42,12 +42,19 @@ model.add(BatchNormalization())
 model.add(Flatten())
 model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.1)))
 model.add(Dropout(0.1))
-#model.add(BatchNormalization())
-#model.add(Flatten())
-#model.add(Dropout(0.1))
 model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer=SGD(learning_rate = 0.001), loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
+
+
+"""model = Sequential()
+
+model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) 
+#model.add(BatchNormalization())
+model.add(Flatten())
+model.add(Dense(9, activation="softmax"))
+
+model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss"""
 
 result = model.fit(
     X_train.reshape(-1, 11, 70, 1), 
