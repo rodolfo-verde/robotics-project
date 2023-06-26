@@ -47,19 +47,6 @@ model.add(Dense(9, activation="softmax"))
 model.compile(optimizer=SGD(learning_rate = 0.01), loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
 
 
-"""model = Sequential()
-
-model.add(Conv2D(11, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1)))
-#model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.1))
-model.add(BatchNormalization())
-model.add(Flatten())
-model.add(Dense(11, activation="sigmoid", kernel_regularizer=L2(0.1)))
-model.add(Dropout(0.1))
-model.add(Dense(9, activation="softmax"))
-
-model.compile(optimizer=SGD(learning_rate=0.01), loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss"""
-
 result = model.fit(
     X_train.reshape(-1, 11, 70, 1), 
     y_train, 
