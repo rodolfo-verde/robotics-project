@@ -21,7 +21,7 @@ from os import listdir
 from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
 
-test_again = True
+test_again = False
 
 if test_again:
     # load data and split into trainings and test data
@@ -65,15 +65,11 @@ if not test_again:
     model.add(Dropout(0.1))
     model.add(BatchNormalization())
     model.add(Flatten())
-    model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.1)))
+    model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.1))) 
     model.add(Dropout(0.1))
-    #model.add(BatchNormalization())
-    #model.add(Flatten())
-    #model.add(Dropout(0.1))
     model.add(Dense(9, activation="softmax"))
 
-    model.compile(optimizer=SGD(learning_rate = 0.001), loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
-
+    model.compile(optimizer=SGD(learning_rate = 0.01), loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
 
 if not test_again:
 
@@ -121,7 +117,7 @@ for i in devices:
 
 stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
 
-class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
+class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 
 
 with stream:
