@@ -82,7 +82,7 @@ if test_again:
         y_train, 
         validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
         epochs=30, 
-        batch_size=10)
+        batch_size=50)
 
     # evaluate model
     test_loss, test_acc = model.evaluate(X_test.reshape(-1, 11, 70, 1), y_test, verbose=2)

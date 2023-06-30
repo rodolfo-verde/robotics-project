@@ -33,7 +33,7 @@ model.load_weights("audio_processing\speech_CNN_weights.h5")
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
 predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
-index = 0
+index = 1
 print(f"Predict shape: {predict_mfcc.shape}")
 print(f"Labels shape: {predict_labels.shape}")
 predict = predict_mfcc[index]
