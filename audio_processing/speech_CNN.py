@@ -52,7 +52,7 @@ result = model.fit(
     y_train, 
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
     epochs=60, 
-    batch_size=10)
+    batch_size=50)
 
 model.summary()
 
