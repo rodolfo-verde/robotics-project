@@ -410,8 +410,21 @@ def save_combine_data_set(name, datasets, augbool):
 
         size = dataraw.shape[0]
         print(f"{np.max(dataraw)} and {np.max(np.abs(dataraw))}")
-        return
-        #noice = np.random.normal(0, )
+        noice = np.random.normal(0, 0.005, (size, 32500))
+        noice2 = np.random.normal(0, 0.01, (size, 32500))
+        dataraw2 = dataraw+noice
+        dataraw3 = dataraw+noice2
+        print(f"{dataraw2.shape} and {dataraw.shape} and {dataraw2[0]} and {dataraw[0]}")
+        sd.play(dataraw2[1])
+
+        mc = mfcc_dataprocessor(44100)
+
+        datamfcc2 = mc.mfcc_process(dataraw2)
+        datamfcc3 = mc.mfcc_process(dataraw3)
+    
+        dataraw = np.append(np.append(dataraw, dataraw2, axis=0), dataraw3, axis=0)
+        datamfcc = np.append(np.append(datamfcc, datamfcc2, axis=0), datamfcc3, axis=0)
+        datalabel = np.append(np.append(datalabel, datalabel, axis=0), datalabel, axis=0)
 
     if with_raw:
         rand_data_raw = np.array([np.zeros(32500)], ndmin = 2)
