@@ -80,10 +80,10 @@ plt.show()
 
 
 #save model
-#model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
-#model.save_weights("audio_processing\speech_CNN_weights.h5")
+model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
+model.save_weights("audio_processing\speech_CNN_weights.h5")
 
-BLOCKLENGTH = 44100
+"""BLOCKLENGTH = 44100
 SAMPLERATE = 44100
 TARGETLVL = -30
 VOICETHRESHHOLD = -40
@@ -149,3 +149,4 @@ with stream:
             sd.play(i)
         print(time.time()-starttime)
 
+"""
