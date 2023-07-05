@@ -41,8 +41,7 @@ model.add(MaxPooling2D(pool_size=(5, 5), padding="same"))
 model.add(BatchNormalization())
 model.add(Dropout(0.1))
 model.add(Flatten())
-model.add(Dense(10, activation="sigmoid"))
-model.add(Dense(10, activation="sigmoid"))
+model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.01), bias_regularizer=L2(0.01)))
 model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
@@ -53,7 +52,7 @@ result = model.fit(
     y_train, 
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
     epochs=100, 
-    batch_size=100)
+    batch_size=50)
 
 model.summary()
 
