@@ -308,9 +308,15 @@ def check_data_button():
 
 def load_data_to_check(setname):
     
-    #data_raw = np.load(f"audio_processing/Train_Data/{setname}_raw.npy")
+
     data_label = np.load(f"audio_processing/Train_Data/{setname}_label.npy")
     data_mfcc = np.load(f"audio_processing/Train_Data/{setname}_mfcc.npy")
+
+    if path.exists(f"audio_processing/Train_Data/{setname}_raw.npy"):
+        data_raw = np.load(f"audio_processing/Train_Data/{setname}_raw.npy")
+        playdat = tk.Button(master=root_tk, command= lambda i=data_label, j = data_raw: playdata(j, i), text="Play a random data")
+        playdat.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        buttons.append(playdat)
 
     print(f"{data_mfcc.shape} and {data_label.shape}")
 
@@ -330,6 +336,13 @@ def load_data_to_check(setname):
             a = tk.Label(master=root_tk, text=f"{labellistnames[j]}: {int(labels[j])}")
             a.place(relx=(0.8), rely=(0.2+j/(len(labellistnames)+2)), anchor=tk.CENTER)
             buttons.append(a)
+
+def playdata(data_raw, data_label):
+
+    rand = random.randint(0, data_raw.shape[0]-1)
+    print(f"{data_raw.shape} and {data_label.shape}")
+    print(data_label[rand])
+    sd.play(data_raw[rand])
 
 
 def combine_sets():
