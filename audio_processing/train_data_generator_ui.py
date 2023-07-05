@@ -408,14 +408,13 @@ def save_combine_data_set(name, datasets, augbool):
 
     if with_raw and toaugment:
 
+        print("starting augmentation")
         size = dataraw.shape[0]
-        print(f"{np.max(dataraw)} and {np.max(np.abs(dataraw))}")
         noice = np.random.normal(0, 0.005, (size, 32500))
         noice2 = np.random.normal(0, 0.01, (size, 32500))
         dataraw2 = dataraw+noice
         dataraw3 = dataraw+noice2
-        print(f"{dataraw2.shape} and {dataraw.shape} and {dataraw2[0]} and {dataraw[0]}")
-        sd.play(dataraw2[1])
+
 
         print(datamfcc.shape)
         mc = mfcc_dataprocessor(44100)
@@ -426,6 +425,8 @@ def save_combine_data_set(name, datasets, augbool):
         for i in range(dataraw2.shape[0]):
             datamfcc2[i] = mc.mfcc_process(dataraw2[i])[1:,:]
             datamfcc3[i] = mc.mfcc_process(dataraw3[i])[1:,:]
+        
+        print("finished augmentation")
 
         dataraw = np.append(np.append(dataraw, dataraw2, axis=0), dataraw3, axis=0)
         datamfcc = np.append(np.append(datamfcc, datamfcc2, axis=0), datamfcc3, axis=0)
