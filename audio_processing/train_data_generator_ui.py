@@ -432,12 +432,19 @@ def save_combine_data_set(name, datasets, augbool):
         datamfcc = np.append(np.append(datamfcc, datamfcc2, axis=0), datamfcc3, axis=0)
         datalabel = np.append(np.append(datalabel, datalabel, axis=0), datalabel, axis=0)
 
+        with_raw = False
+
     if with_raw:
         rand_data_raw = np.array([np.zeros(32500)], ndmin = 2)
     rand_data_mfcc = np.array([np.zeros((11, 70))], ndmin=3)
     rand_data_label = np.array([np.zeros(9)], ndmin=2)
 
-    for i in range(datamfcc.shape[0]):
+    print("Starting randomising")
+
+    size = datamfcc.shape[0]
+    for i in range(size):
+        if i%(size//10)==0:
+            print(f"{i}/{size} done")
         rand = random.randint(0, datamfcc.shape[0]-1)
         if with_raw:
             rand_data_raw = np.append(rand_data_raw, [dataraw[rand]], axis=0)
@@ -449,6 +456,8 @@ def save_combine_data_set(name, datasets, augbool):
         datamfcc = np.delete(datamfcc, rand, axis=0)
         datalabel = np.delete(datalabel, rand, axis=0)
     
+    print("finished randomising")
+
     if with_raw:
         rand_data_raw = rand_data_raw[1:]    
     rand_data_mfcc = rand_data_mfcc[1:]
