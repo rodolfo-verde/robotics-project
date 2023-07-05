@@ -21,6 +21,8 @@ rawlist = np.array([["a"]], ndmin=2)
 mfcclist = np.array([["a"]], ndmin=2)
 labellist = np.array([[]], ndmin=2)
 first = True
+backbut = tk.Button(master=root_tk, command= lambda: set_start_buttons(), text="<--")
+backbut.place(relx=0.1, rely=0.1, anchor=tk.CENTER)
 
 
 def button_label_from_file():
@@ -351,18 +353,24 @@ def combine_sets():
         but.place(relx=0.2, rely=(i+1)/(len(stored)+1), anchor=tk.CENTER)
         buttons.append(but)
     
+    aug = tk.BooleanVar()
+    augment = tk.Checkbutton(master=root_tk, variable=aug, onvalue=True, offvalue=False, bd=1, text="Augment data if possible")
+    augment.place(relx=0.7, rely=0.3, anchor=tk.CENTER)
+    
     nameentry = tk.Entry(master=root_tk)
     nameentry.place(relx=0.7, rely=0.4, anchor=tk.CENTER)
     buttons.append(nameentry)
-    savebut = tk.Button(master=root_tk, command=lambda: save_combine_data_set(nameentry.get(), checks), text=f"Save to file")
+    savebut = tk.Button(master=root_tk, command=lambda: save_combine_data_set(nameentry.get(), checks, aug), text=f"Save to file")
     savebut.place(relx=0.7, rely=0.6, anchor=tk.CENTER)
     buttons.append(savebut)
 
 
-def save_combine_data_set(name, datasets):
+def save_combine_data_set(name, datasets, augbool):
     infile = listdir("audio_processing/Train_Data/")
 
     stored = list()
+
+    toaugment = augbool.get()
 
     for i in infile:
         if i[len(i)-9:]=="label.npy":
@@ -398,6 +406,12 @@ def save_combine_data_set(name, datasets):
         datamfcc = np.append(datamfcc, np.load(f"audio_processing/Train_Data/{i}_mfcc.npy"), axis=0)
         datalabel = np.append(datalabel, np.load(f"audio_processing/Train_Data/{i}_label.npy"), axis=0)
 
+    if with_raw and toaugment:
+
+        size = dataraw.shape[0]
+        print(f"{np.max(dataraw)} and {np.max(np.abs(dataraw))}")
+        return
+        #noice = np.random.normal(0, )
 
     if with_raw:
         rand_data_raw = np.array([np.zeros(32500)], ndmin = 2)
@@ -425,6 +439,8 @@ def save_combine_data_set(name, datasets):
     if with_raw:
         print(f"{rand_data_raw.shape}")
     print(f"{rand_data_mfcc.shape} and {rand_data_label.shape}")
+
+
 
     if with_raw:
         np.save(f"audio_processing/Train_Data/{name}_raw.npy", rand_data_raw)

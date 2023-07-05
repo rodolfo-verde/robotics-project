@@ -86,7 +86,7 @@ if test_again:
     print(f"Test accuracy: {test_acc}")
 
 
-data_test_set_name = "set_big_test_0"
+data_test_set_name = "set_complete_test"
 # predict
 class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
 predict_mfcc = np.load(f"audio_processing/Train_Data/{data_test_set_name}_mfcc.npy",allow_pickle=True) # load data
@@ -101,6 +101,8 @@ print(prediction.shape)
 print(np.sum(tf.argmax(predict_labels, axis=1)==prediction))
 
 cm = confusion_matrix(prediction, tf.argmax(predict_labels, axis=1))
+
+
 
 fig = plt.figure()
 ax = fig.add_subplot()
