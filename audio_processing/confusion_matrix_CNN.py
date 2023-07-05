@@ -29,9 +29,9 @@ model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accur
 #import weights
 model.load_weights("audio_processing/speech_CNN_weights.h5")
 
-data_test_set_name = "data_set_roman_complete"
+data_test_set_name = "set_complete_test"
 # predict
-class_names = ["a", "b", "c", "1", "2", "3", "rex", "stopp", "other"]
+class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 predict_mfcc = np.load(f"audio_processing/Train_Data/{data_test_set_name}_mfcc.npy",allow_pickle=True) # load data
 predict_labels = np.load(f"audio_processing/Train_Data/{data_test_set_name}_label.npy",allow_pickle=True) # load data
 index = 0

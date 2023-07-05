@@ -80,5 +80,72 @@ plt.show()
 
 
 #save model
-model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
-model.save_weights("audio_processing\speech_CNN_weights.h5")
+#model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
+#model.save_weights("audio_processing\speech_CNN_weights.h5")
+
+BLOCKLENGTH = 44100
+SAMPLERATE = 44100
+TARGETLVL = -30
+VOICETHRESHHOLD = -40
+LENGTHOFVOICEACTIVITY = 10
+
+from dataprocessor import dataprocessor
+from mfcc_processor import mfcc_dataprocessor
+import sounddevice as sd
+import time
+
+dp = dataprocessor(BLOCKLENGTH, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
+mp = mfcc_dataprocessor(BLOCKLENGTH)
+
+devices = sd.query_devices()
+
+    #safe1 stores the input from the stream to be processed later
+safe1 = np.array([], dtype="float64")
+
+
+    # function used from stream to get the sound input
+def callback(indata, frame_count, time_info, status):
+    global safe1
+    safe1 = np.append(safe1, indata)
+INPUTDEVICE = 1
+for i in devices:
+    if i['name'] == 'default':
+        INPUTDEVICE = i['index']
+    
+#INPUTDEVICE = 7 # 1 for jonas usb mic
+
+stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
+
+class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
+
+
+with stream:
+    while True:
+        while(len(safe1)<BLOCKLENGTH):
+            time.sleep(0.1)
+            continue
+        workblock = safe1[:BLOCKLENGTH]
+        safe1 = safe1[BLOCKLENGTH:]
+        starttime = time.time()
+
+        words, plots = dp.processdata(workblock)
+
+        for i in words[0]:
+
+            mfcc = mp.mfcc_process(i)
+            prediction = model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
+            index_pred = np.argmax(prediction) #tf.argmax geht auch
+            print(f"Prediction: {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
+            print(f"Word: {class_names[0]} equals a prediction of {prediction[0][0]*100} %")
+            print(f"Word: {class_names[1]} equals a prediction of {prediction[0][1]*100} %")
+            print(f"Word: {class_names[2]} equals a prediction of {prediction[0][2]*100} %")
+            print(f"Word: {class_names[3]} equals a prediction of {prediction[0][3]*100} %")
+            print(f"Word: {class_names[4]} equals a prediction of {prediction[0][4]*100} %")
+            print(f"Word: {class_names[5]} equals a prediction of {prediction[0][5]*100} %")
+            print(f"Word: {class_names[6]} equals a prediction of {prediction[0][6]*100} %")
+            print(f"Word: {class_names[7]} equals a prediction of {prediction[0][7]*100} %")
+            print(f"Word: {class_names[8]} equals a prediction of {prediction[0][8]*100} %")
+            print(f"Time: {time.time()-starttime}")
+            sd.play(i)
+        print(time.time()-starttime)
+
