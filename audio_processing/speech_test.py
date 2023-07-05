@@ -13,17 +13,19 @@ from keras.regularizers import L2
 
 
 # CNN
+# CNN
 model = Sequential()
 
-model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1))) 
-model.add(Dropout(0.1))
+model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
+model.add(MaxPooling2D(pool_size=(5, 5), padding="same"))
 model.add(BatchNormalization())
-model.add(Flatten())
-model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.1))) 
 model.add(Dropout(0.1))
+model.add(Flatten())
+model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.01), bias_regularizer=L2(0.01)))
 model.add(Dense(9, activation="softmax"))
 
-model.compile(optimizer=SGD(learning_rate = 0.01), loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
+model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
+
 
 #import weights
 model.load_weights("audio_processing\speech_CNN_weights.h5")
