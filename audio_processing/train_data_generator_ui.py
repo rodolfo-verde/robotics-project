@@ -417,11 +417,16 @@ def save_combine_data_set(name, datasets, augbool):
         print(f"{dataraw2.shape} and {dataraw.shape} and {dataraw2[0]} and {dataraw[0]}")
         sd.play(dataraw2[1])
 
+        print(datamfcc.shape)
         mc = mfcc_dataprocessor(44100)
 
-        datamfcc2 = mc.mfcc_process(dataraw2)
-        datamfcc3 = mc.mfcc_process(dataraw3)
-    
+        datamfcc2 = np.zeros((size, 11, 70))
+        datamfcc3 = np.zeros((size, 11, 70))
+
+        for i in range(dataraw2.shape[0]):
+            datamfcc2[i] = mc.mfcc_process(dataraw2[i])[1:,:]
+            datamfcc3[i] = mc.mfcc_process(dataraw3[i])[1:,:]
+
         dataraw = np.append(np.append(dataraw, dataraw2, axis=0), dataraw3, axis=0)
         datamfcc = np.append(np.append(datamfcc, datamfcc2, axis=0), datamfcc3, axis=0)
         datalabel = np.append(np.append(datalabel, datalabel, axis=0), datalabel, axis=0)
