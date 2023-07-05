@@ -97,6 +97,6 @@ with stream:
             print(f"Word: {class_names[7]} equals a prediction of {prediction[0][7]*100} %")
             print(f"Word: {class_names[8]} equals a prediction of {prediction[0][8]*100} %")
             print(f"Time: {time.time()-starttime}")
-        
+            sd.play(i)
         print(time.time()-starttime)
 
