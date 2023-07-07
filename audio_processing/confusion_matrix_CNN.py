@@ -27,7 +27,7 @@ model.add(Dense(9, activation="softmax"))
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
 
 #import weights
-model.load_weights("audio_processing/speech_CNN_weights.h5")
+model.load_weights("audio_processing\speech_CNN_weights.h5")
 
 data_test_set_name = "set_complete_test"
 # predict
