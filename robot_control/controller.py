@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 _MAX_STEP_SIZE: float = np.deg2rad(0.1)  # radians Default: 0.1
 _MOVING_TIME: float = 2 / 1000  # seconds Default: 2ms
-_FINAL_POS_TOLERANCE: float = np.deg2rad(0.4)  # radians Default: 0.4
+_FINAL_POS_TOLERANCE: float = np.deg2rad(0.5)  # radians Default: 0.4
 _DEFAULT_SLEEP_POS: list[float] = [0.0, -1.7999999523162842, 1.5499999523162842, 0.800000011920929, 0.0]
 _SLEEP_POS: list[float] = [-0.00920388475060463, -1.7993595600128174, 1.6444274187088013, 0.777728259563446, 0.0]
 _HOME_POS: list[float] = [0] * 5
@@ -190,7 +190,7 @@ class Controller:
                     print('Warning: joint positions not reached, it is recommended to clear the queue. Pausing...')
                     # maybe break here? or clear the queue? or just continue? or raise an error? or do nothing?
                     # decide later rn just pause
-                    self._pause = True
+                    # self._pause = True
                     # break
 
         while self._alive:
