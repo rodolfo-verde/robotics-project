@@ -37,11 +37,12 @@ print(f"y_test shape: {y_test.shape}")
 model = Sequential()
 
 model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
-model.add(MaxPooling2D(pool_size=(5, 5), padding="same"))
+model.add(MaxPooling2D(pool_size=(5, 5)))
 model.add(BatchNormalization())
 model.add(Dropout(0.1))
 model.add(Flatten())
 model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.01), bias_regularizer=L2(0.01)))
+model.add(Dense(10, activation="relu"))
 model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
@@ -51,8 +52,8 @@ result = model.fit(
     X_train.reshape(-1, 11, 70, 1), 
     y_train, 
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
-    epochs=60, 
-    batch_size=100)
+    epochs=60, # 60
+    batch_size=100) # 100
 
 model.summary()
 
