@@ -101,8 +101,20 @@ class Controller:
         else:
             raise ValueError(f"Unknown command code: {command.code}")
 
+    def _check_home(self):
+        return np.all(np.abs(self.get_joint_states() - Constants.HOME) < Constants.FINAL_POS_TOLERANCE)
+
+    def goto_home_position(self):
+        if not self._check_home():
+            self.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.PRE_PICK_UP))
+            self.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.HOME))
+
     def shutdown(self):
         self.paused = True
+        if not self._check_home():
+            self._con.arm.set_trajectory_time(3, 1.5)
+            self._con.arm.set_joint_positions(Constants.PRE_PICK_UP)
+            self._con.arm.set_joint_positions(Constants.HOME)
         self._con.shutdown()
 
 
