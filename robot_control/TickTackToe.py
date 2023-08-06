@@ -115,9 +115,9 @@ class TickTackToe:
                     print("Invalid move!")
             print(self)
             print(f"Game over! Winner is {self._winner}")
-            if input("Play again? (y/n) ") == "y":
-                self.reset()
-            else:
+            play_again = input("Play again? (y/n) ") == "y"
+            self.reset()
+            if not play_again:
                 break
         self._controller.shutdown()
 
@@ -142,7 +142,7 @@ class TickTackToe:
             time.sleep(1)
         print(self)
         print(f"Game over! Winner is {self._winner}")
-        self._clear_board()
+        self.reset()
         self._controller.shutdown()
 
 
