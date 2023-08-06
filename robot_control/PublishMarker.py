@@ -35,9 +35,9 @@ def publish_marker():
     marker.scale.y = scale
     marker.scale.z = scale
 
-    marker.color.r = 0.0
-    marker.color.g = 0.8
-    marker.color.b = 0.8
+    marker.color.r = 1.0
+    marker.color.g = 1.0
+    marker.color.b = 1.0
     marker.color.a = 1.0
 
     marker.mesh_resource = f"file://{PATH}/mesh.stl"
