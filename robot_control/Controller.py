@@ -12,14 +12,6 @@ import numpy as np
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 
-# con = InterbotixManipulatorXS(
-#     robot_model='rx150',
-#     group_name='arm',
-#     gripper_name='gripper',
-#     logging_level=LoggingSeverity.FATAL
-# )
-
-
 class Command:
     def __init__(self, code: int, *, final_pos: list | tuple = None, grasp: bool = False, z_offset: float = 0.0):
         self.code = code
@@ -86,13 +78,7 @@ class Controller:
         for i in range(steps):
             while self.paused:
                 time.sleep(0.5)
-            self._con.arm.set_ee_cartesian_trajectory(
-                z=increment
-            )
-        # self._con.arm.set_trajectory_time(mv_t, mv_t / 2)
-        # self._con.arm.set_ee_cartesian_trajectory(
-        #     z=offset,
-        # )
+            self._con.arm.set_ee_cartesian_trajectory(z=increment)
 
     def process_command(self, command: Command):
         if command.code == Constants.SIMPLE_MOVE:
@@ -136,28 +122,6 @@ def simple_test():
     controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.PRE_PICK_UP))
     controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.HOME))
     controller.shutdown()
-
-
-def manual_control():
-    while True:
-        if input("Press enter to continue or q to quit: ") == "q":
-            break
-        # pos_list.append()
-        with open("pos.txt", "a") as pos:
-            pos.write(f"{get_joint_states().tolist()}\n")
-        # print(f"Added to list: {', '.join([str(x) for x in pos_list[-1]])}")
-
-
-def det_height():
-    step = 0.01 / 2
-    total = 0
-    while True:
-        if input("Press enter to continue or q to quit: ") == "q":
-            break
-        con.arm.set_ee_cartesian_trajectory(z=-step, moving_time=0.2)
-        total -= step
-    print(total)
-    con.arm.set_ee_cartesian_trajectory(z=-total)
 
 
 if __name__ == '__main__':
