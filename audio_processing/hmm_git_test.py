@@ -14,8 +14,8 @@ with open('hmm_model.pkl', 'rb') as f:
 # load test data
 # predict
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
-predict_mfcc = np.load(f"audio_processing\Train_Data\set_a_30_mfcc.npy",allow_pickle=True) # load data
-predict_labels = np.load(f"audio_processing\Train_Data\set_a_30_label.npy",allow_pickle=True) # load data
+predict_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
+predict_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
 
 labels_string = ["" for x in range(len(predict_labels))]
 print(np.size(labels_string))
