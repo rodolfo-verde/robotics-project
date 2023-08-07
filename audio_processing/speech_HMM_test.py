@@ -1,13 +1,14 @@
 import numpy as np
-from gmm_hmm_asr.data import DataTuple
-from gmm_hmm_asr.trainers import SingleGaussTrainer
-from gmm_hmm_asr.trainers import GMMTrainer
-from gmm_hmm_asr.trainers import HMMTrainer
+from speech_HMM_train import DataTuple
+from speech_HMM_train import SingleGaussTrainer
+from speech_HMM_train import GMMTrainer
+from speech_HMM_train import HMMTrainer
+
 
 import pickle
 
 # load model
-with open(f'audio_processing\hmm_model.pkl', 'rb') as f:
+with open(f'audio_processing\speech_hmm_model.pkl', 'rb') as f:
     hmm_model = pickle.load(f)
 
 
@@ -61,5 +62,3 @@ for i, class_name in enumerate(class_names):
     y_pred_class = np.array(y_pred) == class_name
     accuracy_class = np.sum(y_true_class == y_pred_class) / len(y_true_class)
     print(f"Accuracy for class {class_name}: {accuracy_class}")
-
-

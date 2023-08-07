@@ -10,6 +10,9 @@ data_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",al
 data_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
 
 print(f"Data shape: {data_mfcc.shape}")
+"""# swap first and second dimension of data_mfcc
+data_mfcc = np.swapaxes(data_mfcc, 0, 1)
+print(f"Data shape: {data_mfcc.shape}")"""
 print(f"Labels shape: {data_labels.shape}")
 print(len(data_labels))
 labels_string = ["" for x in range(len(data_labels))]
@@ -29,9 +32,12 @@ for i in range(len(data_mfcc)):
 
 # create train_data which should be a list of DataTuple(key,feats,label) objects
 # key is a unique identifier for each data point
-# feats is a numpy array of features
-# label is a string containing the label
+# feats is a numpy array of features, in this case mfccs with 11 dimensions
+# label is a string containing the label of the data point
 data = [DataTuple(i, x[0], x[1]) for i, x in enumerate(data)]
+
+print(f"Number of data points: {len(data)}")
+print(data[0].feats.shape)
 
 # split data into trainings and test data
 split = int(len(data)*0.8) # 80% trainings data, 20% test data
@@ -64,9 +70,6 @@ gmm_model.train(train_data, niter)
 
 preds = gmm_model.predict(test_data)
 
-hmm_model = GMMTrainer(ndim, nstate, class_names)
-hmm_model.train(train_data, niter)
-
 # Hidden markov model
 hmm_model = GMMTrainer(ndim, nstate, class_names)
 hmm_model.train(train_data, niter)
@@ -74,11 +77,11 @@ hmm_model.train(train_data, niter)
 preds = hmm_model.predict(test_data)
 
 
-# save model
+# save model to audio_processing\hmm_model.pkl
 import pickle
-with open('hmm_model.pkl', 'wb') as f:
+with open(f"audio_processing\hmm_model.pkl", "wb") as f:
     pickle.dump(hmm_model, f)
- 
+
 
 # predict
 y_pred = [pred[0] for pred in preds]  # predicted labels
