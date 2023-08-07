@@ -70,9 +70,6 @@ gmm_model.train(train_data, niter)
 
 preds = gmm_model.predict(test_data)
 
-hmm_model = GMMTrainer(ndim, nstate, class_names)
-hmm_model.train(train_data, niter)
-
 # Hidden markov model
 hmm_model = GMMTrainer(ndim, nstate, class_names)
 hmm_model.train(train_data, niter)
