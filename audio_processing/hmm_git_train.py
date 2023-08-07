@@ -77,11 +77,11 @@ hmm_model.train(train_data, niter)
 preds = hmm_model.predict(test_data)
 
 
-# save model
+# save model to audio_processing\hmm_model.pkl
 import pickle
-with open('hmm_model.pkl', 'wb') as f:
+with open(f"audio_processing\hmm_model.pkl", "wb") as f:
     pickle.dump(hmm_model, f)
- 
+
 
 # predict
 y_pred = [pred[0] for pred in preds]  # predicted labels

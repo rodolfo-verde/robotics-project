@@ -3,6 +3,7 @@ from collections import namedtuple
 from typing import Dict, Type, List, Optional, Tuple
 from collections import defaultdict
 from itertools import groupby
+from dataclasses import dataclass
 import warnings
 import pickle
 
@@ -375,6 +376,7 @@ class GMMTrainer:
         return preds
 
 # Hidden Markov Model
+@dataclass(unsafe_hash=True)
 class HMMDataTuple:
     '''Class to store data for HMM training'''
     feats: np.ndarray
@@ -639,7 +641,7 @@ gmm_model.train(train_data, n_iter)
 preds = gmm_model.predict(test_data)
 
 # HMM Model
-hmm_model = HMMTrainer(n_dim, n_states, class_names)
+hmm_model = GMMTrainer(n_dim, n_states, class_names)
 hmm_model.train(train_data, n_iter)
 
 preds = hmm_model.predict(test_data)
@@ -666,7 +668,7 @@ for i, class_name in enumerate(class_names):
     print(f"Accuracy for class {class_name}: {accuracy_class}")
 
 # save the model
-with open('speech_hmm_model.pkl', 'wb') as f:
+with open(f'audio_processing\speech_hmm_model.pkl', 'wb') as f:
     pickle.dump(hmm_model, f)
 
 

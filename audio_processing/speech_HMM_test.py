@@ -8,7 +8,7 @@ from speech_HMM_train import HMMTrainer
 import pickle
 
 # load model
-with open('speech_hmm_model.pkl', 'rb') as f:
+with open(f'audio_processing\speech_hmm_model.pkl', 'rb') as f:
     hmm_model = pickle.load(f)
 
 

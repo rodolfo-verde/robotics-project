@@ -7,7 +7,7 @@ from gmm_hmm_asr.trainers import HMMTrainer
 import pickle
 
 # load model
-with open('hmm_model.pkl', 'rb') as f:
+with open(f'audio_processing\hmm_model.pkl', 'rb') as f:
     hmm_model = pickle.load(f)
 
 
