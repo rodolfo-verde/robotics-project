@@ -147,7 +147,7 @@ class TickTackToe:
 
 
 def main():
-    TickTackToe().demo_main_loop()
+    TickTackToe().main_loop()
 
 
 if __name__ == '__main__':
