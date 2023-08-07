@@ -14,12 +14,13 @@ with open('hmm_model.pkl', 'rb') as f:
 # load test data
 # predict
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
-predict_mfcc = np.load(f"audio_processing\Train_Data\set_test_a1_mfcc.npy",allow_pickle=True) # load data
-predict_labels = np.load(f"audio_processing\Train_Data\set_test_a1_label.npy",allow_pickle=True) # load data
+predict_mfcc = np.load(f"audio_processing\Train_Data\set_a_30_mfcc.npy",allow_pickle=True) # load data
+predict_labels = np.load(f"audio_processing\Train_Data\set_a_30_label.npy",allow_pickle=True) # load data
 
 labels_string = ["" for x in range(len(predict_labels))]
 print(np.size(labels_string))
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
+
 # convert one hot encoded labels to class names
 for i in range(len(predict_labels)):
     for j in range(len(class_names)):
@@ -37,6 +38,8 @@ for i in range(len(predict_mfcc)):
 # feats is a numpy array of features
 # label is a string containing the label
 data = [DataTuple(i, x[0], x[1]) for i, x in enumerate(data)]
+
+print(f"Number of data points: {len(data)}")
 
 # predict
 preds = hmm_model.predict(data)
