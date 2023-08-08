@@ -57,9 +57,6 @@ preds = sg_model.predict(test_data)
 y_pred = [pred[0] for pred in preds]  # predicted labels
 y_ll = [pred[1] for pred in preds]  # maximum log-likelihood
 
-from gmm_hmm_asr.data import DataTuple
-from gmm_hmm_asr.trainers import HMMTrainer
-
 # Gaussian mixture model
 nstate = 9 # number of HMM states
 ncomp = 8 # number of Gaussian components
@@ -91,7 +88,7 @@ y_ll = [pred[1] for pred in preds]  # maximum log-likelihood
 print(f"Predicted labels: {y_pred}")
 print(f"Maximum log-likelihood: {y_ll}")
 
-# calculate accuracy
+"""# calculate accuracy
 y_true = [x.label for x in data]  # true labels
 accuracy = np.sum(np.array(y_true) == np.array(y_pred)) / len(y_true)
 print(f"Accuracy: {accuracy}")
@@ -102,6 +99,6 @@ for i, class_name in enumerate(class_names):
     y_pred_class = np.array(y_pred) == class_name
     accuracy_class = np.sum(y_true_class == y_pred_class) / len(y_true_class)
     print(f"Accuracy for class {class_name}: {accuracy_class}")
-
+"""
 
 
