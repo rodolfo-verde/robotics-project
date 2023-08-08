@@ -1,20 +1,19 @@
+print("Importing...")
 import numpy as np
-from speech_HMM_train import DataTuple
-from speech_HMM_train import SingleGaussTrainer
-from speech_HMM_train import GMMTrainer
-from speech_HMM_train import HMMTrainer
-
-
+from speech_HMM_train import DataTuple, SingleGaussTrainer, GMMTrainer, HMMTrainer
+import time
 import pickle
+print("Imported")
 
 # load model
+print("Loading model...")
 with open(f'audio_processing\speech_hmm_model.pkl', 'rb') as f:
     hmm_model = pickle.load(f)
+    print("Model loaded")
 
 
 # load test data
 # predict
-class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 predict_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
 predict_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
 
@@ -43,9 +42,17 @@ data = [DataTuple(i, x[0], x[1]) for i, x in enumerate(data)]
 print(f"Number of data points: {len(data)}")
 
 # predict
+print("Predicting...")
+# start time
+start = time.time()
+
 preds = hmm_model.predict(data)
 y_pred = [pred[0] for pred in preds]  # predicted labels
 y_ll = [pred[1] for pred in preds]  # maximum log-likelihood
+
+# end time
+end = time.time()
+print(f"Prediction time: {end - start}s")
 
 # print results
 print(f"Predicted labels: {y_pred}")

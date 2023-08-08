@@ -9,11 +9,11 @@ import pickle
 # load model
 with open(f'audio_processing\hmm_model.pkl', 'rb') as f:
     hmm_model = pickle.load(f)
+    print("Model loaded")
 
 
 # load test data
 # predict
-class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 predict_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
 predict_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
 
