@@ -84,7 +84,7 @@ print("Time taken to train the model (Gaussian Mixture): ", end_gmm - start_gmm)
 # start time
 start_hmm = time.time()
 
-hmm_model = GMMTrainer(n_dim, n_states, class_names)
+hmm_model = GMMTrainer(n_dim, n_states, class_names)  # HMMTrainer(n_dim, n_states, class_names)
 hmm_model.train(train_data, n_iter)
 
 preds = hmm_model.predict(test_data)
@@ -115,7 +115,7 @@ for i, class_name in enumerate(class_names):
     print(f"Accuracy for class {class_name}: {accuracy_class}")"""
 
 # save the model
-with open(f'audio_processing\speech_hmm_model.pkl', 'wb') as f:
+with open(f'audio_processing\speech_hmm_model_v2.pkl', 'wb') as f:
     pickle.dump(hmm_model, f)
 
 
