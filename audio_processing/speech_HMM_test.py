@@ -1,6 +1,6 @@
 print("Importing...")
 import numpy as np
-from speech_HMM_train import DataTuple, SingleGaussTrainer, GMMTrainer, HMMTrainer
+from tuple_hmm import DataTuple
 import time
 import pickle
 print("Imported")
