@@ -37,7 +37,7 @@ data_sets = DataTuple(key=random_key, feats=random_feats, label=random_label)
 
 for i in range(len(class_names)):
     data_sets = DataTuple(n_keys_tuple, n_dim_tuple, class_names)
-data_set_0 = DataTuple(key=random_key, feats=random_feats, label=random_label)
+
 
 
 for i in range(len(class_names)):
