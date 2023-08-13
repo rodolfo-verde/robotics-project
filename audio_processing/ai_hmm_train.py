@@ -2,18 +2,37 @@ import numpy as np
 from ai_hmm import HiddenMarkovModel
 import time
 
+# Model improving factors:
+# 1. Model Complexity: The Hidden Markov Model might not be suitable for your specific task. HMMs are often used for sequential data, but if your data doesn't exhibit the underlying assumptions of an HMM (such as Markovian behavior), the model might struggle to capture patterns effectively.
+# 2. Data Quality: The quality and diversity of your training data play a crucial role in the model's performance. If the training data is noisy, unrepresentative, or lacks enough variation, the model may not generalize well to unseen examples.
+# 3. Feature Extraction: The features you're using (MFCCs) may not be capturing the relevant information needed for the classification task. Consider experimenting with different features or preprocessing techniques.
+# 4. Model Hyperparameters: The choice of hyperparameters (such as the number of states) can significantly impact the model's performance. You might need to tune these hyperparameters to achieve better results.
+# 5. Training Data Size: The amount of training data is also important. If you have a small dataset, the model may struggle to generalize. More data could lead to improved performance.
+# 6. Model Initialization: The initial random initialization of the model's parameters (transition matrix, emission matrix, etc.) can affect training convergence. Experiment with different initialization strategies.
+# 7. Training Algorithm: The update method you're using to optimize the model's parameters might not be appropriate for your data. There are various optimization algorithms that can be more effective for specific types of data.
+# 8. Class Imbalance: If there is a significant class imbalance in your data, the model might bias towards the majority class, leading to poor performance on minority classes.
 
 # parameters of the hmm
 n_states = 9
-n_features = 11
+n_features = 70
 
+class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
+label = class_names
 # Create an instance of the HiddenMarkovModel class
-hmm = HiddenMarkovModel(n_states, n_features)
+hmm = HiddenMarkovModel(n_states, n_features, class_names)
     
 # Load and preprocess your training data (sequences of MFCC features)
 data_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
+
+# Load and preprocess your training labels (strings of letters)
 data_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
-    
+label_to_index = {label: index for index, label in enumerate(class_names)}
+data_labels = [np.argmax(label_row) if np.any(label_row) else label_to_index["other"] for label_row in data_labels]
+data_labels = np.array(data_labels)
+
+print(f"Shape of the training data: {data_mfcc.shape}")
+print(f"Shape of the training labels: {data_labels.shape}")
+
 # Train the model
 forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc)
 # start time
@@ -23,6 +42,27 @@ hmm.train(data_mfcc, data_labels)
 end = time.time()
 print(f"Training time: {end-start}s")
 
+# Predict the most likely state (word/command) for each sequence
+# predicting time
+start = time.time()
+predicted_labels = hmm.predict(data_mfcc)
+# end time
+end = time.time()
+print(f"Predicting time: {end-start}s")
+
+# Calculate and print accuracy
+overall_accuracy = hmm.calculate_accuracy(predicted_labels, data_labels)
+print(f"Overall Accuracy: {overall_accuracy:.2f}%")
+class_accuracies = hmm.calculate_class_accuracies(predicted_labels, data_labels, label_to_index)
+print(f"Overall Accuracy: {overall_accuracy:.2f}%")
+for i, class_name in enumerate(class_names):
+    print(f"Accuracy for {class_name}: {class_accuracies[i]:.2f}%")
+
+
+# Print class accuracies
+for class_name, accuracy in class_accuracies.items():
+    print(f"Accuracy for class {class_name}: {accuracy:.2f}%")
+    
 # Save the model
-hmm.save("hmm_model.pkl")
+hmm.save_model("hmm_model.pkl")
 
