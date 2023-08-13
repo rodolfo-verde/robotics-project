@@ -143,11 +143,19 @@ class HiddenMarkovModel:
         class_accuracies = {}
         for class_name in self.class_names:
             class_indices = np.where(true_labels == label_to_index[class_name])[0]
-            class_predictions = predicted_labels[class_indices]
-            class_true_labels = true_labels[class_indices]
+            print(f"Class name: {class_name}")
+            print(f"Class indices: {class_indices}")
+        
+            class_predictions = [predicted_labels[i] for i in class_indices]
+            print(f"Class predictions: {class_predictions}")
+        
+            class_true_labels = [true_labels[i] for i in class_indices]
+            print(f"Class true labels: {class_true_labels}")
+        
             class_accuracy = self.calculate_accuracy(class_predictions, class_true_labels)
             class_accuracies[class_name] = class_accuracy
         return class_accuracies
+
 
     
     def save_model(self, filename):

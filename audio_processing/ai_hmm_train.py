@@ -1,6 +1,10 @@
 import numpy as np
 from ai_hmm import HiddenMarkovModel
 import time
+from sklearn.preprocessing import StandardScaler
+
+
+
 
 # Model improving factors:
 # 1. Model Complexity: The Hidden Markov Model might not be suitable for your specific task. HMMs are often used for sequential data, but if your data doesn't exhibit the underlying assumptions of an HMM (such as Markovian behavior), the model might struggle to capture patterns effectively.
@@ -13,7 +17,7 @@ import time
 # 8. Class Imbalance: If there is a significant class imbalance in your data, the model might bias towards the majority class, leading to poor performance on minority classes.
 
 # parameters of the hmm
-n_states = 9
+n_states = 12
 n_features = 70
 
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
@@ -23,6 +27,10 @@ hmm = HiddenMarkovModel(n_states, n_features, class_names)
     
 # Load and preprocess your training data (sequences of MFCC features)
 data_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
+
+# Normalize the MFCC features
+scaler = StandardScaler()
+data_mfcc_normalized = [scaler.fit_transform(seq) for seq in data_mfcc]
 
 # Load and preprocess your training labels (strings of letters)
 data_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
@@ -34,10 +42,10 @@ print(f"Shape of the training data: {data_mfcc.shape}")
 print(f"Shape of the training labels: {data_labels.shape}")
 
 # Train the model
-forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc)
+forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc_normalized)
 # start time
 start = time.time()
-hmm.train(data_mfcc, data_labels)
+hmm.train(data_mfcc_normalized, data_labels, n_iterations=20)
 # end time
 end = time.time()
 print(f"Training time: {end-start}s")
@@ -45,7 +53,7 @@ print(f"Training time: {end-start}s")
 # Predict the most likely state (word/command) for each sequence
 # predicting time
 start = time.time()
-predicted_labels = hmm.predict(data_mfcc)
+predicted_labels = hmm.predict(data_mfcc_normalized)
 # end time
 end = time.time()
 print(f"Predicting time: {end-start}s")
@@ -54,15 +62,9 @@ print(f"Predicting time: {end-start}s")
 overall_accuracy = hmm.calculate_accuracy(predicted_labels, data_labels)
 print(f"Overall Accuracy: {overall_accuracy:.2f}%")
 class_accuracies = hmm.calculate_class_accuracies(predicted_labels, data_labels, label_to_index)
-print(f"Overall Accuracy: {overall_accuracy:.2f}%")
-for i, class_name in enumerate(class_names):
-    print(f"Accuracy for {class_name}: {class_accuracies[i]:.2f}%")
-
-
 # Print class accuracies
-for class_name, accuracy in class_accuracies.items():
-    print(f"Accuracy for class {class_name}: {accuracy:.2f}%")
-    
+for class_name in class_accuracies:
+    print(f"Accuracy for {class_name}: {class_accuracies[class_name]:.2f}%")
+
 # Save the model
 hmm.save_model("hmm_model.pkl")
-
