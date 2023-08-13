@@ -2,13 +2,14 @@ import numpy as np
 from ai_hmm import HiddenMarkovModel
 import time
 
+
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 
 # load the model
 hmm = HiddenMarkovModel.load_model("hmm_model.pkl")
 
 # load the test data
-data_mfcc = np.load(f"audio_processing\Train_Data\set_a_30_mfcc.npy",allow_pickle=True) # load data
+data_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
 
 # start time
 start = time.time()
