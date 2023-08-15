@@ -10,7 +10,6 @@ from keras import layers
 from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, MaxPooling2D
 from keras.optimizers import SGD
 from keras.regularizers import L2 
-
 import numpy as np
 import WaveInterface
 import time
@@ -22,7 +21,7 @@ from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
 
 # CNN
-model = Sequential()
+"""model = Sequential()
 
 model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
 model.add(MaxPooling2D(pool_size=(5, 5), padding="same"))
@@ -36,7 +35,8 @@ model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accur
 
 
 #import weights
-model.load_weights("audio_processing\speech_CNN_weights.h5")
+model.load_weights("audio_processing\speech_CNN_weights.h5")"""
+model = tf.keras.models.load_model('audio_processing\CNN_Models\AI_speech_recognition_model.h5')  # Replace with the path to your saved model file
 
 BLOCKLENGTH = 44100
 SAMPLERATE = 44100
@@ -84,7 +84,10 @@ with stream:
         for i in words[0]:
 
             mfcc = mp.mfcc_process(i)
+            #prediction = model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
+            # Make predictions
             prediction = model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
+            predicted_classes = prediction.argmax(axis=1)
             index_pred = np.argmax(prediction) #tf.argmax geht auch
             print(f"Prediction: {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
             print(f"Word: {class_names[0]} equals a prediction of {prediction[0][0]*100} %")

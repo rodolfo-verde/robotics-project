@@ -50,13 +50,18 @@ hmm.train(data_mfcc_normalized, data_labels, n_iterations=20)
 end = time.time()
 print(f"Training time: {end-start}s")
 
+# Save the model
+hmm.save_model("hmm_model.pkl")
+
 # Predict the most likely state (word/command) for each sequence
 # predicting time
 start = time.time()
-predicted_labels = hmm.predict(data_mfcc_normalized)
+data_mfcc_normalized_array = np.array(data_mfcc_normalized)  # Convert list to NumPy array
+predicted_labels = hmm.predict(data_mfcc_normalized_array)
 # end time
 end = time.time()
 print(f"Predicting time: {end-start}s")
+
 
 # Calculate and print accuracy
 overall_accuracy = hmm.calculate_accuracy(predicted_labels, data_labels)
@@ -66,5 +71,3 @@ class_accuracies = hmm.calculate_class_accuracies(predicted_labels, data_labels,
 for class_name in class_accuracies:
     print(f"Accuracy for {class_name}: {class_accuracies[class_name]:.2f}%")
 
-# Save the model
-hmm.save_model("hmm_model.pkl")
