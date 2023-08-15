@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import time
+from sklearn.mixture import GaussianMixture
 
 """The HiddenMarkovModel class is initialized with the number of hidden states (n_states), the number of observed features (n_features), and a list of class names (class_names). The class initializes the transition matrix, emission matrix, and initial probabilities with random values.
 
@@ -60,10 +61,11 @@ uses the trained model to predict the most likely state for each input sequence.
 The accuracy metrics provide insights into the model's performance on both an overall and class-specific level."""
 
 class HiddenMarkovModel:
-    def __init__(self, n_states, n_features, class_names):
+    def __init__(self, n_states, n_features, class_names, n_components=1):
         self.n_states = n_states
         self.n_features = n_features
-        
+        self.n_components = n_components  # Add n_components attribute
+
         self.transition_matrix = np.random.rand(n_states, n_states)
         self.transition_matrix /= np.sum(self.transition_matrix, axis=1, keepdims=True)
         
@@ -86,9 +88,11 @@ class HiddenMarkovModel:
     def update_model_parameters(self, training_data, labels, forward_probabilities, backward_probabilities):
         n_sequences = len(training_data)
         new_transition_matrix = np.zeros_like(self.transition_matrix)
-        new_emission_matrix = np.zeros_like(self.emission_matrix)
         new_initial_probabilities = np.zeros_like(self.initial_probabilities)
-
+        
+        # Update emission matrix with GMM parameters
+        new_emission_matrix = self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+        
         for i in range(n_sequences):
             sequence = training_data[i]
             forward_prob = forward_probabilities[i]
@@ -101,17 +105,35 @@ class HiddenMarkovModel:
 
             new_initial_probabilities[label] += gamma[0, label]
             new_transition_matrix[label] += np.sum(xi[:, label, :], axis=0)
-            for t in range(sequence_length):
-                for j in range(self.n_states):
-                    feature_index = np.argmax(sequence[t])
-                    new_emission_matrix[j, feature_index] += gamma[t, j]
 
+        # Normalize transition matrix and initial probabilities
         self.initial_probabilities = new_initial_probabilities / n_sequences
         self.transition_matrix = new_transition_matrix / np.sum(new_transition_matrix, axis=1, keepdims=True)
         self.emission_matrix = new_emission_matrix / np.sum(new_emission_matrix, axis=1, keepdims=True)
 
+    def update_emission_matrix(self, training_data, forward_probabilities, backward_probabilities, labels):
+        new_emission_matrix = np.zeros_like(self.emission_matrix)
 
-    
+        for i in range(len(self.class_names)):
+            class_indices = np.where(labels == i)[0]
+            class_sequences = [training_data[idx] for idx in class_indices]
+            class_forward_probs = [forward_probabilities[idx] for idx in class_indices]
+            class_backward_probs = [backward_probabilities[idx] for idx in class_indices]
+
+            gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
+            gmm.fit(np.concatenate(class_sequences))
+
+            for j in range(self.n_states):
+                emission_probs = []
+                for seq_idx in range(len(class_sequences)):
+                    seq_length = len(class_sequences[seq_idx])
+                    if j < seq_length:  # Check if j is within the valid range
+                        emission_prob = gmm.score_samples(class_sequences[seq_idx][j].reshape(-1, self.n_features))
+                        emission_probs.append(np.sum(class_forward_probs[seq_idx][:, j] * class_backward_probs[seq_idx][:, j] * np.exp(emission_prob)))
+                new_emission_matrix[i, j] = np.sum(emission_probs)
+
+        return new_emission_matrix
+
     def forward_backward(self, training_data):
         n_sequences = len(training_data)
         forward_probabilities = []
@@ -176,18 +198,57 @@ class HiddenMarkovModel:
     
         return xi
     
-    def predict(self, data_mfcc):
-        n_sequences, sequence_length, _ = data_mfcc.shape
-        predicted_states = []
+    def calculate_emission_probability(self, feature_vector, state):
+        # Fit a Gaussian Mixture Model (GMM) to the state's data
+        gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
+        state_data = feature_vector[state == self.states]
+        gmm.fit(state_data)
         
+        # Calculate the probability of the feature vector using the GMM
+        log_prob = gmm.score_samples(feature_vector.reshape(1, -1))
+        emission_prob = np.exp(log_prob)
+
+        return emission_prob
+    
+    def viterbi_decode(self, sequence):
+        sequence_length = len(sequence)
+        n_states = self.n_states
+
+        # Initialize variables for Viterbi algorithm
+        path_probabilities = np.zeros((sequence_length, n_states))
+        best_paths = np.zeros((sequence_length, n_states), dtype=int)
+
+        # Initialize the first step with initial probabilities and emission probabilities
+        path_probabilities[0] = self.initial_probabilities * self.calculate_emission_probability(sequence[0])
+
+        # Perform the Viterbi algorithm
+        for t in range(1, sequence_length):
+            for j in range(n_states):
+                transition_probabilities = path_probabilities[t - 1] * self.transition_matrix[:, j]
+                best_path = np.argmax(transition_probabilities)
+                best_paths[t, j] = best_path
+                emission_prob = self.calculate_emission_probability(sequence[t], state=j)  # Provide the state argument
+                path_probabilities[t, j] = transition_probabilities[best_path] * emission_prob
+
+        # Backtrack to find the best path
+        best_sequence = [np.argmax(path_probabilities[-1])]
+        for t in range(sequence_length - 1, 0, -1):
+            best_state = best_paths[t, best_sequence[-1]]
+            best_sequence.append(best_state)
+        best_sequence.reverse()
+
+        return best_sequence
+
+
+    def predict(self, data_mfcc):
+        n_sequences = len(data_mfcc)
+        predicted_states = []
+
         for i in range(n_sequences):
             sequence = data_mfcc[i]
-            forward_prob, _ = self.initialize_probabilities(sequence_length)
-            forward_prob = self.forward_algorithm(sequence, forward_prob)
-            
-            predicted_state = np.argmax(forward_prob[-1])  # Predict based on the final state probabilities
-            predicted_states.append(predicted_state)
-        
+            predicted_path = self.viterbi_decode(sequence)
+            predicted_states.append(predicted_path)
+    
         return predicted_states
     
     def calculate_accuracy(self, predicted_labels, true_labels):

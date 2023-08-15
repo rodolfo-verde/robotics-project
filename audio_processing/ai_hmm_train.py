@@ -16,39 +16,48 @@ from sklearn.preprocessing import StandardScaler
 # 7. Training Algorithm: The update method you're using to optimize the model's parameters might not be appropriate for your data. There are various optimization algorithms that can be more effective for specific types of data.
 # 8. Class Imbalance: If there is a significant class imbalance in your data, the model might bias towards the majority class, leading to poor performance on minority classes.
 
-# parameters of the hmm
+# Parameters of the HMM
 n_states = 12
 n_features = 70
-
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 label = class_names
+
 # Create an instance of the HiddenMarkovModel class
 hmm = HiddenMarkovModel(n_states, n_features, class_names)
-    
+
 # Load and preprocess your training data (sequences of MFCC features)
-data_mfcc = np.load(f"audio_processing\Train_Data\set_complete_test_mfcc.npy",allow_pickle=True) # load data
+data_mfcc = np.load("audio_processing\Train_Data\set_complete_test_mfcc.npy", allow_pickle=True)
 
 # Normalize the MFCC features
 scaler = StandardScaler()
 data_mfcc_normalized = [scaler.fit_transform(seq) for seq in data_mfcc]
 
 # Load and preprocess your training labels (strings of letters)
-data_labels = np.load(f"audio_processing\Train_Data\set_complete_test_label.npy",allow_pickle=True) # load data
+data_labels = np.load("audio_processing\Train_Data\set_complete_test_label.npy", allow_pickle=True)
 label_to_index = {label: index for index, label in enumerate(class_names)}
 data_labels = [np.argmax(label_row) if np.any(label_row) else label_to_index["other"] for label_row in data_labels]
 data_labels = np.array(data_labels)
 
-print(f"Shape of the training data: {data_mfcc.shape}")
-print(f"Shape of the training labels: {data_labels.shape}")
+print("Preprocessing done")
 
 # Train the model
-forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc_normalized)
+print("Training started")
 # start time
 start = time.time()
+forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc_normalized)
 hmm.train(data_mfcc_normalized, data_labels, n_iterations=20)
 # end time
 end = time.time()
+print("Training done")
 print(f"Training time: {end-start}s")
+
+# Predict the most likely state (phoneme) for each sequence
+# start time
+start = time.time()
+predicted_states = hmm.predict(data_mfcc_normalized)
+# end time
+end = time.time()
+print(f"Predicting time: {end-start}s")
 
 # Save the model
 hmm.save_model("hmm_model.pkl")

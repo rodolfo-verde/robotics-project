@@ -23,7 +23,7 @@ import pickle
 
 # load model
 print("Loading model...")
-with open(f'audio_processing\speech_hmm_model.pkl', 'rb') as f:
+with open(f'audio_processing\HMM_models\hmm_model.pkl', 'rb') as f:
     hmm_model = pickle.load(f)
     print("Model loaded")
 
