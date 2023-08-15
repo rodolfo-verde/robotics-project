@@ -2,6 +2,63 @@ import numpy as np
 import pickle
 import time
 
+"""The HiddenMarkovModel class is initialized with the number of hidden states (n_states), the number of observed features (n_features), and a list of class names (class_names). The class initializes the transition matrix, emission matrix, and initial probabilities with random values.
+
+Now, let's explain the methods step by step:
+
+train Method:
+This method trains the HMM using the Baum-Welch algorithm (also known as the Forward-Backward algorithm). It iteratively updates the model's parameters to fit the training data.
+
+forward_probabilities and backward_probabilities are computed using the forward_backward method.
+
+The update_model_parameters method updates the model's parameters based on the forward and backward probabilities.
+
+update_model_parameters Method:
+This method updates the model parameters (transition matrix, emission matrix, initial probabilities) based on the forward and backward probabilities.
+
+It calculates gamma and xi values using the forward and backward probabilities and updates the model parameters.
+forward_backward Method:
+This method computes the forward and backward probabilities for each sequence in the training data.
+
+It initializes forward and backward probabilities using initialize_probabilities.
+It uses the forward_algorithm and backward_algorithm methods to calculate the probabilities.
+initialize_probabilities Method:
+This method initializes the forward and backward probabilities for a sequence.
+
+It sets the initial probabilities and the first backward probability.
+It returns the initialized probabilities.
+forward_algorithm Method:
+This method performs the forward algorithm to calculate the forward probabilities for a sequence.
+
+It iteratively computes forward probabilities for each time step and each hidden state.
+backward_algorithm Method:
+This method performs the backward algorithm to calculate the backward probabilities for a sequence.
+
+It iteratively computes backward probabilities for each time step and each hidden state.
+compute_xi Method:
+This method calculates the xi values, which are used in updating the transition matrix.
+
+It computes the xi values based on the forward and backward probabilities.
+predict Method:
+This method predicts the most likely state for each sequence in the test data using the trained model.
+
+It calculates forward probabilities for each sequence and predicts based on the final state probabilities.
+calculate_accuracy Method:
+This method calculates the overall accuracy of the model's predictions.
+
+It compares predicted labels with true labels and calculates accuracy.
+calculate_class_accuracies Method:
+This method calculates class-specific accuracies.
+
+It computes accuracy for each class separately and returns a dictionary of class accuracies.
+save_model and load_model Methods:
+These methods save and load the trained HMM model using pickle.
+
+Each method serves a specific purpose in training, predicting, and evaluating the Hidden Markov Model. 
+The training process iteratively updates the model parameters based on the forward and backward probabilities, and the prediction process 
+uses the trained model to predict the most likely state for each input sequence. 
+The accuracy metrics provide insights into the model's performance on both an overall and class-specific level."""
+
 class HiddenMarkovModel:
     def __init__(self, n_states, n_features, class_names):
         self.n_states = n_states
