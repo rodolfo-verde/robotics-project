@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-
 # Model improving factors:
 # 1. Model Complexity: The Hidden Markov Model might not be suitable for your specific task. HMMs are often used for sequential data, but if your data doesn't exhibit the underlying assumptions of an HMM (such as Markovian behavior), the model might struggle to capture patterns effectively.
 # 2. Data Quality: The quality and diversity of your training data play a crucial role in the model's performance. If the training data is noisy, unrepresentative, or lacks enough variation, the model may not generalize well to unseen examples.
@@ -18,19 +17,23 @@ from sklearn.preprocessing import StandardScaler
 
 # Parameters of the HMM
 n_states = 12
-n_features = 70
+n_features = 11
+n_time_steps = 70
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 label = class_names
 
 # Create an instance of the HiddenMarkovModel class
-hmm = HiddenMarkovModel(n_states, n_features, class_names)
+hmm = HiddenMarkovModel(n_states, n_features, n_time_steps, class_names)
 
 # Load and preprocess your training data (sequences of MFCC features)
 data_mfcc = np.load("audio_processing\Train_Data\set_complete_test_mfcc.npy", allow_pickle=True)
 
+print(f"Data shape: {data_mfcc.shape}")
+
 # Normalize the MFCC features
 scaler = StandardScaler()
 data_mfcc_normalized = [scaler.fit_transform(seq) for seq in data_mfcc]
+print(f"Data normalized shape: {np.array(data_mfcc_normalized).shape}")
 
 # Load and preprocess your training labels (strings of letters)
 data_labels = np.load("audio_processing\Train_Data\set_complete_test_label.npy", allow_pickle=True)
@@ -40,12 +43,15 @@ data_labels = np.array(data_labels)
 
 print("Preprocessing done")
 
+# Call this function before training:
+hmm.fit_gmm_models(data_mfcc_normalized, data_labels)
+
 # Train the model
 print("Training started")
 # start time
 start = time.time()
 forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc_normalized)
-hmm.train(data_mfcc_normalized, data_labels, n_iterations=20)
+hmm.train(data_mfcc_normalized, data_labels, n_iterations=10)
 # end time
 end = time.time()
 print("Training done")

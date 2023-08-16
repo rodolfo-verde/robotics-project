@@ -3,68 +3,13 @@ import pickle
 import time
 from sklearn.mixture import GaussianMixture
 
-"""The HiddenMarkovModel class is initialized with the number of hidden states (n_states), the number of observed features (n_features), and a list of class names (class_names). The class initializes the transition matrix, emission matrix, and initial probabilities with random values.
-
-Now, let's explain the methods step by step:
-
-train Method:
-This method trains the HMM using the Baum-Welch algorithm (also known as the Forward-Backward algorithm). It iteratively updates the model's parameters to fit the training data.
-
-forward_probabilities and backward_probabilities are computed using the forward_backward method.
-
-The update_model_parameters method updates the model's parameters based on the forward and backward probabilities.
-
-update_model_parameters Method:
-This method updates the model parameters (transition matrix, emission matrix, initial probabilities) based on the forward and backward probabilities.
-
-It calculates gamma and xi values using the forward and backward probabilities and updates the model parameters.
-forward_backward Method:
-This method computes the forward and backward probabilities for each sequence in the training data.
-
-It initializes forward and backward probabilities using initialize_probabilities.
-It uses the forward_algorithm and backward_algorithm methods to calculate the probabilities.
-initialize_probabilities Method:
-This method initializes the forward and backward probabilities for a sequence.
-
-It sets the initial probabilities and the first backward probability.
-It returns the initialized probabilities.
-forward_algorithm Method:
-This method performs the forward algorithm to calculate the forward probabilities for a sequence.
-
-It iteratively computes forward probabilities for each time step and each hidden state.
-backward_algorithm Method:
-This method performs the backward algorithm to calculate the backward probabilities for a sequence.
-
-It iteratively computes backward probabilities for each time step and each hidden state.
-compute_xi Method:
-This method calculates the xi values, which are used in updating the transition matrix.
-
-It computes the xi values based on the forward and backward probabilities.
-predict Method:
-This method predicts the most likely state for each sequence in the test data using the trained model.
-
-It calculates forward probabilities for each sequence and predicts based on the final state probabilities.
-calculate_accuracy Method:
-This method calculates the overall accuracy of the model's predictions.
-
-It compares predicted labels with true labels and calculates accuracy.
-calculate_class_accuracies Method:
-This method calculates class-specific accuracies.
-
-It computes accuracy for each class separately and returns a dictionary of class accuracies.
-save_model and load_model Methods:
-These methods save and load the trained HMM model using pickle.
-
-Each method serves a specific purpose in training, predicting, and evaluating the Hidden Markov Model. 
-The training process iteratively updates the model parameters based on the forward and backward probabilities, and the prediction process 
-uses the trained model to predict the most likely state for each input sequence. 
-The accuracy metrics provide insights into the model's performance on both an overall and class-specific level."""
 
 class HiddenMarkovModel:
-    def __init__(self, n_states, n_features, class_names, n_components=1):
+    def __init__(self, n_states, n_features, n_time_steps, class_names, n_components=1):
         self.n_states = n_states
         self.n_features = n_features
         self.n_components = n_components  # Add n_components attribute
+        self.n_time_steps = n_time_steps  # Add n_time_steps attribute
 
         self.transition_matrix = np.random.rand(n_states, n_states)
         self.transition_matrix /= np.sum(self.transition_matrix, axis=1, keepdims=True)
@@ -76,63 +21,129 @@ class HiddenMarkovModel:
 
         self.class_names = class_names  # Set the class names attribute
 
+        # Initialize the state_gmms attribute as a list of GaussianMixture models
+        self.state_gmms = [GaussianMixture(n_components=self.n_components, covariance_type='full') for _ in range(n_states)]
+
+        # Initialize the transition matrix with random values
+        self.transition_matrix = np.random.rand(n_states, n_states)
+        self.transition_matrix /= np.sum(self.transition_matrix, axis=1, keepdims=True)
+
+    def update_transition_matrix(self, forward_probabilities, backward_probabilities):
+        n_sequences, sequence_length, _ = forward_probabilities.shape
+        new_transition_matrix = np.zeros_like(self.transition_matrix)
+
+        for i in range(self.n_states):
+            for j in range(self.n_states):
+                numerator = np.sum(forward_probabilities[:, :, i] * self.transition_matrix[i, j] *
+                                self.emission_matrix[j] * backward_probabilities[:, :, j])
+                denominator = np.sum(forward_probabilities[:, :, i] * backward_probabilities[:, :, i])
+                new_transition_matrix[i, j] = numerator / denominator
+
+        # Normalize the new transition matrix
+        new_transition_matrix /= np.sum(new_transition_matrix, axis=1, keepdims=True)
+
+        return new_transition_matrix
+
     def train(self, training_data, labels, n_iterations=10):
         for iteration in range(n_iterations):
             print(f"Iteration {iteration + 1}/{n_iterations}")
             start = time.time()
+
             forward_probabilities, backward_probabilities = self.forward_backward(training_data)
+
+            forward_probabilities = np.array(forward_probabilities)  # Convert to numpy array
+            backward_probabilities = np.array(backward_probabilities)  # Convert to numpy array
+
+            new_transition_matrix = self.update_transition_matrix(forward_probabilities, backward_probabilities)
+            new_emission_matrix = self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+
             self.update_model_parameters(training_data, labels, forward_probabilities, backward_probabilities)
+
+            self.transition_matrix = new_transition_matrix
+            self.emission_matrix = new_emission_matrix
+
             end = time.time()
             print(f"Training time: {end - start}s for iteration {iteration + 1}")
 
     def update_model_parameters(self, training_data, labels, forward_probabilities, backward_probabilities):
         n_sequences = len(training_data)
+    
+        if len(forward_probabilities) != n_sequences or len(backward_probabilities) != n_sequences:
+            raise ValueError("Number of sequences in forward_probabilities or backward_probabilities does not match training_data.")
+    
+        # Update initial probabilities
+        self.initial_probabilities = np.sum(forward_probabilities[:, 0] * backward_probabilities[:, 0], axis=0)
+        self.initial_probabilities /= np.sum(self.initial_probabilities)
+    
+        # Update transition matrix
         new_transition_matrix = np.zeros_like(self.transition_matrix)
-        new_initial_probabilities = np.zeros_like(self.initial_probabilities)
-        
-        # Update emission matrix with GMM parameters
-        new_emission_matrix = self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
-        
+        for i in range(self.n_states):
+            for j in range(self.n_states):
+                numerator = 0.0
+                denominator = 0.0
+                for t in range(n_sequences):
+                    sequence = training_data[t]
+                    forward_prob = forward_probabilities[t]
+                    backward_prob = backward_probabilities[t]
+                
+                    sequence_length = len(sequence)
+                
+                    if sequence_length <= 1:
+                        continue
+                
+                    for t in range(1, sequence_length):
+                        numerator += forward_prob[i, t - 1] * self.transition_matrix[i, j] * \
+                                    self.calculate_emission_probability(sequence[t], state=j) * backward_prob[j, t]
+                        denominator += forward_prob[i, t - 1] * backward_prob[i, t - 1]
+            
+                new_transition_matrix[i, j] = numerator / denominator
+    
+        # Normalize the transition matrix
+        self.transition_matrix = new_transition_matrix / np.sum(new_transition_matrix, axis=1, keepdims=True)
+    
+        # Update emission matrix
+        self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities)
+
+    def fit_gmm_models(self, training_data, labels):
+        self.state_gmms = {}  # Initialize the state_gmms dictionary
+        for state in range(self.n_states):
+            state_data = []  # Collect training data for this state
+            for i, label in enumerate(labels):
+                if label == state:
+                    state_data.append(training_data[i])
+            state_data = np.vstack(state_data)
+
+            gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
+            gmm.fit(state_data)
+
+            self.state_gmms[state] = gmm
+
+
+
+
+    def update_emission_matrix(self, training_data, forward_probabilities, backward_probabilities, labels):
+        n_sequences = len(training_data)
+        new_emission_matrix = np.zeros_like(self.emission_matrix)
+    
         for i in range(n_sequences):
             sequence = training_data[i]
             forward_prob = forward_probabilities[i]
             backward_prob = backward_probabilities[i]
-            label = labels[i]
-            sequence_length = len(sequence)
+        
+            # Verify the shape and contents of the feature vector
+            if sequence.shape != (self.n_features, self.n_time_steps):  # Update the shape condition
+                raise ValueError(f"Invalid shape of feature vector in training_data[{i}]")
 
-            gamma = forward_prob * backward_prob
-            xi = self.compute_xi(sequence, forward_prob, backward_prob)
+            for i in range(self.n_states):
+                for j in range(self.n_states):
+                    emission_prob = self.calculate_emission_probability(sequence, state=j)
+                    new_emission_matrix[i, j] += forward_prob[i] * backward_prob[i] * emission_prob
 
-            new_initial_probabilities[label] += gamma[0, label]
-            new_transition_matrix[label] += np.sum(xi[:, label, :], axis=0)
-
-        # Normalize transition matrix and initial probabilities
-        self.initial_probabilities = new_initial_probabilities / n_sequences
-        self.transition_matrix = new_transition_matrix / np.sum(new_transition_matrix, axis=1, keepdims=True)
+        # Normalize the emission matrix
         self.emission_matrix = new_emission_matrix / np.sum(new_emission_matrix, axis=1, keepdims=True)
 
-    def update_emission_matrix(self, training_data, forward_probabilities, backward_probabilities, labels):
-        new_emission_matrix = np.zeros_like(self.emission_matrix)
 
-        for i in range(len(self.class_names)):
-            class_indices = np.where(labels == i)[0]
-            class_sequences = [training_data[idx] for idx in class_indices]
-            class_forward_probs = [forward_probabilities[idx] for idx in class_indices]
-            class_backward_probs = [backward_probabilities[idx] for idx in class_indices]
 
-            gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
-            gmm.fit(np.concatenate(class_sequences))
-
-            for j in range(self.n_states):
-                emission_probs = []
-                for seq_idx in range(len(class_sequences)):
-                    seq_length = len(class_sequences[seq_idx])
-                    if j < seq_length:  # Check if j is within the valid range
-                        emission_prob = gmm.score_samples(class_sequences[seq_idx][j].reshape(-1, self.n_features))
-                        emission_probs.append(np.sum(class_forward_probs[seq_idx][:, j] * class_backward_probs[seq_idx][:, j] * np.exp(emission_prob)))
-                new_emission_matrix[i, j] = np.sum(emission_probs)
-
-        return new_emission_matrix
 
     def forward_backward(self, training_data):
         n_sequences = len(training_data)
@@ -199,17 +210,13 @@ class HiddenMarkovModel:
         return xi
     
     def calculate_emission_probability(self, feature_vector, state):
-        # Fit a Gaussian Mixture Model (GMM) to the state's data
-        gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
-        state_data = feature_vector[state == self.states]
-        gmm.fit(state_data)
-        
-        # Calculate the probability of the feature vector using the GMM
-        log_prob = gmm.score_samples(feature_vector.reshape(1, -1))
-        emission_prob = np.exp(log_prob)
+        print("Feature vector shape = {feature_vector.shape}")  # Add this line to check the shape of the feature vector
+        gmm = self.state_gmms[state]
+        if feature_vector.shape[0] != self.n_features:
+            raise ValueError("Feature vector has incorrect number of features")
+        emission_prob = gmm.score_samples(feature_vector.reshape(1, -1))
+        return np.exp(emission_prob)
 
-        return emission_prob
-    
     def viterbi_decode(self, sequence):
         sequence_length = len(sequence)
         n_states = self.n_states
@@ -219,7 +226,8 @@ class HiddenMarkovModel:
         best_paths = np.zeros((sequence_length, n_states), dtype=int)
 
         # Initialize the first step with initial probabilities and emission probabilities
-        path_probabilities[0] = self.initial_probabilities * self.calculate_emission_probability(sequence[0])
+        for j in range(n_states):
+            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[0], state=j)
 
         # Perform the Viterbi algorithm
         for t in range(1, sequence_length):
@@ -227,7 +235,7 @@ class HiddenMarkovModel:
                 transition_probabilities = path_probabilities[t - 1] * self.transition_matrix[:, j]
                 best_path = np.argmax(transition_probabilities)
                 best_paths[t, j] = best_path
-                emission_prob = self.calculate_emission_probability(sequence[t], state=j)  # Provide the state argument
+                emission_prob = self.calculate_emission_probability(sequence[t], state=j)
                 path_probabilities[t, j] = transition_probabilities[best_path] * emission_prob
 
         # Backtrack to find the best path
@@ -238,6 +246,7 @@ class HiddenMarkovModel:
         best_sequence.reverse()
 
         return best_sequence
+
 
 
     def predict(self, data_mfcc):
