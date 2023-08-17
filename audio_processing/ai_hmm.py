@@ -5,11 +5,11 @@ from sklearn.mixture import GaussianMixture
 
 
 class HiddenMarkovModel:
-    def __init__(self, n_states, n_features, n_time_steps, class_names, n_components=1):
+    def __init__(self, n_states, n_features, class_names, n_time_steps, n_components=1):
         self.n_states = n_states
         self.n_features = n_features
         self.n_components = n_components  # Add n_components attribute
-        self.n_time_steps = n_time_steps  # Add n_time_steps attribute
+        self.n_time_steps = n_time_steps # Add n_time_steps attribute
 
         self.transition_matrix = np.random.rand(n_states, n_states)
         self.transition_matrix /= np.sum(self.transition_matrix, axis=1, keepdims=True)
@@ -109,40 +109,40 @@ class HiddenMarkovModel:
         for state in range(self.n_states):
             state_data = []  # Collect training data for this state
             for i, label in enumerate(labels):
-                if label == state:
+                if np.all(label == state):  # Check if all elements of label array are equal to state
                     state_data.append(training_data[i])
-            state_data = np.vstack(state_data)
+            if len(state_data) > 0:  # Only stack if there is data for this state
+                state_data = np.vstack(state_data)
 
-            gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
-            gmm.fit(state_data)
+                # Reshape the state_data to have 11 features
+                state_data_reshaped = state_data.reshape(-1, 11)  # Reshape to (num_samples, 11)
 
-            self.state_gmms[state] = gmm
+                gmm = GaussianMixture(n_components=self.n_components, covariance_type='full')
+                gmm.fit(state_data_reshaped)
 
-
-
+                self.state_gmms[state] = gmm
 
     def update_emission_matrix(self, training_data, forward_probabilities, backward_probabilities, labels):
         n_sequences = len(training_data)
         new_emission_matrix = np.zeros_like(self.emission_matrix)
-    
+
         for i in range(n_sequences):
             sequence = training_data[i]
             forward_prob = forward_probabilities[i]
             backward_prob = backward_probabilities[i]
-        
-            # Verify the shape and contents of the feature vector
-            if sequence.shape != (self.n_features, self.n_time_steps):  # Update the shape condition
+            if sequence.shape != (self.n_features, self.n_time_steps):
+                print(f"Invalid shape of feature vector in training_data[{i}]: {sequence.shape}")
                 raise ValueError(f"Invalid shape of feature vector in training_data[{i}]")
-
-            for i in range(self.n_states):
-                for j in range(self.n_states):
-                    emission_prob = self.calculate_emission_probability(sequence, state=j)
-                    new_emission_matrix[i, j] += forward_prob[i] * backward_prob[i] * emission_prob
-
-        # Normalize the emission matrix
-        self.emission_matrix = new_emission_matrix / np.sum(new_emission_matrix, axis=1, keepdims=True)
-
-
+            for t in range(self.n_time_steps):  # Iterate over the valid time steps
+                #print("t:", t)  # Debugging print
+                #print("forward_prob shape:", forward_prob.shape)  # Debugging print
+                #print("backward_prob shape:", backward_prob.shape)  # Debugging print
+                feature_vector = sequence[:, t].reshape(1, -1)  # Use MFCC values at time step t
+                for state_i in range(self.n_states):
+                    for state_j in range(self.n_states):
+                        emission_prob = self.calculate_emission_probability(feature_vector.reshape(1, -1), state=state_j)
+                        #print(state_i, state_j, emission_prob)
+                        new_emission_matrix[state_i, state_j] += forward_prob[state_i, state_j] * backward_prob[state_i, state_j] * emission_prob
 
 
     def forward_backward(self, training_data):
@@ -170,29 +170,36 @@ class HiddenMarkovModel:
     
     def forward_algorithm(self, sequence, forward_prob):
         sequence_length = len(sequence)
-    
+
         for t in range(1, sequence_length):
+            #print("Forward Algorithm - t:", t, "of", sequence_length)  # Debugging print
             for j in range(self.n_states):
                 probabilities = forward_prob[t - 1] * self.transition_matrix[:, j]
-            
+                
                 # Calculate the emission index based on the emission probabilities
                 emission_index = np.argmax(self.emission_matrix[j, :])
                 emission_prob = self.emission_matrix[j, emission_index]
-            
+                #print("Forward Algorithm - j:", j, "emission_prob:", emission_prob)  # Debugging print
+                
                 forward_prob[t, j] = np.sum(probabilities) * emission_prob
-    
+                #print("Forward Algorithm - forward_prob:", forward_prob[t, j])  # Debugging print
+
         return forward_prob
-    
+
     def backward_algorithm(self, sequence, backward_prob):
         sequence_length = len(sequence)
-    
+
         for t in range(sequence_length - 2, -1, -1):
+            #print("Backward Algorithm - t:", t, "of", sequence_length - 2)  # Debugging print
             for i in range(self.n_states):
                 emission_index = np.argmax(self.emission_matrix[i, :])
                 probabilities = self.transition_matrix[i, :] * self.emission_matrix[:, emission_index] * backward_prob[t + 1]
+                #print("Backward Algorithm - i:", i, "probabilities:", probabilities)  # Debugging print
                 backward_prob[t, i] = np.sum(probabilities)
-        
+                #print("Backward Algorithm - backward_prob:", backward_prob[t, i])  # Debugging print
+
         return backward_prob
+
     
     def compute_xi(self, sequence, forward_prob, backward_prob):
         sequence_length = len(sequence)
@@ -210,12 +217,14 @@ class HiddenMarkovModel:
         return xi
     
     def calculate_emission_probability(self, feature_vector, state):
-        print("Feature vector shape = {feature_vector.shape}")  # Add this line to check the shape of the feature vector
+        #print("Feature vector shape =", feature_vector.shape)
         gmm = self.state_gmms[state]
-        if feature_vector.shape[0] != self.n_features:
-            raise ValueError("Feature vector has incorrect number of features")
-        emission_prob = gmm.score_samples(feature_vector.reshape(1, -1))
+        if feature_vector.shape != (1, self.n_features):
+            raise ValueError(f"Feature vector has incorrect shape. Expected: (1, {self.n_features}), Actual: {feature_vector.shape}")
+        emission_prob = gmm.score_samples(feature_vector)
         return np.exp(emission_prob)
+
+
 
     def viterbi_decode(self, sequence):
         sequence_length = len(sequence)
@@ -246,8 +255,6 @@ class HiddenMarkovModel:
         best_sequence.reverse()
 
         return best_sequence
-
-
 
     def predict(self, data_mfcc):
         n_sequences = len(data_mfcc)
@@ -283,8 +290,6 @@ class HiddenMarkovModel:
             class_accuracies[class_name] = class_accuracy
         return class_accuracies
 
-
-    
     def save_model(self, filename):
         with open(f'audio_processing\HMM_models\{filename}', 'wb') as f:
             pickle.dump(self, f)

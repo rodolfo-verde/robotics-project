@@ -16,51 +16,46 @@ from sklearn.preprocessing import StandardScaler
 # 8. Class Imbalance: If there is a significant class imbalance in your data, the model might bias towards the majority class, leading to poor performance on minority classes.
 
 # Parameters of the HMM
-n_states = 12
-n_features = 11
-n_time_steps = 70
+n_states = 9  # Number of states in your HMM
+n_features = 11  # Number of features in your extracted MFCC vectors
+n_time_steps = 70  # Provide the appropriate value here
 class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
-label = class_names
 
 # Create an instance of the HiddenMarkovModel class
-hmm = HiddenMarkovModel(n_states, n_features, n_time_steps, class_names)
+hmm = HiddenMarkovModel(n_states, n_features, class_names, n_time_steps)
 
-# Load and preprocess your training data (sequences of MFCC features)
+# Load and preprocess your training data (MFCC images)
 data_mfcc = np.load("audio_processing\Train_Data\set_complete_test_mfcc.npy", allow_pickle=True)
 
 print(f"Data shape: {data_mfcc.shape}")
-
-# Normalize the MFCC features
-scaler = StandardScaler()
-data_mfcc_normalized = [scaler.fit_transform(seq) for seq in data_mfcc]
-print(f"Data normalized shape: {np.array(data_mfcc_normalized).shape}")
 
 # Load and preprocess your training labels (strings of letters)
 data_labels = np.load("audio_processing\Train_Data\set_complete_test_label.npy", allow_pickle=True)
 label_to_index = {label: index for index, label in enumerate(class_names)}
 data_labels = [np.argmax(label_row) if np.any(label_row) else label_to_index["other"] for label_row in data_labels]
 data_labels = np.array(data_labels)
+print(f"Labels shape: {data_labels.shape}")
 
 print("Preprocessing done")
 
 # Call this function before training:
-hmm.fit_gmm_models(data_mfcc_normalized, data_labels)
+hmm.fit_gmm_models(data_mfcc, data_labels)
 
 # Train the model
 print("Training started")
 # start time
 start = time.time()
-forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc_normalized)
-hmm.train(data_mfcc_normalized, data_labels, n_iterations=10)
+forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc)
+hmm.train(data_mfcc, data_labels, n_iterations=10)
 # end time
 end = time.time()
 print("Training done")
 print(f"Training time: {end-start}s")
-
+ 
 # Predict the most likely state (phoneme) for each sequence
 # start time
 start = time.time()
-predicted_states = hmm.predict(data_mfcc_normalized)
+predicted_states = hmm.predict(data_mfcc)
 # end time
 end = time.time()
 print(f"Predicting time: {end-start}s")
@@ -71,8 +66,7 @@ hmm.save_model("hmm_model.pkl")
 # Predict the most likely state (word/command) for each sequence
 # predicting time
 start = time.time()
-data_mfcc_normalized_array = np.array(data_mfcc_normalized)  # Convert list to NumPy array
-predicted_labels = hmm.predict(data_mfcc_normalized_array)
+predicted_labels = hmm.predict(data_mfcc)
 # end time
 end = time.time()
 print(f"Predicting time: {end-start}s")
