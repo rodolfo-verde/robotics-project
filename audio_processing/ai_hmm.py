@@ -49,23 +49,87 @@ class HiddenMarkovModel:
             print(f"Iteration {iteration + 1}/{n_iterations}")
             start = time.time()
 
+            print("Starting forward backward algorithm")
+            starttime_fb = time.time()
             forward_probabilities, backward_probabilities = self.forward_backward(training_data)
+            endtime_fb = time.time()
+            print("Finished forward backward algorithm")
+            print(f"Time taken for forward backward algorithm: {endtime_fb - starttime_fb}s iteration {iteration + 1}")
 
             forward_probabilities = np.array(forward_probabilities)  # Convert to numpy array
             backward_probabilities = np.array(backward_probabilities)  # Convert to numpy array
 
+            print("Starting to update transition matrix")
+            starttime_utm = time.time()
             new_transition_matrix = self.update_transition_matrix(forward_probabilities, backward_probabilities)
-            new_emission_matrix = self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+            endtime_utm = time.time()
+            print("Finished updating transition matrix")
+            print(f"Time taken for updating transition matrix: {endtime_utm - starttime_utm}s iteration {iteration + 1}")
+            print(f"Transition matrix after iteration {iteration + 1} = ", new_transition_matrix)
 
+            print("Starting to update emission matrix")
+            starttime_uem = time.time()
+            new_emission_matrix = self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+            endtime_uem = time.time()
+            print("Finished updating emission matrix")
+            print(f"Time taken for updating emission matrix: {endtime_uem - starttime_uem}s iteration {iteration + 1}")
+            print(f"Emission_matrix after iteration {iteration + 1} = ", new_emission_matrix)
+
+            print("Starting to update model parameters")
+            starttime_ump = time.time()
             self.update_model_parameters(training_data, labels, forward_probabilities, backward_probabilities)
+            endtime_ump = time.time()
+            print("Finished updating model parameters")
+            print(f"Time taken for updating model parameters: {endtime_ump - starttime_ump}s iteration {iteration + 1}")
 
             self.transition_matrix = new_transition_matrix
-            self.emission_matrix = new_emission_matrix
+            self.emission_matrix = self.emission_matrix
+            print(f"Final Transition matrix after iteration {iteration + 1} = ", self.transition_matrix)
+            print(f"Final Emission matrix after iteration {iteration + 1} = ", self.emission_matrix)
 
             end = time.time()
             print(f"Training time: {end - start}s for iteration {iteration + 1}")
 
     def update_model_parameters(self, training_data, labels, forward_probabilities, backward_probabilities):
+        n_sequences = len(training_data)
+
+        if len(forward_probabilities) != n_sequences or len(backward_probabilities) != n_sequences:
+            raise ValueError("Number of sequences in forward_probabilities or backward_probabilities does not match training_data.")
+
+        # Update initial probabilities
+        self.initial_probabilities = np.sum(forward_probabilities[:, 0] * backward_probabilities[:, 0], axis=0)
+        self.initial_probabilities /= np.sum(self.initial_probabilities)
+
+        # Update transition matrix
+        new_transition_matrix = np.zeros_like(self.transition_matrix)
+        for i in range(self.n_states):
+            for j in range(self.n_states):
+                numerator = 0.0
+                denominator = 0.0
+                for t in range(n_sequences):
+                    sequence = training_data[t]
+                    forward_prob = forward_probabilities[t]
+                    backward_prob = backward_probabilities[t]
+
+                    sequence_length = len(sequence)
+
+                    if sequence_length <= 1:
+                        continue
+
+                    for tt in range(1, sequence_length):
+                        numerator += forward_prob[tt - 1, i] * self.transition_matrix[i, j] * \
+                                    self.calculate_emission_probability(sequence[:, tt].reshape(1, -1), state=j) * backward_prob[tt, j]
+                        denominator += forward_prob[tt - 1, i] * backward_prob[tt, i]
+
+                new_transition_matrix[i, j] = numerator / denominator
+
+        # Normalize the transition matrix
+        self.transition_matrix = new_transition_matrix / np.sum(new_transition_matrix, axis=1, keepdims=True)
+
+        # Update emission matrix
+        self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+
+    """def update_model_parameters(self, training_data, labels, forward_probabilities, backward_probabilities):
         n_sequences = len(training_data)
     
         if len(forward_probabilities) != n_sequences or len(backward_probabilities) != n_sequences:
@@ -90,11 +154,14 @@ class HiddenMarkovModel:
                 
                     if sequence_length <= 1:
                         continue
-                
-                    for t in range(1, sequence_length):
-                        numerator += forward_prob[i, t - 1] * self.transition_matrix[i, j] * \
-                                    self.calculate_emission_probability(sequence[t], state=j) * backward_prob[j, t]
-                        denominator += forward_prob[i, t - 1] * backward_prob[i, t - 1]
+                    #print(f"Sequence length: {sequence_length}")
+                    for tt in range(1, sequence_length):
+                        #print(f"i: {i}, j: {j}, t: {tt}")
+                        numerator += forward_prob[i, j] * self.transition_matrix[i, j] * \
+                                    self.calculate_emission_probability(sequence[:, tt].reshape(1, -1), state=j) * backward_prob[j, i]
+                        denominator += forward_prob[i, i] * backward_prob[i, j]
+
+
             
                 new_transition_matrix[i, j] = numerator / denominator
     
@@ -102,9 +169,10 @@ class HiddenMarkovModel:
         self.transition_matrix = new_transition_matrix / np.sum(new_transition_matrix, axis=1, keepdims=True)
     
         # Update emission matrix
-        self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities)
-
+        self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+"""
     def fit_gmm_models(self, training_data, labels):
+
         self.state_gmms = {}  # Initialize the state_gmms dictionary
         for state in range(self.n_states):
             state_data = []  # Collect training data for this state
@@ -126,6 +194,13 @@ class HiddenMarkovModel:
         n_sequences = len(training_data)
         new_emission_matrix = np.zeros_like(self.emission_matrix)
 
+        # Precalculate emission probabilities for each state
+        emission_probs = np.zeros((self.n_states, self.n_time_steps))
+        for state_j in range(self.n_states):
+            for t in range(self.n_time_steps):
+                feature_vector = training_data[t][:, t].reshape(1, -1)
+                emission_probs[state_j, t] = self.calculate_emission_probability(feature_vector, state=state_j)
+
         for i in range(n_sequences):
             sequence = training_data[i]
             forward_prob = forward_probabilities[i]
@@ -133,19 +208,61 @@ class HiddenMarkovModel:
             if sequence.shape != (self.n_features, self.n_time_steps):
                 print(f"Invalid shape of feature vector in training_data[{i}]: {sequence.shape}")
                 raise ValueError(f"Invalid shape of feature vector in training_data[{i}]")
-            for t in range(self.n_time_steps):  # Iterate over the valid time steps
-                #print("t:", t)  # Debugging print
-                #print("forward_prob shape:", forward_prob.shape)  # Debugging print
-                #print("backward_prob shape:", backward_prob.shape)  # Debugging print
-                feature_vector = sequence[:, t].reshape(1, -1)  # Use MFCC values at time step t
+            for t in range(self.n_time_steps):
+                feature_vector = sequence[:, t].reshape(1, -1)
                 for state_i in range(self.n_states):
                     for state_j in range(self.n_states):
-                        emission_prob = self.calculate_emission_probability(feature_vector.reshape(1, -1), state=state_j)
-                        #print(state_i, state_j, emission_prob)
+                        emission_prob = emission_probs[state_j, t]
                         new_emission_matrix[state_i, state_j] += forward_prob[state_i, state_j] * backward_prob[state_i, state_j] * emission_prob
-
+                        
+        #print("New emission matrix:", new_emission_matrix)
+        self.emission_matrix = new_emission_matrix / np.sum(new_emission_matrix, axis=1, keepdims=True)
+        #print("Normalized emission matrix:", self.emission_matrix)
+        return self.emission_matrix
 
     def forward_backward(self, training_data):
+        n_sequences = len(training_data)
+        forward_probabilities = []
+        backward_probabilities = []
+
+        for sequence in training_data:
+            forward_prob, backward_prob = self.initialize_probabilities(len(sequence))
+            forward_prob = self.forward_algorithm(sequence, forward_prob)
+            backward_prob = self.backward_algorithm(sequence, backward_prob)
+
+            forward_probabilities.append(forward_prob)
+            backward_probabilities.append(backward_prob)
+
+        return forward_probabilities, backward_probabilities
+
+    def initialize_probabilities(self, sequence_length):
+        forward_prob = np.zeros((sequence_length, self.n_states))
+        backward_prob = np.ones((sequence_length, self.n_states))  # Initialize to ones
+        forward_prob[0] = self.initial_probabilities * self.emission_matrix[:, 0]  
+        return forward_prob, backward_prob
+
+    def forward_algorithm(self, sequence, forward_prob):
+        emission_indices = np.argmax(self.emission_matrix, axis=1)
+        sequence_length = len(sequence)
+
+        for t in range(1, sequence_length):
+            for j in range(self.n_states):
+                probabilities = forward_prob[t - 1] * self.transition_matrix[:, j]
+                emission_prob = self.emission_matrix[j, emission_indices[j]]
+                forward_prob[t, j] = np.sum(probabilities) * emission_prob
+        return forward_prob
+
+    def backward_algorithm(self, sequence, backward_prob):
+        emission_indices = np.argmax(self.emission_matrix, axis=1)
+        sequence_length = len(sequence)
+
+        for t in range(sequence_length - 2, -1, -1):
+            for i in range(self.n_states):
+                probabilities = self.transition_matrix[i, :] * self.emission_matrix[:, emission_indices[i]] * backward_prob[t + 1, :]
+                backward_prob[t, i] = np.sum(probabilities)
+        return backward_prob
+
+    """def forward_backward(self, training_data):
         n_sequences = len(training_data)
         forward_probabilities = []
         backward_probabilities = []
@@ -165,7 +282,6 @@ class HiddenMarkovModel:
         backward_prob = np.zeros((sequence_length, self.n_states))
         forward_prob[0] = self.initial_probabilities * self.emission_matrix[:, 0]  # Modify index as needed
         backward_prob[-1] = 1.0
-        
         return forward_prob, backward_prob
     
     def forward_algorithm(self, sequence, forward_prob):
@@ -183,7 +299,6 @@ class HiddenMarkovModel:
                 
                 forward_prob[t, j] = np.sum(probabilities) * emission_prob
                 #print("Forward Algorithm - forward_prob:", forward_prob[t, j])  # Debugging print
-
         return forward_prob
 
     def backward_algorithm(self, sequence, backward_prob):
@@ -197,8 +312,7 @@ class HiddenMarkovModel:
                 #print("Backward Algorithm - i:", i, "probabilities:", probabilities)  # Debugging print
                 backward_prob[t, i] = np.sum(probabilities)
                 #print("Backward Algorithm - backward_prob:", backward_prob[t, i])  # Debugging print
-
-        return backward_prob
+        return backward_prob"""
 
     
     def compute_xi(self, sequence, forward_prob, backward_prob):
@@ -213,7 +327,6 @@ class HiddenMarkovModel:
                     xi[t, i, j] = forward_prob[t, i] * self.transition_matrix[i, j] * \
                                 self.emission_matrix[j, emission_index_j] * backward_prob[t + 1, j]
             xi[t] /= np.sum(xi[t])
-    
         return xi
     
     def calculate_emission_probability(self, feature_vector, state):

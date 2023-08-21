@@ -37,9 +37,13 @@ data_labels = np.array(data_labels)
 print(f"Labels shape: {data_labels.shape}")
 
 print("Preprocessing done")
-
+   
 # Call this function before training:
+print("Starting to fit GMM models")
+starttime_fgmm = time.time()
 hmm.fit_gmm_models(data_mfcc, data_labels)
+endtime_fgmm = time.time()
+print(f"Fitting GMM models done. Time: {endtime_fgmm-starttime_fgmm}s")
 
 # Train the model
 print("Training started")
@@ -58,7 +62,7 @@ start = time.time()
 predicted_states = hmm.predict(data_mfcc)
 # end time
 end = time.time()
-print(f"Predicting time: {end-start}s")
+print(f"Predicting time: {end-start}s --> {(end-start)/60} mins --> {(end-start)/3600} hours")
 
 # Save the model
 hmm.save_model("hmm_model.pkl")
