@@ -65,7 +65,7 @@ class HiddenMarkovModel:
             endtime_utm = time.time()
             print("Finished updating transition matrix")
             print(f"Time taken for updating transition matrix: {endtime_utm - starttime_utm}s iteration {iteration + 1}")
-            print(f"Transition matrix after iteration {iteration + 1} = ", new_transition_matrix)
+            #print(f"Transition matrix after iteration {iteration + 1} = ", new_transition_matrix)
 
             print("Starting to update emission matrix")
             starttime_uem = time.time()
@@ -73,7 +73,7 @@ class HiddenMarkovModel:
             endtime_uem = time.time()
             print("Finished updating emission matrix")
             print(f"Time taken for updating emission matrix: {endtime_uem - starttime_uem}s iteration {iteration + 1}")
-            print(f"Emission_matrix after iteration {iteration + 1} = ", new_emission_matrix)
+            #print(f"Emission_matrix after iteration {iteration + 1} = ", new_emission_matrix)
 
             print("Starting to update model parameters")
             starttime_ump = time.time()
@@ -342,6 +342,10 @@ class HiddenMarkovModel:
     def viterbi_decode(self, sequence):
         sequence_length = len(sequence)
         n_states = self.n_states
+        feature_vector_length = self.n_features  # Change this if needed
+        
+        # Reshape the sequence into individual feature vectors
+        sequence = sequence.reshape(-1, feature_vector_length)
 
         # Initialize variables for Viterbi algorithm
         path_probabilities = np.zeros((sequence_length, n_states))
@@ -349,7 +353,7 @@ class HiddenMarkovModel:
 
         # Initialize the first step with initial probabilities and emission probabilities
         for j in range(n_states):
-            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[0], state=j)
+            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[0].reshape(1, -1), state=j)
 
         # Perform the Viterbi algorithm
         for t in range(1, sequence_length):
@@ -357,7 +361,7 @@ class HiddenMarkovModel:
                 transition_probabilities = path_probabilities[t - 1] * self.transition_matrix[:, j]
                 best_path = np.argmax(transition_probabilities)
                 best_paths[t, j] = best_path
-                emission_prob = self.calculate_emission_probability(sequence[t], state=j)
+                emission_prob = self.calculate_emission_probability(sequence[t].reshape(1,-1), state=j)
                 path_probabilities[t, j] = transition_probabilities[best_path] * emission_prob
 
         # Backtrack to find the best path

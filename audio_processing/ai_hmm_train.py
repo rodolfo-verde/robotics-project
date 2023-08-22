@@ -54,7 +54,7 @@ hmm.train(data_mfcc, data_labels, n_iterations=10)
 # end time
 end = time.time()
 print("Training done")
-print(f"Training time: {end-start}s")
+print(f"Training time: {end-start}s --> {(end-start)/60} mins --> {(end-start)/3600} hours")
  
 # Predict the most likely state (phoneme) for each sequence
 # start time
@@ -63,23 +63,15 @@ predicted_states = hmm.predict(data_mfcc)
 # end time
 end = time.time()
 print(f"Predicting time: {end-start}s --> {(end-start)/60} mins --> {(end-start)/3600} hours")
+print(f"Predicted labels are: {predicted_states}")
 
 # Save the model
 hmm.save_model("hmm_model.pkl")
 
-# Predict the most likely state (word/command) for each sequence
-# predicting time
-start = time.time()
-predicted_labels = hmm.predict(data_mfcc)
-# end time
-end = time.time()
-print(f"Predicting time: {end-start}s")
-
-
 # Calculate and print accuracy
-overall_accuracy = hmm.calculate_accuracy(predicted_labels, data_labels)
+overall_accuracy = hmm.calculate_accuracy(predicted_states, data_labels)
 print(f"Overall Accuracy: {overall_accuracy:.2f}%")
-class_accuracies = hmm.calculate_class_accuracies(predicted_labels, data_labels, label_to_index)
+class_accuracies = hmm.calculate_class_accuracies(predicted_states, data_labels, label_to_index)
 # Print class accuracies
 for class_name in class_accuracies:
     print(f"Accuracy for {class_name}: {class_accuracies[class_name]:.2f}%")
