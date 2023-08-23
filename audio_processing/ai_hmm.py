@@ -339,7 +339,7 @@ class HiddenMarkovModel:
 
 
 
-    def viterbi_decode(self, sequence):
+    """def viterbi_decode(self, sequence):
         sequence_length = len(sequence)
         n_states = self.n_states
         feature_vector_length = self.n_features  # Change this if needed
@@ -353,7 +353,7 @@ class HiddenMarkovModel:
 
         # Initialize the first step with initial probabilities and emission probabilities
         for j in range(n_states):
-            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[0].reshape(1, -1), state=j)
+            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[0].reshape(1,-1), state=j)
 
         # Perform the Viterbi algorithm
         for t in range(1, sequence_length):
@@ -361,8 +361,9 @@ class HiddenMarkovModel:
                 transition_probabilities = path_probabilities[t - 1] * self.transition_matrix[:, j]
                 best_path = np.argmax(transition_probabilities)
                 best_paths[t, j] = best_path
-                emission_prob = self.calculate_emission_probability(sequence[t].reshape(1,-1), state=j)
+                emission_prob = self.calculate_emission_probability(sequence[t].reshape(1, -1), state=j)  # Reshape here
                 path_probabilities[t, j] = transition_probabilities[best_path] * emission_prob
+
 
         # Backtrack to find the best path
         best_sequence = [np.argmax(path_probabilities[-1])]
@@ -371,17 +372,49 @@ class HiddenMarkovModel:
             best_sequence.append(best_state)
         best_sequence.reverse()
 
+        return best_sequence"""
+    def viterbi_decode(self, sequence):
+        n_features, n_time_steps = sequence.shape
+        n_states = self.n_states
+
+        # Initialize variables for Viterbi algorithm
+        path_probabilities = np.zeros((n_time_steps, n_states))
+        best_paths = np.zeros((n_time_steps, n_states), dtype=int)
+
+        # Initialize the first step with initial probabilities and emission probabilities
+        for j in range(n_states):
+            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[:, 0].reshape(1,-1), state=j)
+
+        # Perform the Viterbi algorithm
+        for t in range(1, n_time_steps):
+            for j in range(n_states):
+                transition_probabilities = path_probabilities[t - 1] * self.transition_matrix[:, j]
+                best_path = np.argmax(transition_probabilities)
+                best_paths[t, j] = best_path
+                emission_prob = self.calculate_emission_probability(sequence[:, t].reshape(1,-1), state=j)
+                path_probabilities[t, j] = transition_probabilities[best_path] * emission_prob
+
+        # Backtrack to find the best path
+        best_sequence = [np.argmax(path_probabilities[-1])]
+        for t in range(n_time_steps - 1, 0, -1):
+            best_state = best_paths[t, best_sequence[-1]]
+            best_sequence.append(best_state)
+        best_sequence.reverse()
+
         return best_sequence
+
+
 
     def predict(self, data_mfcc):
         n_sequences = len(data_mfcc)
         predicted_states = []
 
         for i in range(n_sequences):
-            sequence = data_mfcc[i]
+            sequence = data_mfcc[i]  # Assuming each element is (n_features, n_time_steps)
+            print(f"Sequence shape: {sequence.shape}")
             predicted_path = self.viterbi_decode(sequence)
             predicted_states.append(predicted_path)
-    
+
         return predicted_states
     
     def calculate_accuracy(self, predicted_labels, true_labels):

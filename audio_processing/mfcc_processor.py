@@ -62,7 +62,7 @@ class mfcc_dataprocessor:
 
     def mfcc_process(self, data: np.array) -> np.array:
         NumberOfColumns = int((data.shape[0] - self.ws) / self.hs + 1)
-        NumberOfOutputFeatures = 12
+        NumberOfOutputFeatures = 11 # I coded it to 11
         MFCC = np.zeros((NumberOfOutputFeatures, NumberOfColumns))
         for col in range(NumberOfColumns):
             idx1 = col*self.hs

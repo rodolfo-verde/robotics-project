@@ -26,8 +26,12 @@ hmm = HiddenMarkovModel(n_states, n_features, class_names, n_time_steps)
 
 # Load and preprocess your training data (MFCC images)
 data_mfcc = np.load("audio_processing\Train_Data\set_complete_test_mfcc.npy", allow_pickle=True)
+# gather first mfcc data for prediction
+predict_data = data_mfcc[0, :, :]
 
 print(f"Data shape: {data_mfcc.shape}")
+print(f"Predict data shape: {predict_data.shape}")
+
 
 # Load and preprocess your training labels (strings of letters)
 data_labels = np.load("audio_processing\Train_Data\set_complete_test_label.npy", allow_pickle=True)
@@ -35,7 +39,6 @@ label_to_index = {label: index for index, label in enumerate(class_names)}
 data_labels = [np.argmax(label_row) if np.any(label_row) else label_to_index["other"] for label_row in data_labels]
 data_labels = np.array(data_labels)
 print(f"Labels shape: {data_labels.shape}")
-
 print("Preprocessing done")
    
 # Call this function before training:
@@ -57,13 +60,16 @@ print("Training done")
 print(f"Training time: {end-start}s --> {(end-start)/60} mins --> {(end-start)/3600} hours")
  
 # Predict the most likely state (phoneme) for each sequence
+print("Predicting started")
 # start time
 start = time.time()
 predicted_states = hmm.predict(data_mfcc)
 # end time
 end = time.time()
+print("Predicting done")
 print(f"Predicting time: {end-start}s --> {(end-start)/60} mins --> {(end-start)/3600} hours")
 print(f"Predicted labels are: {predicted_states}")
+print(f"True label is: {data_labels[0]}")
 
 # Save the model
 hmm.save_model("hmm_model.pkl")

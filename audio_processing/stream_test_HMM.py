@@ -72,9 +72,14 @@ with stream:
 
         for i in words[0]:
             mfcc = mp.mfcc_process(i)
-            # predict the word with the hmm model
-            data = [DataTuple(i, mfcc, "")]
-            preds = hmm_model.predict(data)
+            mfcc_single_sequence = mfcc.reshape(1, 11, 70)
+            print(mfcc_single_sequence.shape)
+            preds = hmm_model.predict(mfcc_single_sequence)
+            #print(preds)
+            # convert preds to string
+            preds = np.argmax(preds)
             print(preds)
+            k = class_names[preds]
+            print(k)
             sd.play(i)
         print(time.time()-starttime)
