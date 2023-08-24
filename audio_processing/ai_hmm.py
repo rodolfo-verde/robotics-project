@@ -403,17 +403,17 @@ class HiddenMarkovModel:
 
         return best_sequence
 
-
-
     def predict(self, data_mfcc):
         n_sequences = len(data_mfcc)
         predicted_states = []
 
         for i in range(n_sequences):
             sequence = data_mfcc[i]  # Assuming each element is (n_features, n_time_steps)
-            print(f"Sequence shape: {sequence.shape}")
             predicted_path = self.viterbi_decode(sequence)
-            predicted_states.append(predicted_path)
+            
+            # Map predicted state indices to class names
+            predicted_class_names = [self.class_names[state] for state in predicted_path]
+            predicted_states.append(predicted_class_names)
 
         return predicted_states
     
