@@ -52,7 +52,6 @@ print(f"Fitting GMM models done. Time: {endtime_fgmm-starttime_fgmm}s")
 print("Training started")
 # start time
 start = time.time()
-forward_probabilities, backward_probabilities = hmm.forward_backward(data_mfcc)
 hmm.train(data_mfcc, data_labels, n_iterations=10)
 # end time
 end = time.time()

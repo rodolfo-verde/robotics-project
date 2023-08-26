@@ -22,5 +22,6 @@ endtime = time.time()
 # extract the first word of each array in predicted words
 # predicted_words = [class_names[i] for i in predicted_words[:,0]]
 # end time
-print(f"Predicting time: {endtime-start}s --> {(endtime-start)/60} mins --> {(endtime-start)/3600} hours")    
+print(f"Predicting time: {endtime-start}s --> {(endtime-start)/60} mins --> {(endtime-start)/3600} hours")
+print(f"Predicted labels are: {predicted_words}")    
 print("shape of predicted words:", predicted_words.shape)

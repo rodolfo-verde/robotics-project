@@ -51,7 +51,7 @@ class HiddenMarkovModel:
 
             print("Starting forward backward algorithm")
             starttime_fb = time.time()
-            forward_probabilities, backward_probabilities = self.forward_backward(training_data)
+            forward_probabilities, backward_probabilities = self.forward_backward(training_data) # calculate forward and backward probabilities = Expectation step
             endtime_fb = time.time()
             print("Finished forward backward algorithm")
             print(f"Time taken for forward backward algorithm: {endtime_fb - starttime_fb}s iteration {iteration + 1}")
@@ -69,7 +69,7 @@ class HiddenMarkovModel:
 
             print("Starting to update emission matrix")
             starttime_uem = time.time()
-            new_emission_matrix = self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
+            self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
             endtime_uem = time.time()
             print("Finished updating emission matrix")
             print(f"Time taken for updating emission matrix: {endtime_uem - starttime_uem}s iteration {iteration + 1}")
@@ -129,50 +129,7 @@ class HiddenMarkovModel:
         # Update emission matrix
         self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
 
-    """def update_model_parameters(self, training_data, labels, forward_probabilities, backward_probabilities):
-        n_sequences = len(training_data)
-    
-        if len(forward_probabilities) != n_sequences or len(backward_probabilities) != n_sequences:
-            raise ValueError("Number of sequences in forward_probabilities or backward_probabilities does not match training_data.")
-    
-        # Update initial probabilities
-        self.initial_probabilities = np.sum(forward_probabilities[:, 0] * backward_probabilities[:, 0], axis=0)
-        self.initial_probabilities /= np.sum(self.initial_probabilities)
-    
-        # Update transition matrix
-        new_transition_matrix = np.zeros_like(self.transition_matrix)
-        for i in range(self.n_states):
-            for j in range(self.n_states):
-                numerator = 0.0
-                denominator = 0.0
-                for t in range(n_sequences):
-                    sequence = training_data[t]
-                    forward_prob = forward_probabilities[t]
-                    backward_prob = backward_probabilities[t]
-                
-                    sequence_length = len(sequence)
-                
-                    if sequence_length <= 1:
-                        continue
-                    #print(f"Sequence length: {sequence_length}")
-                    for tt in range(1, sequence_length):
-                        #print(f"i: {i}, j: {j}, t: {tt}")
-                        numerator += forward_prob[i, j] * self.transition_matrix[i, j] * \
-                                    self.calculate_emission_probability(sequence[:, tt].reshape(1, -1), state=j) * backward_prob[j, i]
-                        denominator += forward_prob[i, i] * backward_prob[i, j]
-
-
-            
-                new_transition_matrix[i, j] = numerator / denominator
-    
-        # Normalize the transition matrix
-        self.transition_matrix = new_transition_matrix / np.sum(new_transition_matrix, axis=1, keepdims=True)
-    
-        # Update emission matrix
-        self.update_emission_matrix(training_data, forward_probabilities, backward_probabilities, labels)
-"""
     def fit_gmm_models(self, training_data, labels):
-
         self.state_gmms = {}  # Initialize the state_gmms dictionary
         for state in range(self.n_states):
             state_data = []  # Collect training data for this state
@@ -221,7 +178,6 @@ class HiddenMarkovModel:
         return self.emission_matrix
 
     def forward_backward(self, training_data):
-        n_sequences = len(training_data)
         forward_probabilities = []
         backward_probabilities = []
 
@@ -318,16 +274,18 @@ class HiddenMarkovModel:
     def compute_xi(self, sequence, forward_prob, backward_prob):
         sequence_length = len(sequence)
         xi = np.zeros((sequence_length - 1, self.n_states, self.n_states))
-    
+        
         for t in range(sequence_length - 1):
             for i in range(self.n_states):
-                emission_index_i = np.argmax(self.emission_matrix[i, :])
                 for j in range(self.n_states):
-                    emission_index_j = np.argmax(self.emission_matrix[j, :])
-                    xi[t, i, j] = forward_prob[t, i] * self.transition_matrix[i, j] * \
-                                self.emission_matrix[j, emission_index_j] * backward_prob[t + 1, j]
+                    transition_prob = forward_prob[t, i] * self.transition_matrix[i, j] * \
+                                    self.emission_matrix[j, sequence[t + 1]] * backward_prob[t + 1, j]
+                    xi[t, i, j] = transition_prob
+                    
             xi[t] /= np.sum(xi[t])
+            
         return xi
+
     
     def calculate_emission_probability(self, feature_vector, state):
         #print("Feature vector shape =", feature_vector.shape)
@@ -337,42 +295,20 @@ class HiddenMarkovModel:
         emission_prob = gmm.score_samples(feature_vector)
         return np.exp(emission_prob)
 
+    def predict(self, data_mfcc):
+        n_sequences = len(data_mfcc)
+        predicted_states = []
 
+        for i in range(n_sequences):
+            sequence = data_mfcc[i]  # Assuming each element is (n_features, n_time_steps)
+            predicted_path = self.viterbi_decode(sequence)
+            
+            # Map predicted state indices to class names
+            predicted_class_names = [self.class_names[state] for state in predicted_path]
+            predicted_states.append(predicted_class_names)
 
-    """def viterbi_decode(self, sequence):
-        sequence_length = len(sequence)
-        n_states = self.n_states
-        feature_vector_length = self.n_features  # Change this if needed
-        
-        # Reshape the sequence into individual feature vectors
-        sequence = sequence.reshape(-1, feature_vector_length)
-
-        # Initialize variables for Viterbi algorithm
-        path_probabilities = np.zeros((sequence_length, n_states))
-        best_paths = np.zeros((sequence_length, n_states), dtype=int)
-
-        # Initialize the first step with initial probabilities and emission probabilities
-        for j in range(n_states):
-            path_probabilities[0, j] = self.initial_probabilities[j] * self.calculate_emission_probability(sequence[0].reshape(1,-1), state=j)
-
-        # Perform the Viterbi algorithm
-        for t in range(1, sequence_length):
-            for j in range(n_states):
-                transition_probabilities = path_probabilities[t - 1] * self.transition_matrix[:, j]
-                best_path = np.argmax(transition_probabilities)
-                best_paths[t, j] = best_path
-                emission_prob = self.calculate_emission_probability(sequence[t].reshape(1, -1), state=j)  # Reshape here
-                path_probabilities[t, j] = transition_probabilities[best_path] * emission_prob
-
-
-        # Backtrack to find the best path
-        best_sequence = [np.argmax(path_probabilities[-1])]
-        for t in range(sequence_length - 1, 0, -1):
-            best_state = best_paths[t, best_sequence[-1]]
-            best_sequence.append(best_state)
-        best_sequence.reverse()
-
-        return best_sequence"""
+        return predicted_states
+    
     def viterbi_decode(self, sequence):
         n_features, n_time_steps = sequence.shape
         n_states = self.n_states
@@ -402,20 +338,6 @@ class HiddenMarkovModel:
         best_sequence.reverse()
 
         return best_sequence
-
-    def predict(self, data_mfcc):
-        n_sequences = len(data_mfcc)
-        predicted_states = []
-
-        for i in range(n_sequences):
-            sequence = data_mfcc[i]  # Assuming each element is (n_features, n_time_steps)
-            predicted_path = self.viterbi_decode(sequence)
-            
-            # Map predicted state indices to class names
-            predicted_class_names = [self.class_names[state] for state in predicted_path]
-            predicted_states.append(predicted_class_names)
-
-        return predicted_states
     
     def calculate_accuracy(self, predicted_labels, true_labels):
         total_samples = len(predicted_labels)
