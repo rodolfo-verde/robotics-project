@@ -16,12 +16,12 @@ import time
 import sounddevice as sd
 import sys
 from os import listdir
-
+from keras.models import load_model
 from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
 
-# CNN
-"""model = Sequential()
+"""# CNN
+model = Sequential()
 
 model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
 model.add(MaxPooling2D(pool_size=(5, 5), padding="same"))
@@ -35,8 +35,12 @@ model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accur
 
 
 #import weights
-model.load_weights("audio_processing\speech_CNN_weights.h5")"""
-model = tf.keras.models.load_model('audio_processing\CNN_Models\AI_speech_recognition_model.h5')  # Replace with the path to your saved model file
+model.load_weights("audio_processing\CNN_Models\speech_CNN_weights.h5")"""
+
+# Load the saved model
+print("Loading model...")
+loaded_model = load_model('audio_processing\CNN_Models\AI_speech_recognition_model.h5')
+print("Model loaded.")
 
 BLOCKLENGTH = 44100
 SAMPLERATE = 44100
@@ -86,7 +90,7 @@ with stream:
             mfcc = mp.mfcc_process(i)
             #prediction = model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
             # Make predictions
-            prediction = model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
+            prediction = loaded_model.predict(mfcc[1:].reshape(-1, 11, 70, 1))
             predicted_classes = prediction.argmax(axis=1)
             index_pred = np.argmax(prediction) #tf.argmax geht auch
             print(f"Prediction: {class_names[index_pred]} and {prediction[0][index_pred]*100} %")

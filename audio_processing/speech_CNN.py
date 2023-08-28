@@ -80,8 +80,8 @@ plt.show()
 
 
 #save model
-model.save("audio_processing\speech_CNN_model.h5", include_optimizer=True)
-model.save_weights("audio_processing\speech_CNN_weights.h5")
+model.save("audio_processing\CNN_Models\speech_CNN_model.h5", include_optimizer=True)
+model.save_weights("audio_processing\CNN_Models\speech_CNN_weights.h5")
 
 """BLOCKLENGTH = 44100
 SAMPLERATE = 44100

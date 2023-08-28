@@ -7,10 +7,11 @@ import tensorflow as tf
 from keras import layers, models
 from keras import regularizers
 from keras.regularizers import l2
+from keras.layers import BatchNormalization
 
 
 # Build the CNN model
-def build_cnn_model(input_shape, num_classes, regularization_factor):
+"""def build_cnn_model(input_shape, num_classes, regularization_factor, learning_rate):
     model = models.Sequential()
     model.add(layers.Input(shape=input_shape))
     model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(regularization_factor)))
@@ -22,6 +23,20 @@ def build_cnn_model(input_shape, num_classes, regularization_factor):
     model.add(layers.Flatten())
     model.add(layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(regularization_factor)))
     model.add(layers.Dropout(0.5))  # Dropout for regularization
+    model.add(layers.Dense(num_classes, activation='softmax'))
+    return model"""
+
+# Define the build_cnn_model function
+def build_cnn_model(input_shape, num_classes, regularization_factor):
+    model = models.Sequential()
+    model.add(layers.Input(shape=input_shape))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(regularization_factor)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(regularization_factor)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(regularization_factor)))
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(num_classes, activation='softmax'))
     return model
 
@@ -48,11 +63,11 @@ num_classes = 9
 input_shape = (11,70,1)
 
 # Create and compile the model
-model = build_cnn_model(input_shape, num_classes, 0.01)
+model = build_cnn_model(input_shape, num_classes, 0.1)
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 batch_size = 64
-epochs = 10
+epochs = 60
 result = model.fit(X_train.reshape(-1, 11, 70, 1), y_train, batch_size=batch_size, epochs=epochs, validation_data=(X_test.reshape(-1, 11, 70, 1), y_test))
 
 # Save the trained model
