@@ -1,7 +1,9 @@
 import speech_recognition as sr  
+import S
 import pyttsx3
 
 # Initialize the recognizer
+
 r = sr.Recognizer()
 
 # Function to convert text to
