@@ -4,7 +4,7 @@ import scipy.signal as signal
 import tensorflow as tf
 
 # load wave file for processing
-wave = np.load("audio_processing\Train_Data\set_a_200_raw.npy",allow_pickle=True) # load data
+wave = np.load("audio_processing\Train_Data\set_stopp_200_raw.npy",allow_pickle=True) # load data
 #labels = np.load("audio_processing\Train_Data\set_eins_200_label.npy",allow_pickle=True) # load data
 print(f"Data shape: {wave.shape}")
 #print(f"Labels shape: {labels.shape}")
@@ -60,5 +60,5 @@ spectrograms = np.array(spectrograms)
 print(f"Spectrograms shape: {spectrograms.shape}")
 
 # save spectrograms as .npy file
-np.save(f"audio_processing\Train_Data\set_a_200_spectrogram.npy", spectrograms) # X, 252,129 = shape of spectrograms
+np.save(f"audio_processing\Train_Data\set_stopp_200_spectrogram.npy", spectrograms) # X, 252,129 = shape of spectrograms
 
