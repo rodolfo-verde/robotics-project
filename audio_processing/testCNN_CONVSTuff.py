@@ -22,7 +22,7 @@ from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
 
 
-TRAIN = False
+TRAIN = True
 SAVE = False
 USEPROCESSOR = True
 
