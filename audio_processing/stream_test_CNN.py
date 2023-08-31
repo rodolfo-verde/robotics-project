@@ -40,8 +40,8 @@ model.load_weights("audio_processing\CNN_Models\speech_CNN_weights.h5")"""
 # Load the saved model
 print("Loading model...")
 #loaded_model = load_model('audio_processing\CNN_Models\AI_speech_recognition_model.h5')
-loaded_model = load_model('audio_processing\CNN_Models\speech_CNN_model.h5')
-#loaded_model = load_model('audio_processing//roman_test_CNN_model.h5')
+#loaded_model = load_model('audio_processing\CNN_Models\speech_CNN_model.h5')
+loaded_model = load_model('audio_processing//roman_test_CNN_model.h5')
 print("Model loaded.")
 
 BLOCKLENGTH = 44100
