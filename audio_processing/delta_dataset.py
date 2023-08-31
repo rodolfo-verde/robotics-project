@@ -54,6 +54,6 @@ plt.colorbar()
 plt.show()
 
 # save data_mfcc_final
-np.save(f"audio_processing\Train_Data\set_complete_test_mfcc_final.npy", data_mfcc_final)
+np.save(f"audio_processing\Train_Data\set_complete_test_mfcc_final.npy", data_mfcc_final) # X,33,70 = shape of data_mfcc_final
 
 

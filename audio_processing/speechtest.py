@@ -1,4 +1,5 @@
-import speech_recognition as sr  
+import speech_recognition as sr
+# Sphinx is offline --> no german  
 import pyttsx3
 
 # Initialize the recognizer
