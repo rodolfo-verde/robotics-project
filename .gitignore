@@ -404,4 +404,4 @@ settings.json
 
 # Training data
 *raw.npy
-*spectogram.npy
+*spectrogram.npy
