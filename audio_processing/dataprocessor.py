@@ -102,7 +102,7 @@ class dataprocessor:
         # checking the convolved array and convert them to a matrix of word indeces
         self.convolved_to_indeces()
         # expanding words
-        self.expand_words(5000, 0)
+        self.expand_words(10000, 0)
 
         self.wordfrompastblock = self.words_in_blocks()
 
@@ -207,7 +207,7 @@ class dataprocessor:
         #print(self.wordindeces.shape[0])
 
     
-    def words_in_blocks(self, blocklength: int = 32500):
+    def words_in_blocks(self, blocklength: int = 35500):
 
         words = np.array([[0, 0]], ndmin=2)
 
