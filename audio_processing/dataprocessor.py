@@ -207,7 +207,7 @@ class dataprocessor:
         #print(self.wordindeces.shape[0])
 
     
-    def words_in_blocks(self, blocklength: int = 35500):
+    def words_in_blocks(self, blocklength: int = 32500):
 
         words = np.array([[0, 0]], ndmin=2)
 
