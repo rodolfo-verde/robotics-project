@@ -402,4 +402,6 @@ FodyWeavers.xsd
 
 settings.json
 
+# Training data
 *raw.npy
+*spectogram.npy
