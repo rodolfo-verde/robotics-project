@@ -22,7 +22,8 @@ from data_spectrogramm import get_spectrogram
 
 
 print("Loading model...")
-loaded_model = load_model('audio_processing//CNN_Models//Spectrogram_CNN_model.h5')
+#loaded_model = load_model('audio_processing//CNN_Models//Spectrogram_CNN_model.h5')
+loaded_model = load_model('audio_processing//CNN_Models//Spectrogram_CNN_combined_model.h5')
 print("Model loaded.")
 
 BLOCKLENGTH = 44100

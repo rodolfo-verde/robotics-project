@@ -33,8 +33,8 @@ from mfcc_processor import mfcc_dataprocessor
 from Delta_MFCC import EvaluateDeltaMFCC
 
 #load data and split into trainings and test data
-spectrogram = np.load("audio_processing\Train_Data\set_all_spectrogram.npy",allow_pickle=True) # load data
-labels = np.load("audio_processing\Train_Data\set_all_label.npy",allow_pickle=True) # load data
+spectrogram = np.load("audio_processing\Train_Data\set_all_spectrogram_combined.npy",allow_pickle=True) # load data
+labels = np.load("audio_processing\Train_Data\set_all_label_combined.npy",allow_pickle=True) # load data
 
 # split data into trainings and test data, 80% trainings data, 20% test data
 train_spectrogram = spectrogram[:int(0.8*spectrogram.shape[0])]
@@ -142,5 +142,5 @@ plt.legend(["Train", "Test"], loc="upper left")
 plt.show()
 
 
-model.save("audio_processing//CNN_Models//Spectrogram_CNN_model.h5", include_optimizer=True)
-model.save_weights("audio_processing//CNN_Models//Spectrogram_CNN_weights.h5")
+model.save("audio_processing//CNN_Models//Spectrogram_CNN_combined_model.h5", include_optimizer=True)
+model.save_weights("audio_processing//CNN_Models//Spectrogram_CNN_combined_weights.h5")
