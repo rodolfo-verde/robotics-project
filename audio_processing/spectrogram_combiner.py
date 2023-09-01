@@ -1,7 +1,37 @@
 import numpy as np
 from data_spectrogramm import get_spectrogram 
 
-# load all spectrogram data files in the folder "Train_Data"
+# load spectrogram data files, the big ones
+spectrogram_all = np.load("audio_processing\Train_Data\set_all_spectrogram.npy",allow_pickle=True) # load data
+labels_all = np.load("audio_processing\Train_Data\set_all_label.npy",allow_pickle=True) # load data
+spectrogram_augmented = np.load("audio_processing\Train_Data\set_all_spectrogram_augmented.npy",allow_pickle=True) # load data
+labels_augmented = np.load("audio_processing\Train_Data\set_all_label_augmented.npy",allow_pickle=True) # load data
+
+# print shapes of data
+print(f"Data shape of spectrogram_all: {spectrogram_all.shape}")
+print(f"Data shape of labels_all: {labels_all.shape}")
+print(f"Data shape of spectrogram_augmented: {spectrogram_augmented.shape}")
+print(f"Data shape of labels_augmented: {labels_augmented.shape}")
+
+# combine the data
+spectrograms = np.concatenate((spectrogram_all, spectrogram_augmented), axis=0)
+labels = np.concatenate((labels_all, labels_augmented), axis=0)
+
+# print shapes of combined data
+print(f"Data shape of spectrograms: {spectrograms.shape}")
+print(f"Data shape of labels: {labels.shape}")
+
+# shuffle the data in the same order
+indices = np.arange(spectrograms.shape[0])
+np.random.shuffle(indices)
+spectrograms = spectrograms[indices]
+labels = labels[indices]
+
+# save the combined data
+np.save("audio_processing\Train_Data\set_all_spectrogram_combined.npy", spectrograms)
+np.save("audio_processing\Train_Data\set_all_label_combined.npy", labels)
+
+"""# load all spectrogram data files in the folder "Train_Data"
 spectrogram_eins = np.load("audio_processing\Train_Data\set_eins_200_spectrogram.npy",allow_pickle=True) # load data
 spectrogram_zwei = np.load("audio_processing\Train_Data\set_zwei_200_spectrogram.npy",allow_pickle=True) # load data
 spectrogram_drei = np.load("audio_processing\Train_Data\set_drei_200_spectrogram.npy",allow_pickle=True) # load data
@@ -49,4 +79,4 @@ labels = labels[indices]
 
 # save the combined data
 np.save("audio_processing\Train_Data\set_all_spectrogram.npy", spectrograms)
-np.save("audio_processing\Train_Data\set_all_label.npy", labels)
+np.save("audio_processing\Train_Data\set_all_label.npy", labels)"""
