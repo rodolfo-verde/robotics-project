@@ -1,4 +1,5 @@
-import numpy as np 
+import numpy as np
+from data_spectrogramm import get_spectrogram 
 
 # load all spectrogram data files in the folder "Train_Data"
 spectrogram_eins = np.load("audio_processing\Train_Data\set_eins_200_spectrogram.npy",allow_pickle=True) # load data
