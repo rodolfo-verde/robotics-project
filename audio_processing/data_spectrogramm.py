@@ -11,6 +11,8 @@ def get_spectrogram(waveform):
       waveform, frame_length=255, frame_step=128)
   # Obtain the magnitude of the STFT.
   spectrogram = tf.abs(spectrogram)
+  # throw away first row of spectrogram since it contains not important information
+  spectrogram = spectrogram[1:]
   return spectrogram
 
 

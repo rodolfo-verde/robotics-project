@@ -51,7 +51,7 @@ print(f"Data shape of test labels: {test_labels.shape}")
 # CNN
 model = Sequential()
 
-model.add(Conv2D(10,(3,3),padding='same',input_shape=(252,129,1), activation="relu"))
+model.add(Conv2D(10,(3,3),padding='same',input_shape=(251,129,1), activation="relu"))
 model.add(BatchNormalization())
 model.add(Conv2D(10,(3,3),padding='same', activation="relu"))
 model.add(BatchNormalization())
@@ -110,9 +110,9 @@ model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accur
 
 
 result = model.fit(
-    train_spectrogram.reshape(-1, 252, 129, 1),
+    train_spectrogram.reshape(-1, 251, 129, 1),
     train_labels,
-    validation_data = (test_spectrogram.reshape(-1, 252, 129, 1), test_labels),
+    validation_data = (test_spectrogram.reshape(-1, 251, 129, 1), test_labels),
     epochs=30, # 60
     batch_size=50) # 100
 
@@ -120,7 +120,7 @@ result = model.fit(
 model.summary()
 
 # evaluate model
-test_loss, test_acc = model.evaluate(test_spectrogram.reshape(-1, 252, 129, 1), test_labels, verbose=2)
+test_loss, test_acc = model.evaluate(test_spectrogram.reshape(-1, 251, 129, 1), test_labels, verbose=2)
 print(f"Test accuracy: {test_acc}")
 
 # plot accuracy and loss

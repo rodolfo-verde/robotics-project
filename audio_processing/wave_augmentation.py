@@ -36,7 +36,6 @@ def augment_wave(wave):
     # add random noise
     wave = wave + np.random.normal(0, 0.001, len(wave))
     wave = wave + np.random.normal(0, 0.001, len(wave))
-
     return wave
 
 # augment all the wave arrays
@@ -89,15 +88,52 @@ print(f"Data shape of REX: {wave_rex_augmented.shape}")
 print(f"Data shape of OTHER: {wave_other_augmented.shape}")
 
 # convert the augmented wave files into spectrograms
-spectrogram_eins = get_spectrogram(wave_eins_augmented)
-spectrogram_zwei = get_spectrogram(wave_zwei_augmented)
-spectrogram_drei = get_spectrogram(wave_drei_augmented)
-spectrogram_a = get_spectrogram(wave_a_augmented)
-spectrogram_b = get_spectrogram(wave_b_augmented)
-spectrogram_c = get_spectrogram(wave_c_augmented)
-spectrogram_stopp = get_spectrogram(wave_stopp_augmented)
-spectrogram_rex = get_spectrogram(wave_rex_augmented)
-spectrogram_other = get_spectrogram(wave_other_augmented)
+# convert wave to spectrogram
+spectrogram_eins = []
+spectrogram_zwei = []
+spectrogram_drei = []
+spectrogram_a = []
+spectrogram_b = []
+spectrogram_c = []
+spectrogram_rex = []
+spectrogram_stopp = []
+spectrogram_other = []
+
+for i in range(wave_eins_augmented.shape[0]):
+    spectrogram_eins.append(get_spectrogram(wave_eins_augmented[i]))
+spectrogram_eins = np.array(spectrogram_eins)
+
+for i in range(wave_zwei_augmented.shape[0]):
+    spectrogram_zwei.append(get_spectrogram(wave_zwei_augmented[i]))
+spectrogram_zwei = np.array(spectrogram_zwei)
+
+for i in range(wave_drei_augmented.shape[0]):
+    spectrogram_drei.append(get_spectrogram(wave_drei_augmented[i]))
+spectrogram_drei = np.array(spectrogram_drei)
+
+for i in range(wave_a_augmented.shape[0]):
+    spectrogram_a.append(get_spectrogram(wave_a_augmented[i]))
+spectrogram_a = np.array(spectrogram_a)
+
+for i in range(wave_b_augmented.shape[0]):
+    spectrogram_b.append(get_spectrogram(wave_b_augmented[i]))
+spectrogram_b = np.array(spectrogram_b)
+
+for i in range(wave_c_augmented.shape[0]):
+    spectrogram_c.append(get_spectrogram(wave_c_augmented[i]))
+spectrogram_c = np.array(spectrogram_c)
+
+for i in range(wave_rex_augmented.shape[0]):
+    spectrogram_rex.append(get_spectrogram(wave_rex_augmented[i]))
+spectrogram_rex = np.array(spectrogram_rex)
+
+for i in range(wave_stopp_augmented.shape[0]):
+    spectrogram_stopp.append(get_spectrogram(wave_stopp_augmented[i]))
+spectrogram_stopp = np.array(spectrogram_stopp)
+
+for i in range(wave_other_augmented.shape[0]):
+    spectrogram_other.append(get_spectrogram(wave_other_augmented[i]))
+spectrogram_other = np.array(spectrogram_other)
 
 # print the shapes of the spectrograms
 print(f"Data shape of EINS: {spectrogram_eins.shape}")

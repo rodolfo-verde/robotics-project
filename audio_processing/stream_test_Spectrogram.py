@@ -73,7 +73,7 @@ with stream:
             spectrogram = get_spectrogram(i)
             spectrogram = spectrogram.numpy()
             # Make predictions
-            prediction = loaded_model.predict(spectrogram.reshape(-1, 252, 129, 1))
+            prediction = loaded_model.predict(spectrogram.reshape(-1, 251, 129, 1))
             predicted_classes = prediction.argmax(axis=1)
             index_pred = np.argmax(prediction) #tf.argmax geht auch
             print(f"Prediction: {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
