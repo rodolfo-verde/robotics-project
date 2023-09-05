@@ -20,28 +20,13 @@ from keras.models import load_model
 from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
 
-"""# CNN
-model = Sequential()
-
-model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
-model.add(MaxPooling2D(pool_size=(5, 5), padding="same"))
-model.add(BatchNormalization())
-model.add(Dropout(0.1))
-model.add(Flatten())
-model.add(Dense(10, activation="sigmoid", kernel_regularizer=L2(0.01), bias_regularizer=L2(0.01)))
-model.add(Dense(9, activation="softmax"))
-
-model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
-
-
-#import weights
-model.load_weights("audio_processing\CNN_Models\speech_CNN_weights.h5")"""
 
 # Load the saved model
 print("Loading model...")
 #loaded_model = load_model('audio_processing\CNN_Models\AI_speech_recognition_model.h5')
 #loaded_model = load_model('audio_processing\CNN_Models\speech_CNN_model.h5')
-loaded_model = load_model('audio_processing//roman_test_CNN_model.h5')
+#loaded_model = load_model('audio_processing//CNN_Models//roman_test_CNN_model.h5')
+loaded_model = load_model('audio_processing//CNN_Models//Final_speech_CNN_model.h5')
 print("Model loaded.")
 
 BLOCKLENGTH = 44100

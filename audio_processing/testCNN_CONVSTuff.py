@@ -122,8 +122,8 @@ test_loss, test_acc = model.evaluate(X_test.reshape(-1, 11, 70, 1), y_test, verb
 print(f"Test accuracy: {test_acc}")
 
 if SAVE:
-    model.save("audio_processing//roman_test_CNN_model.h5", include_optimizer=True)
-    model.save_weights("audio_processing//roman_test_CNN_weights.h5")
+    model.save("audio_processing//CNN_Models//roman_test_CNN_model.h5", include_optimizer=True)
+    model.save_weights("audio_processing//CNN_Models//roman_test_CNN_weights.h5")
 
 
 if TRAIN:
