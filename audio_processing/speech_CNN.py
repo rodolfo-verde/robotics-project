@@ -35,8 +35,7 @@ print(f"y_test shape: {y_test.shape}")
 # CNN
 model = Sequential()
 
-#model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
-model.add(Conv2D(10,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
+"""model.add(Conv2D(10,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
 model.add(BatchNormalization())
 model.add(Conv2D(10,(3,3),padding='same', activation="relu"))
 model.add(BatchNormalization())
@@ -76,7 +75,15 @@ model.add(BatchNormalization())
 model.add(Conv2D(320,(1,3),padding='same', activation="relu"))
 model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(1,2)))   # shape = (1, 1, 320)
-model.add(Dropout(0.2))
+model.add(Dropout(0.2))"""
+
+"""model.add(Conv2D(10,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
+model.add(BatchNormalization())
+model.add(Conv2D(10,(3,3),padding='same', activation="relu"))
+model.add(BatchNormalization())
+model.add(MaxPool2D(pool_size=(8,36)))   # shape = (1, 1, 10)
+model.add(Dropout(0.2)) # 70 % accuracy"""
+
 
 model.add(Flatten())
 
@@ -104,7 +111,7 @@ result = model.fit(
     X_train.reshape(-1, 11, 70, 1), 
     y_train, 
     validation_data = (X_test.reshape(-1, 11, 70, 1), y_test),
-    epochs=60, # 60
+    epochs=60, # 30 = to low, 60 = good, 100 = also good (maybe even better)
     batch_size=100) # 100
 endtime = time.time()
 print(f"Training time : {endtime-starttime} seconds")
@@ -113,7 +120,7 @@ model.summary()
 
 # evaluate model
 test_loss, test_acc = model.evaluate(X_test.reshape(-1, 11, 70, 1), y_test, verbose=2)
-print(f"Test accuracy: {test_acc}")
+print(f"Test accuracy: {test_acc}") # 60 epochs = 0.96, 100 epochs = 0.97
 
 # plot accuracy and loss
 plt.figure(1)
@@ -135,6 +142,10 @@ plt.show()
 
 
 #save model
-model.save("audio_processing\CNN_Models\Final_speech_CNN_model.h5", include_optimizer=True)
-model.save_weights("audio_processing\CNN_Models\Final_speech_CNN_weights.h5")
+model.save("audio_processing\CNN_Models\Final_test_speech_CNN_model.h5", include_optimizer=True)
+model.save_weights("audio_processing\CNN_Models\Final_test_speech_CNN_weights.h5")
+
+#save model
+#model.save("audio_processing\CNN_Models\Final_speech_CNN_model.h5", include_optimizer=True)
+#model.save_weights("audio_processing\CNN_Models\Final_speech_CNN_weights.h5")
 
