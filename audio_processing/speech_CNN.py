@@ -35,7 +35,7 @@ print(f"y_test shape: {y_test.shape}")
 # CNN
 model = Sequential()
 
-"""model.add(Conv2D(10,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
+model.add(Conv2D(10,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
 model.add(BatchNormalization())
 model.add(Conv2D(10,(3,3),padding='same', activation="relu"))
 model.add(BatchNormalization())
@@ -75,14 +75,14 @@ model.add(BatchNormalization())
 model.add(Conv2D(320,(1,3),padding='same', activation="relu"))
 model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(1,2)))   # shape = (1, 1, 320)
-model.add(Dropout(0.2))"""
+model.add(Dropout(0.2))
 
 """model.add(Conv2D(10,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
 model.add(BatchNormalization())
 model.add(Conv2D(10,(3,3),padding='same', activation="relu"))
 model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(8,36)))   # shape = (1, 1, 10)
-model.add(Dropout(0.2)) # 70 % accuracy"""
+model.add(Dropout(0.2)) # 70 % accuracy """
 
 
 model.add(Flatten())
