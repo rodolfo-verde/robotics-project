@@ -13,7 +13,7 @@ from mfcc_processor import mfcc_dataprocessor
 
 root_tk = tk.Tk()
 root_tk.geometry("600x300")
-root_tk.title("generate and laber data")
+root_tk.title("mass label helper")
 
 
 buttons = list()
@@ -45,16 +45,17 @@ def audio_to_mfcc():
     for i in buttons:
         i.destroy()
 
-    
+    global dirtoselectfrom
+    dirtoselectfrom = f"../resources/"
 
-    files = listdir("../resources/")
+    files = listdir(dirtoselectfrom)
     selectedfiles = list()
     for i in files:
         if i[len(i)-4:] == ".wav":
                 selectedfiles.append(i)
         
     for i in range(len(selectedfiles)):
-        but = tk.Button(master=root_tk, command=lambda i=f"../resources/{selectedfiles[i]}": button_read_wave(i), text=f"{i+1}. {selectedfiles[i]}")
+        but = tk.Button(master=root_tk, command=lambda i=f"{dirtoselectfrom}{selectedfiles[i]}": button_read_wave(i), text=f"{i+1}. {selectedfiles[i]}")
         but.place(relx=0.2, rely=(i+1)/(len(selectedfiles)+1), anchor=tk.CENTER)
         buttons.append(but)
 
@@ -67,7 +68,6 @@ def button_read_wave(instance):
 
 
 def process_audio_to_mfcc(audio, name: str):
-    
 
     SAMPLERATE = 44100
     TARGETLVL = -30
@@ -77,14 +77,18 @@ def process_audio_to_mfcc(audio, name: str):
     mp = mfcc_dataprocessor(SAMPLERATE)
 
     words = dp.processdata(audio, False)
-    print(f"{len(words)} words in {words[1]}")
-    mfccs = mp.mfcc_process_multiple(words)
 
-    print(f"i found {len(mfccs)} words")
+    mfccs = mp.mfcc_process_multiple(words)[:,1:,:]
+
+    np.save(f"audio_processing/Train_Data/{name[len(dirtoselectfrom):-4]}_mfcc.npy", mfccs)
+
+    print(f"I found {len(mfccs)} words")
+
+    set_start_buttons()
 
 
 def add_label_to_mfcc():
-     print("YOIIINK not implemented yet do keggo")
+     print("YOIIINK not implemented yet du keggo")
 
 
 set_start_buttons()

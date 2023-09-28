@@ -89,7 +89,5 @@ class mfcc_dataprocessor:
         leni = len(data)
         reti = np.zeros((leni, 12, 70))
         for i in range(leni-1):
-            print(data[i])
             reti[i] = self.mfcc_process(data[i])
-            print(reti[i].size)
         return reti
