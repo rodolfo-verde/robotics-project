@@ -10,6 +10,7 @@ from keras import layers
 from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, MaxPool2D
 from keras.optimizers import SGD
 from keras.regularizers import L2 
+from keras.models import load_model
 
 import numpy as np
 import WaveInterface
@@ -150,8 +151,8 @@ if TRAIN:
 input("Im done with the modeltraining, press enter to start testing with the stream")
 
 
-modelspectro = model.load("audio_processing/CNN_Models/Spectrogram_CNN_combined_model.h5")
-modelcnnlesslayers = model.load("audio_processing/CNN_Models/Final_speech_CNN_model.h5")
+modelspectro = load_model("audio_processing/CNN_Models/Spectrogram_CNN_combined_model.h5")
+modelcnnlesslayers = load_model("audio_processing/CNN_Models/Final_speech_CNN_model.h5")
 
 BLOCKLENGTH = 44100
 SAMPLERATE = 44100
