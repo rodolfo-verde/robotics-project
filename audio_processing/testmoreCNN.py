@@ -221,9 +221,11 @@ with stream:
                 prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
                 predictioncnnlesslayers = modelcnnlesslayers.predict(to_process.reshape(-1, 11, 70, 1))
                 index_pred = np.argmax(prediction) #tf.argmax geht auch
+                index_pred_spectro = np.argmax(predictionspectro) #tf.argmax geht auch
+                index_pred_cnnlesslayers = np.argmax(predictioncnnlesslayers)
                 print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
-                print(f"Predictionspectro      : {class_names[index_pred]} and {predictionspectro[0][index_pred]*100} %")
-                print(f"Predictioncnnlesslayers: {class_names[index_pred]} and {predictioncnnlesslayers[0][index_pred]*100} %")
+                print(f"Predictionspectro      : {class_names[index_pred]} and {predictionspectro[0][index_pred_spectro]*100} %")
+                print(f"Predictioncnnlesslayers: {class_names[index_pred]} and {predictioncnnlesslayers[0][index_pred_cnnlesslayers]*100} %")
 
                 print(f"Time: {time.time()-starttime}")
                 #sd.play(i)
