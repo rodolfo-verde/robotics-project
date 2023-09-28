@@ -60,7 +60,7 @@ class dataprocessor:
 
     
     # processing data
-    def processdata(self, data: np.array):
+    def processdata(self, data: np.array, returnall: bool = True):
 
         # storing raw data and then filtering it
         self.raw = np.append(self.wordfrompastblock, data)
@@ -127,8 +127,11 @@ class dataprocessor:
         #print("words stored in array")
         #print(len(self.wordlist))
         
-        return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained, self.convolved_wordmarkers], [self.words]], dtype=object)], dtype=object)
-    
+        if (returnall):
+            return np.array([[self.wordlist], np.array([[self.raw, self.voiceactivity], [self.filtered, self.wordmarkers], [self.gained, self.convolved_wordmarkers], [self.words]], dtype=object)], dtype=object)
+        else:
+            return self.wordlist
+
     
     # gives back the shape of the returned values
     def get_shape_info(self):

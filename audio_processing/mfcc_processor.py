@@ -83,3 +83,13 @@ class mfcc_dataprocessor:
             MFCC_normalized[r,:] = MFCC[r,:]*NormalizationGain[r]
 
         return MFCC_normalized
+
+
+    def mfcc_process_multiple(self, data: np.array) -> np.array:
+        leni = len(data)
+        reti = np.zeros((leni, 12, 70))
+        for i in range(leni-1):
+            print(data[i])
+            reti[i] = self.mfcc_process(data[i])
+            print(reti[i].size)
+        return reti
