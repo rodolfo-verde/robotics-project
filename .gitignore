@@ -407,3 +407,4 @@ settings.json
 *spectrogram.npy
 *augmented.npy
 *combined.npy
+*CNN_More*.h5
