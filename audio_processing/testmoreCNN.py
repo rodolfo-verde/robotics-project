@@ -25,8 +25,8 @@ from mfcc_processor import mfcc_dataprocessor
 from data_spectrogramm import get_spectrogram
 
 
-TRAIN = True
-SAVE = True
+TRAIN = False
+SAVE = False
 USEPROCESSOR = True
 
 
@@ -116,7 +116,7 @@ if TRAIN:
         epochs=60, # 60
         batch_size=100) # 100
 else:
-    model.load_weights("audio_processing//roman_test_CNN_weights.h5")
+    model.load_weights("audio_processing//CNN_Models//CNN_More_30_weights.h5")
 
 model.summary()
 
@@ -224,8 +224,8 @@ with stream:
                 index_pred_spectro = np.argmax(predictionspectro) #tf.argmax geht auch
                 index_pred_cnnlesslayers = np.argmax(predictioncnnlesslayers)
                 print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
-                print(f"Predictionspectro      : {class_names[index_pred]} and {predictionspectro[0][index_pred_spectro]*100} %")
-                print(f"Predictioncnnlesslayers: {class_names[index_pred]} and {predictioncnnlesslayers[0][index_pred_cnnlesslayers]*100} %")
+                print(f"Predictionspectro      : {class_names[index_pred_spectro]} and {predictionspectro[0][index_pred_spectro]*100} %")
+                print(f"Predictioncnnlesslayers: {class_names[index_pred_cnnlesslayers]} and {predictioncnnlesslayers[0][index_pred_cnnlesslayers]*100} %")
 
                 print(f"Time: {time.time()-starttime}")
                 #sd.play(i)
