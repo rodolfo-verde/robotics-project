@@ -25,9 +25,9 @@ from mfcc_processor import mfcc_dataprocessor
 from data_spectrogramm import get_spectrogram
 
 
-TRAIN = False
-SAVE = False
-USEPROCESSOR = True
+TRAIN = True
+SAVE = True
+USEPROCESSOR = False
 
 
 #test 
@@ -55,7 +55,7 @@ print(f"y_test shape: {y_test.shape}")
 
 # CNN
 model = Sequential()
-a = 30
+a = 100
 
 #model.add(Conv2D(10, kernel_size=(3, 3), activation="sigmoid", input_shape=(11,70,1), padding="same"))
 model.add(Conv2D(a,(3,3),padding='same',input_shape=(11,70,1), activation="relu"))
@@ -125,8 +125,8 @@ test_loss, test_acc = model.evaluate(X_test.reshape(-1, 11, 70, 1), y_test, verb
 print(f"Test accuracy: {test_acc}")
 
 if SAVE:
-    model.save("audio_processing//CNN_Models//CNN_More_30_model.h5", include_optimizer=True)
-    model.save_weights("audio_processing//CNN_Models//CNN_More_30_weights.h5")
+    model.save("audio_processing//CNN_Models//CNN_More_100_model.h5", include_optimizer=True)
+    model.save_weights("audio_processing//CNN_Models//CNN_More_100_weights.h5")
 
 
 if TRAIN:
