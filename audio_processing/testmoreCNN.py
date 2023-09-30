@@ -25,9 +25,9 @@ from mfcc_processor import mfcc_dataprocessor
 from data_spectrogramm import get_spectrogram
 
 
-TRAIN = True
-SAVE = True
-USEPROCESSOR = False
+TRAIN = False
+SAVE = False
+USEPROCESSOR = True
 
 
 #test 
@@ -116,7 +116,7 @@ if TRAIN:
         epochs=60, # 60
         batch_size=100) # 100
 else:
-    model.load_weights("audio_processing//CNN_Models//CNN_More_30_weights.h5")
+    model.load_weights("audio_processing//CNN_Models//CNN_More_100_weights.h5")
 
 model.summary()
 
