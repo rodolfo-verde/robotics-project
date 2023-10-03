@@ -133,6 +133,10 @@ class TickTackToe:
             time.sleep(1)
         self._controller.shutdown()
 
+    # -1 = invalid move
+    # 0 = all good
+    # 1 = game over
+    # 2 = invalid command
     def command(self, cmd: str) -> int:
         print(self)
         if cmd[0].lower() in ["a", "b", "c"]:
