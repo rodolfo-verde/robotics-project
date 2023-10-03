@@ -69,7 +69,7 @@ class Controller:
         #         print(
         #             f'Max delta: {np.rad2deg(np.max(np.abs(pos - self.get_joint_states())))}, '
         #             f'Average delta: {np.rad2deg(np.mean(np.abs(pos - self.get_joint_states())))}')
-        self._con.arm.set_trajectory_time(3.5, 3.5 / 2)
+        self._con.arm.set_trajectory_time(1.7, 1.7 / 2)
         self._con.arm.set_joint_positions(final_pos)
 
     def _move_cartesian(self, offset: float) -> None:
@@ -81,7 +81,7 @@ class Controller:
         #     while self.paused:
         #         time.sleep(0.5)
         #     self._con.arm.set_ee_cartesian_trajectory(z=increment)
-        self._con.arm.set_trajectory_time(3.5, 3.5 / 2)
+        self._con.arm.set_trajectory_time(1.0, 1.0 / 2)
         self._con.arm.set_ee_cartesian_trajectory(z=offset)
 
     def process_command(self, command: Command):
@@ -153,9 +153,8 @@ def simple_test():
     #
     # time.sleep(1)
 
-
     for i, pos in enumerate([[Constants.A1, Constants.A1_Z], [Constants.A2, Constants.A2_Z]]):
-        z_offset = -0.015 + (-.0073 * i) # -0.015 + (-.0075 * i)
+        z_offset = -0.015 + (-.0073 * i)  # -0.015 + (-.0075 * i)
 
         controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.PRE_PICK_UP))
         #
