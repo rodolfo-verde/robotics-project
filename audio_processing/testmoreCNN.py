@@ -24,6 +24,10 @@ from mfcc_processor import mfcc_dataprocessor
 
 from data_spectrogramm import get_spectrogram
 
+from TickTackToe import TickTackToe
+
+from word_logic import WordLogic
+
 
 TRAIN = False
 SAVE = False
@@ -189,6 +193,8 @@ starttime = 0
 workblocklength = 32500
 mfcc = np.zeros((11, 35))
 with stream:
+    wordlogic = WordLogic()
+    tickTackToe = TickTackToe()
     while True:
         while(len(safe1)<workblocklength):
             time.sleep(0.01)
@@ -199,7 +205,7 @@ with stream:
         starttime = time.time()
 
         if USEPROCESSOR:
-
+            #ticktacktoe = TickTackToe()
             words, plots = dp.processdata(workblock)
 
             for i in words[0]:
@@ -219,6 +225,7 @@ with stream:
                 #print(to_process.shape)
 
                 prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
+
                 predictioncnnlesslayers = modelcnnlesslayers.predict(to_process.reshape(-1, 11, 70, 1))
                 index_pred = np.argmax(prediction) #tf.argmax geht auch
                 index_pred_spectro = np.argmax(predictionspectro) #tf.argmax geht auch
@@ -230,6 +237,14 @@ with stream:
                 print(f"Time: {time.time()-starttime}")
                 #sd.play(i)
                 print(f"{starttime-oldstarttime} and {time.time()-starttime}")
+            
+                wordlogic.command(class_names[index_pred])
+                if wordlogic.get_combination() != None:
+                    print(f"This is the word rodolfo would get = {wordlogic.get_combination()}")
+                    tickTackToe.command(wordlogic.get_combination())
+                    wordlogic.reset_combination()
+
+
         
         else:
             oldmfcc = mfcc
