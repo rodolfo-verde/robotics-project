@@ -106,44 +106,51 @@ class TickTackToe:
         return True
 
     def main_loop(self):
-        while True:
-            while not self._game_over:
-                print(self)
-                x, y = input(f"Player {self._current_player}, enter x and y: ").split()
-                x, y = int(x), int(y)
-                if not self._play(x, y):
-                    print("Invalid move!")
-            print(self)
-            print(f"Game over! Winner is {self._winner}")
-            play_again = input("Play again? (y/n) ") == "y"
-            self.reset()
-            if not play_again:
-                break
+        commands = [
+            "a2",
+            "a3",
+            "b2",
+            "b1",
+            "c2",
+
+        ]
+
+        def thread():
+            time.sleep(2)
+            print("thread")
+            self._controller.paused = True
+            time.sleep(8)
+            print("resume")
+            self._controller.paused = False
+
+        ban = True
+
+        for cmd in commands:
+            if ban:
+                import threading
+                threading.Thread(target=thread).start()
+            print(cmd, self.command(cmd))
+            time.sleep(1)
         self._controller.shutdown()
 
-    def demo_main_loop(self):
-        white_moves = [
-            (Constants.A, 1),
-            (Constants.B, 1),
-            (Constants.C, 1),
-        ]
-        black_moves = [
-            (Constants.A, 2),
-            (Constants.B, 0),
-        ]
-        while len(white_moves) > 0 or len(black_moves) > 0:
-            print(self)
-            if self._current_player == Constants.WHITE:
-                x, y = white_moves.pop(0)
-            else:
-                x, y = black_moves.pop(0)
-            if not self._play(x, y):
-                print("Invalid move!")
-            time.sleep(1)
+    def command(self, cmd: str) -> int:
         print(self)
-        print(f"Game over! Winner is {self._winner}")
-        self.reset()
-        self._controller.shutdown()
+        if cmd[0].lower() in ["a", "b", "c"]:
+            x = ord(cmd[0].lower()) - ord("a")
+            y = int(cmd[1]) - 1
+            if not self._play(x, y):
+                return -1
+            print(self)
+            if self._game_over:
+                return 1
+            return 0
+        else:
+            match cmd.lower():
+                case "stop":
+                    self._controller.paused = True
+                    return 0
+                case _:
+                    return 2
 
 
 def main():
