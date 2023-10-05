@@ -52,7 +52,7 @@ def audio_to_mfcc():
     selectedfiles = list()
     for i in files:
         if i[len(i)-4:] == ".wav":
-                selectedfiles.append(i)
+            selectedfiles.append(i)
         
     for i in range(len(selectedfiles)):
         but = tk.Button(master=root_tk, command=lambda i=f"{dirtoselectfrom}{selectedfiles[i]}": button_read_wave(i), text=f"{i+1}. {selectedfiles[i]}")
@@ -62,7 +62,7 @@ def audio_to_mfcc():
 
 def button_read_wave(instance):
     for i in buttons:
-         i.destroy()
+        i.destroy()
     x, f, r = WaveInterface.ReadWave(instance)
     process_audio_to_mfcc(x, instance)
 
@@ -73,6 +73,7 @@ def process_audio_to_mfcc(audio, name: str):
     TARGETLVL = -30
     VOICETHRESHHOLD = -40
     LENGTHOFVOICEACTIVITY = 10
+
     dp = dataprocessor(SAMPLERATE, TARGETLVL, VOICETHRESHHOLD, LENGTHOFVOICEACTIVITY)
     mp = mfcc_dataprocessor(SAMPLERATE)
 
@@ -88,7 +89,83 @@ def process_audio_to_mfcc(audio, name: str):
 
 
 def add_label_to_mfcc():
-     print("YOIIINK not implemented yet du keggo")
+
+    for i in buttons:
+        i.destroy()
+
+    global dirtoselectfrom
+    dirtoselectfrom = f"../resources/"
+
+    files = listdir(dirtoselectfrom)
+    selectedfiles = list()
+    for i in files:
+        if i[len(i)-4:] == ".txt":
+            selectedfiles.append(i)
+        
+    for i in range(len(selectedfiles)):
+        but = tk.Button(master=root_tk, command=lambda i=f"{dirtoselectfrom}{selectedfiles[i]}": button_read_text(i), text=f"{i+1}. {selectedfiles[i]}")
+        but.place(relx=0.2, rely=(i+1)/(len(selectedfiles)+1), anchor=tk.CENTER)
+        buttons.append(but)
+
+
+def button_read_text(instance):
+    for i in buttons:
+        i.destroy()
+    file = open(instance, "r")
+    x = file.readlines()
+    HAHAHA = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
+    labels = np.zeros((len(x), 9))
+    for i in range(len(x)):
+        for j in range(len(HAHAHA)):
+            if x[i][:-1] == HAHAHA[j]:
+                labels[i,j] = 1
+
+    file.close()
+    
+    process_labels_with_mfcc(labels, instance)
+
+
+def process_labels_with_mfcc(labels, instance):
+    for i in buttons:
+        i.destroy()
+
+    global dirtoselectfrom
+    dirtoselectfrom = f"audio_processing/Train_Data/"
+
+    files = listdir(dirtoselectfrom)
+    selectedfiles = list()
+    nottoselect = list()
+    for i in files:
+        if i[len(i)-8:] == "mfcc.npy":
+            if not nottoselect.__contains__(i[:-8]):
+                selectedfiles.append(i)
+                print(f"{i[:-8]} just added")
+        if i[len(i)-9:] == "label.npy":
+            if (selectedfiles.__contains__(f"{i[:-9]}mfcc.npy")):
+                selectedfiles.remove(f"{i[:-9]}mfcc.npy")
+                print(f"{i[:-9]} should be removed")
+            nottoselect.append(i[:-9])
+            print(f"{i[:-9]} to ignore")
+        
+    for i in range(len(selectedfiles)):
+        but = tk.Button(master=root_tk, command=lambda i=f"{dirtoselectfrom}{selectedfiles[i]}": button_add_label(i, labels), text=f"{i+1}. {selectedfiles[i]}")
+        but.place(relx=0.2, rely=(i+1)/(len(selectedfiles)+1), anchor=tk.CENTER)
+        buttons.append(but)
+
+
+def button_add_label(instance, labels):
+    for i in buttons:
+        i.destroy()
+    
+    mfcc = np.load(instance)
+
+    if (mfcc.shape[0] == labels.shape[0]):
+        np.save(f"{instance[:-8]}label.npy", labels)
+    else:
+        print("wrong amount of labels or mfccs")
+        print(mfcc.shape[0])
+        print(labels.shape[0])
+    set_start_buttons()
 
 
 set_start_buttons()
