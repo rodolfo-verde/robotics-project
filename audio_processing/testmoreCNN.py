@@ -24,7 +24,7 @@ from mfcc_processor import mfcc_dataprocessor
 
 from data_spectrogramm import get_spectrogram
 
-from TickTackToe import TickTackToe
+#from TickTackToe import TickTackToe
 
 from word_logic import WordLogic
 
@@ -194,7 +194,7 @@ workblocklength = 32500
 mfcc = np.zeros((11, 35))
 with stream:
     wordlogic = WordLogic()
-    tickTackToe = TickTackToe()
+    #tickTackToe = TickTackToe()
     while True:
         while(len(safe1)<workblocklength):
             time.sleep(0.01)
@@ -241,7 +241,7 @@ with stream:
                 wordlogic.command(class_names[index_pred])
                 if wordlogic.get_combination() != None:
                     print(f"This is the word rodolfo would get = {wordlogic.get_combination()}")
-                    tickTackToe.command(wordlogic.get_combination())
+                    #tickTackToe.command(wordlogic.get_combination())
                     wordlogic.reset_combination()
 
 
