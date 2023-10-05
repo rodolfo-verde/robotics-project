@@ -13,7 +13,7 @@ from mfcc_processor import mfcc_dataprocessor
 
 root_tk = tk.Tk()
 root_tk.geometry("600x300")
-root_tk.title("generate and laber data")
+root_tk.title("generate and label data")
 
 
 buttons = list()
