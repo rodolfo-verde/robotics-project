@@ -1,22 +1,12 @@
-import os
-import sys
-import pandas as pd
-import tensorflow as tf 
-from tensorflow import keras
 import matplotlib.pyplot as plt
 from keras.models import Sequential
-from keras import layers
 from keras.layers import Dense, Conv2D, Flatten, BatchNormalization, Dropout, MaxPool2D
-from keras.optimizers import SGD
 from keras.regularizers import L2 
 from keras.models import load_model
 
 import numpy as np
-import WaveInterface
 import time
 import sounddevice as sd
-import sys
-from os import listdir
 
 from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
