@@ -6,6 +6,7 @@ import WaveInterface
 import sounddevice as sd
 import time
 import numpy as np
+import math
 
 from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
@@ -48,14 +49,25 @@ def button_select_file(instance):
     for i in buttons:
          i.destroy()
     x, f, r = WaveInterface.ReadWave(instance)
-    label_data(x)
+    select_labels(x)
 
 
 def playagain(x):
     sd.play(x)
 
 
-def label_data(x):
+def select_labels(x):
+
+    for i in buttons:
+        i.destroy()
+
+    labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "zurück", "weiter", "other"]
+    labels = [tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()]
+
+    label_data(x, labellistnames, labels)
+
+
+def label_data(x, labellistnames, labels):
 
     for i in buttons:
         i.destroy()
@@ -65,6 +77,11 @@ def label_data(x):
     TARGETLVL = -30
     VOICETHRESHHOLD = -40
     LENGTHOFVOICEACTIVITY = 10
+
+    divfactor = math.sqrt(len(labellistnames))
+    if (int(divfactor)<divfactor): divfactor = int(divfactor)+1
+    else: divfactor = int(divfactor)
+    print(int(divfactor))
 
     keepvar = tk.BooleanVar()
     keepvar.set(False)
@@ -80,15 +97,13 @@ def label_data(x):
         if not keepvar.get():
             for j in buttons:
                 j.destroy()
-            labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other"]
-            la, lb, lc, l1, l2, l3, ls, lr, lo = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
-            labels = [la, lb, lc, l1, l2, l3, ls, lr, lo]
+            
             again = tk.Button(master=root_tk, command=lambda: playagain(i), text=f"Play the sequence again")
             again.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
             buttons.append(again)
             for j in range(len(labellistnames)):
                 a = tk.Checkbutton(master=root_tk, variable=labels[j], text=labellistnames[j], onvalue=1, offvalue=0, bd=4)
-                a.place(relx=((j%3)/(len(labellistnames)/3)+0.1), rely=(0.3+((j//3)*0.2)), anchor=tk.CENTER)
+                a.place(relx=((j%divfactor)/(divfactor)+0.1), rely=(1/divfactor+((j//divfactor)*0.2)), anchor=tk.CENTER)
                 buttons.append(a)
             buttonpressed = tk.BooleanVar()
             setlabel = tk.Button(master=root_tk, command=lambda: set_labels(i, labels), text=f"Set the labels")
