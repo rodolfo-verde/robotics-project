@@ -28,24 +28,32 @@ class WordLogic:
         if prediction == "rex":
             self.rex = True
             print("Rex activated")
+            self.current_word = ""
+            self.current_combination = ""
             return "rex"
         elif self.rex == True:
             if prediction in self.valid_words:
                 self.current_word = self.current_word + prediction
                 print(f"Current word: {self.current_word}")
+                # check if current word is a valid combination contains more than 1 string letter if yes then clear current word
                 if self.current_word in self.valid_combinations:
                     self.current_combination = self.current_word
                     print(f"Current combination: {self.current_combination}")
                     self.current_word = ""
                     self.rex = False
                     return self.current_combination
+                elif len(self.current_word) > 1:
+                    self.current_word = ""
+
             else:
                 print("No valid word")
                 self.current_word = ""
+                self.current_combination = ""
                 self.rex = False
         else:
             print("No valid word")
             self.current_word = ""
+            self.current_combination = ""
             self.rex = False
         
     def get_combination(self):
