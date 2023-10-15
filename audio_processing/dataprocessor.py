@@ -132,6 +132,50 @@ class dataprocessor:
         else:
             return self.wordlist
 
+
+    def processforMT(self, data: np.array):
+
+        self.raw = np.append(self.wordfrompastblock, data)
+
+        self.filtered = np.array(np.convolve(self.raw, self._filter)[250:-250])
+
+        # applying the automatic gain
+        A = 1
+        block_mean = np.max([np.mean(self.filtered), 0.0002])
+        block_variance = np.max([np.mean(self.filtered**2), 0.003016]) # 0.00016 is the variance of the raw_distance_commands_testt.wav
+        #print(f"mean {block_mean} and variance {block_variance}")
+
+        self.gained = np.array(np.sqrt(A*A/2*(10**(self.targetlvl / 10))/(block_variance - block_mean**2))*(self.filtered-block_mean))
+
+        # seting up values for the voice detection
+        lengthvoiceactivityinsamples = int(self.lengthvoiceactivity*self.samplerate/1000)
+
+        numberofblocks = self.gained.shape[0] // lengthvoiceactivityinsamples
+
+        self.voiceactivity = np.array(np.zeros((numberofblocks)))
+        self.wordmarkers = np.array(np.zeros(self.raw.shape[0]))
+
+        wordfactortodata = self.raw.shape[0]//numberofblocks
+
+        # checking the array for voice activity and marking those indeces as words
+        for n in range(numberofblocks):
+            idx1 = n*lengthvoiceactivityinsamples
+            idx2 = idx1+lengthvoiceactivityinsamples
+            P = np.mean(self.gained[idx1:idx2]**2)
+            self.voiceactivity[n] = 10*np.log10(2*P/(A**2))
+            if self.voiceactivity[n] > self.voicethreshhold:
+                self.wordmarkers[n*wordfactortodata:(n+1)*wordfactortodata] = 1
+
+        # testpattern = np.array([1, 0, -1])
+        testpattern2 = np.array([1, -1])
+
+        # convolvng array of the marked words with a sobel-like filter to get start and end of words
+        self.convolved_wordmarkers = np.convolve(self.wordmarkers, testpattern2, 'same')
+        # checking the convolved array and convert them to a matrix of word indeces
+        self.convolved_to_indeces()
+
+        print(self.wordindeces())
+
     
     # gives back the shape of the returned values
     def get_shape_info(self):
