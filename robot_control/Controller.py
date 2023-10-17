@@ -119,65 +119,97 @@ class Controller:
             self._con.arm.set_trajectory_time(3, 1.5)
             self._con.arm.set_joint_positions(Constants.PRE_PICK_UP)
             self._con.arm.set_joint_positions(Constants.HOME)
+            self._release()
         self._con.shutdown()
 
     def print_joint_states(self):
         print(self.get_joint_states())
 
 
+def new_test(controller: Controller):
+    circle = [-0.16260196, 0.01316135, 0.37899045, 1.16483876, -0.1119806]
+
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=Constants.PRE_PICK_UP
+    ))
+
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=circle
+    ))
+
+    controller.process_command(Command(
+        code=Constants.PICK_UP,
+        z_offset=-.01 + .005
+    ))
+
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=Constants.WHITE_STACK
+    ))
+
+    controller.process_command(Command(
+        code=Constants.PLACE_DOWN,
+        z_offset=-.01 + .005
+    ))
+
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=Constants.PRE_PICK_UP
+    ))
+
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=circle
+    ))
+
+    controller.process_command(Command(
+        code=Constants.PICK_UP,
+        z_offset=-.01
+    ))
+
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=Constants.WHITE_STACK
+    ))
+
+    controller.process_command(Command(
+        code=Constants.PLACE_DOWN,
+        z_offset=-.01
+    ))
+
+
 def simple_test():
     controller = Controller()
 
-    # controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.WHITE_PICK_UP))
+    # c2 = [0.16566993, -0.00460194, 0.53075737, 1.06765068, 0.19174761]
+    # c2 = [0.16566993, - 0.03617548, 0.49518711, 1.13479449, 0.19174761]
 
-    # controller.process_command(Command(code=Constants.CARTESIAN_MOVE, z_offset=-Constants.PICK_UP_Z))
-    # controller.process_command(Command(code=Constants.GRIPPER_MOVE, grasp=True))
+    c2 = [0.16566993, 0.03537067, 0.25458371, 1.30385174, 0.19174761]
 
-    # controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.B2))
-    # controller.process_command(Command(code=Constants.PLACE_DOWN, z_offset=Constants.B2_Z))
-    #
-    # controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.HOME))
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=c2
+    ))
 
-    # controller.process_command(Command(code=Constants.GRIPPER_MOVE, grasp=False))
+    controller.process_command(Command(
+        code=Constants.PICK_UP,
+        z_offset=-0.022
+    ))
 
-    # for i in range(5):
-    #     z_offset = -0.015 + (-.0075 * i)
-    #
-    #     controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.BLACK_STACK))
-    #     controller.process_command(Command(code=Constants.PICK_UP, z_offset=z_offset))
-    #
-    #     controller.process_command(
-    #         Command(code=Constants.PARTS_MOVE, final_pos=[0.01227185, -0.09203885, 0.22702916, 1.47415555, 0]))
-    #
-    #     controller.process_command(Command(code=Constants.GRIPPER_MOVE, grasp=False))
-    #
-    # time.sleep(1)
+    controller.process_command(Command(
+        code=Constants.SIMPLE_MOVE,
+        final_pos=c2
+    ))
 
-    for i, pos in enumerate([[Constants.A1, Constants.A1_Z], [Constants.A2, Constants.A2_Z]]):
-        z_offset = -0.015 + (-.0073 * i)  # -0.015 + (-.0075 * i)
+    controller.process_command(Command(
+        code=Constants.PLACE_DOWN,
+        z_offset=-0.022
+    ))
 
-        controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.PRE_PICK_UP))
-        #
-        controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.WHITE_STACK))
-        controller.process_command(Command(code=Constants.PICK_UP, z_offset=z_offset))
-
-        controller.process_command(Command(code=Constants.PARTS_MOVE, final_pos=pos[0]))
-        controller.process_command(Command(code=Constants.PLACE_DOWN, z_offset=pos[1]))
-
-    for i, pos in enumerate([[Constants.A1, Constants.A1_Z], [Constants.A2, Constants.A2_Z]]):
-        z_offset = -0.015 + (-.0073 * (1 - i))
-
-        controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.PRE_PICK_UP))
-
-        controller.process_command(Command(code=Constants.PARTS_MOVE, final_pos=pos[0]))
-        controller.process_command(Command(code=Constants.PICK_UP, z_offset=pos[1]))
-        #
-        controller.process_command(Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.WHITE_STACK))
-        controller.process_command(Command(code=Constants.PLACE_DOWN, z_offset=z_offset))
-
-    # controller.process_command(
-    #     Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.A2))
-    # controller.process_command(Command(code=Constants.CARTESIAN_MOVE, z_offset=-.015))
+    # controller._con.arm.set_ee_cartesian_trajectory(x=-0.02)
+    # controller._con.arm.set_ee_cartesian_trajectory(z=0.02)
 
     controller.print_joint_states()
 
