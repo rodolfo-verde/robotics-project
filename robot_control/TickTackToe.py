@@ -66,13 +66,11 @@ class TickTackToe:
         self._controller.process_command(
             Command(code=Constants.SIMPLE_MOVE, final_pos=Constants.WHITE_BLACK_PICK_UP[self._current_player]))
         self._controller.process_command(
-            Command(code=Constants.PICK_UP, z_offset=Constants.PICK_UP_Z + (Constants.BLOCK_HEIGHT * (self._turn % 2))))
-
+            Command(code=Constants.PICK_UP, z_offset=Constants.PICK_UP_Z + (Constants.BLOCK_HEIGHT * (self._turn // 2))))
         self._controller.process_command(
             Command(code=Constants.PARTS_MOVE, final_pos=Constants.BOARD[x][y][0]))
         self._controller.process_command(
             Command(code=Constants.PLACE_DOWN, z_offset=Constants.BOARD[x][y][1]))
-
         self._controller.goto_home_position()
 
     def _clear_board(self):

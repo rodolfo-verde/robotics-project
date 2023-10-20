@@ -1,15 +1,9 @@
 from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
 from rclpy.logging import LoggingSeverity
 
-import Constants
-
-import os
-import math
-import time
 import numpy as np
-
-# move workdir to robot_control folder
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+import time
+import Constants
 
 
 class Command:
@@ -183,30 +177,46 @@ def new_test(controller: Controller):
 def simple_test():
     controller = Controller()
 
+    # controller.process_command(Command(
+    #     code=Constants.SIMPLE_MOVE,
+    #     final_pos=Constants.PRE_PICK_UP
+    # ))
+
+    for pos in [Constants.A1, Constants.A2, Constants.A3, Constants.B1, Constants.B2, Constants.C1, Constants.C2, Constants.C3]:
+        controller.process_command(Command(
+            code=Constants.SIMPLE_MOVE,
+            final_pos=Constants.PRE_PICK_UP
+        ))
+
+        controller.process_command(Command(
+            code=Constants.SIMPLE_MOVE,
+            final_pos=pos
+        ))
+
     # c2 = [0.16566993, -0.00460194, 0.53075737, 1.06765068, 0.19174761]
     # c2 = [0.16566993, - 0.03617548, 0.49518711, 1.13479449, 0.19174761]
 
-    c2 = [0.16566993, 0.03537067, 0.25458371, 1.30385174, 0.19174761]
-
-    controller.process_command(Command(
-        code=Constants.SIMPLE_MOVE,
-        final_pos=c2
-    ))
-
-    controller.process_command(Command(
-        code=Constants.PICK_UP,
-        z_offset=-0.022
-    ))
-
-    controller.process_command(Command(
-        code=Constants.SIMPLE_MOVE,
-        final_pos=c2
-    ))
-
-    controller.process_command(Command(
-        code=Constants.PLACE_DOWN,
-        z_offset=-0.022
-    ))
+    # c2 = [0.16566993, 0.03537067, 0.25458371, 1.30385174, 0.19174761]
+    #
+    # controller.process_command(Command(
+    #     code=Constants.SIMPLE_MOVE,
+    #     final_pos=c2
+    # ))
+    #
+    # controller.process_command(Command(
+    #     code=Constants.PICK_UP,
+    #     z_offset=-0.022
+    # ))
+    #
+    # controller.process_command(Command(
+    #     code=Constants.SIMPLE_MOVE,
+    #     final_pos=c2
+    # ))
+    #
+    # controller.process_command(Command(
+    #     code=Constants.PLACE_DOWN,
+    #     z_offset=-0.022
+    # ))
 
     # controller._con.arm.set_ee_cartesian_trajectory(x=-0.02)
     # controller._con.arm.set_ee_cartesian_trajectory(z=0.02)
