@@ -3,7 +3,7 @@ from rclpy.logging import LoggingSeverity
 
 import numpy as np
 import time
-import Constants
+from . import Constants
 
 
 class Command:

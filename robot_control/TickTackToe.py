@@ -1,4 +1,4 @@
-from Controller import Controller, Command, Constants
+from .Controller import Controller, Command, Constants
 from typing import Union, Optional
 import time
 
