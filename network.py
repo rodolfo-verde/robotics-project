@@ -174,7 +174,7 @@ class Network:
                         if tickTackToe.command(wordlogic.get_combination()) == 1:
                             print("Game Over")
                             tickTackToe.reset()
-                            return
+                            
                         wordlogic.reset_combination()
 
     def run(self):
