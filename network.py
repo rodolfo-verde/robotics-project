@@ -12,13 +12,13 @@ from keras.models import load_model
 import time
 import sounddevice as sd
 
-from dataprocessor import dataprocessor
-from mfcc_processor import mfcc_dataprocessor
+from audio_processing.dataprocessor import dataprocessor
+from audio_processing.mfcc_processor import mfcc_dataprocessor
 
 
-#from TickTackToe import TickTackToe
+from robot_control.TickTackToe import TickTackToe
 
-from word_logic import WordLogic
+from audio_processing.word_logic import WordLogic
 
 # This will be the main class for the Speech Recognition + TickTackToe game
 # It will import the CNN model and the TickTackToe game and then run the game
@@ -85,9 +85,15 @@ model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
 
+import os
+print(os.listdir())
+
 # import big speech model
 model.load_weights("audio_processing//CNN_Models//CNN_More_100_weights.h5")
 
+#safe1 stores the input from the stream to be processed later
+        
+safe1 = np.array([], dtype="float64")
 
 
 # This is the Network class
@@ -115,9 +121,7 @@ class Network:
 
         devices = sd.query_devices()
 
-        #safe1 stores the input from the stream to be processed later
-        safe1 = np.array([], dtype="float64")
-
+        
 
         # function used from stream to get the sound input
         def callback(indata, frame_count, time_info, status):
@@ -138,11 +142,12 @@ class Network:
         mfcc = np.zeros((11, 35))
         return stream, safe1, workblocklength, mfcc, dp, mp, class_names
     
-    def main_loop(self, stream, safe1, workblocklength, mfcc, dp, mp, class_names):
+    def main_loop(self, stream, workblocklength, mfcc, dp, mp, class_names):
         with stream:
             wordlogic = WordLogic()
-            #tickTackToe = TickTackToe()
+            tickTackToe = TickTackToe()
             while True:
+                global safe1
                 while(len(safe1)<workblocklength):
                     time.sleep(0.01)
                     continue
@@ -164,14 +169,17 @@ class Network:
                     print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
                 
                     wordlogic.command(class_names[index_pred])
-                    if wordlogic.get_combination() != None:
+                    if wordlogic.get_combination() not in ["", None]:
                         print(f"Das Wort ist = {wordlogic.get_combination()}")
-                        #tickTackToe.command(wordlogic.get_combination())
+                        if tickTackToe.command(wordlogic.get_combination()) == 1:
+                            print("Game Over")
+                            tickTackToe.reset()
+                            return
                         wordlogic.reset_combination()
 
     def run(self):
         stream, safe1, workblocklength, mfcc, dp, mp, class_names = self.pre_process()
-        self.main_loop(stream, safe1, workblocklength, mfcc, dp, mp, class_names)
+        self.main_loop(stream, workblocklength, mfcc, dp, mp, class_names)
 
 if __name__ == '__main__':
     Network().run()
