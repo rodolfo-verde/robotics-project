@@ -17,6 +17,7 @@ from data_spectrogramm import get_spectrogram
 
 from word_logic import WordLogic
 
+from multiprocessing import Pool
 
 TRAIN = False
 SAVE = False

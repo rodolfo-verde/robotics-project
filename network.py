@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import tensorflow as tf 
@@ -15,11 +16,13 @@ import sounddevice as sd
 from audio_processing.dataprocessor import dataprocessor
 from audio_processing.mfcc_processor import mfcc_dataprocessor
 
-
 from robot_control.TickTackToe import TickTackToe
 
 from audio_processing.word_logic import WordLogic
 
+from scipy.io import wavfile
+
+import threading
 # This will be the main class for the Speech Recognition + TickTackToe game
 # It will import the CNN model and the TickTackToe game and then run the game
 # The CNN model will be used to recognize the words spoken by the user
@@ -32,6 +35,7 @@ from audio_processing.word_logic import WordLogic
 
 # CNN
 # CNN
+
 model = Sequential()
 a = 100
 
@@ -84,9 +88,6 @@ model.add(Dense(a, activation="sigmoid", kernel_regularizer=L2(0.01), bias_regul
 model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
-
-import os
-print(os.listdir())
 
 # import big speech model
 model.load_weights("audio_processing//CNN_Models//CNN_More_100_weights.h5")
@@ -141,6 +142,25 @@ class Network:
         workblocklength = 32500
         mfcc = np.zeros((11, 35))
         return stream, safe1, workblocklength, mfcc, dp, mp, class_names
+    def prediction(self, to_process, wordlogic, class_names, tickTackToe): 
+        # prediction
+        prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
+
+        index_pred = np.argmax(prediction) #tf.argmax geht auch
+
+        print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
+                
+        wordlogic.command(class_names[index_pred])
+        if wordlogic.get_combination() not in ["", None]:
+            print(f"Das Wort ist = {wordlogic.get_combination()}")
+            if tickTackToe.command(wordlogic.get_combination()) == 1:
+                print("Game Over")
+                tickTackToe.reset()
+                            
+            wordlogic.reset_combination()
+
+
+
     
     def main_loop(self, stream, workblocklength, mfcc, dp, mp, class_names):
         with stream:
@@ -161,21 +181,22 @@ class Network:
                     mfcc = mp.mfcc_process(i)[1:]
 
                     to_process = mfcc
+                    threading.Thread(target = self.prediction, args = (to_process, wordlogic, class_names, tickTackToe)).start()
 
-                    prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
+                    # prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
 
-                    index_pred = np.argmax(prediction) #tf.argmax geht auch
+                    # index_pred = np.argmax(prediction) #tf.argmax geht auch
 
-                    print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
+                    # print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
                 
-                    wordlogic.command(class_names[index_pred])
-                    if wordlogic.get_combination() not in ["", None]:
-                        print(f"Das Wort ist = {wordlogic.get_combination()}")
-                        if tickTackToe.command(wordlogic.get_combination()) == 1:
-                            print("Game Over")
-                            tickTackToe.reset()
+                    # wordlogic.command(class_names[index_pred])
+                    # if wordlogic.get_combination() not in ["", None]:
+                    #     print(f"Das Wort ist = {wordlogic.get_combination()}")
+                    #     if tickTackToe.command(wordlogic.get_combination()) == 1:
+                    #         print("Game Over")
+                    #         tickTackToe.reset()
                             
-                        wordlogic.reset_combination()
+                    #     wordlogic.reset_combination()
 
     def run(self):
         stream, safe1, workblocklength, mfcc, dp, mp, class_names = self.pre_process()
