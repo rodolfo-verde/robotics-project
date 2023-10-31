@@ -3,62 +3,62 @@ from typing import Union, Optional
 
 
 def get_best_move(board):
-    def is_winner(board, current_player):
+    def is_winner(b, c_p):
         # Check if the current player has won
-        for row in board:
-            if all(cell == current_player for cell in row):
+        for row in b:
+            if all(cell == c_p for cell in row):
                 return True
 
         for col in range(3):
-            if all(board[row][col] == current_player for row in range(3)):
+            if all(b[row][col] == c_p for row in range(3)):
                 return True
 
-        if all(board[i][i] == current_player for i in range(3)) or all(
-                board[i][2 - i] == current_player for i in range(3)):
+        if all(b[i][i] == c_p for i in range(3)) or all(
+                b[i][2 - i] == c_p for i in range(3)):
             return True
 
         return False
 
-    def is_draw(board):
+    def is_draw(b):
         # Check if the game is a draw
-        return all(cell is not None for row in board for cell in row)
+        return all(cell is not None for row in b for cell in row)
 
-    def evaluate(board, player):
+    def evaluate(b, p):
         # Evaluate the current state of the board
-        opponent = 1 if player == 0 else 0
-        if is_winner(board, player):
+        opponent = 1 if p == 0 else 0
+        if is_winner(b, p):
             return 1
-        elif is_winner(board, opponent):
+        elif is_winner(b, opponent):
             return -1
-        elif is_draw(board):
+        elif is_draw(b):
             return 0
         return None
 
-    def minimax(board, depth, maximizing_player, player):
-        result = evaluate(board, player)
+    def minimax(b, depth, maximizing_player, player):
+        result = evaluate(b, player)
 
         if result is not None:
             return result
 
         if maximizing_player:
             max_eval = -float("inf")
-            for i in range(3):
-                for j in range(3):
-                    if board[i][j] is None:
-                        board[i][j] = player
-                        eval = minimax(board, depth + 1, False, player)
-                        board[i][j] = None
-                        max_eval = max(max_eval, eval)
+            for x in range(3):
+                for y in range(3):
+                    if b[x][y] is None:
+                        b[x][y] = player
+                        evaluation = minimax(b, depth + 1, False, player)
+                        b[x][y] = None
+                        max_eval = max(max_eval, evaluation)
             return max_eval
         else:
             min_eval = float("inf")
-            for i in range(3):
-                for j in range(3):
-                    if board[i][j] is None:
-                        board[i][j] = 1 if player == 0 else 0
-                        eval = minimax(board, depth + 1, True, player)
-                        board[i][j] = None
-                        min_eval = min(min_eval, eval)
+            for x in range(3):
+                for y in range(3):
+                    if b[x][y] is None:
+                        b[x][y] = 1 if player == 0 else 0
+                        evaluation = minimax(b, depth + 1, True, player)
+                        b[x][y] = None
+                        min_eval = min(min_eval, evaluation)
             return min_eval
 
     current_player = 0 if sum(row.count(0) for row in board) <= sum(row.count(1) for row in board) else 1
@@ -69,14 +69,14 @@ def get_best_move(board):
         for j in range(3):
             if board[i][j] is None:
                 board[i][j] = current_player
-                eval = minimax(board, 0, False, current_player)
+                ev = minimax(board, 0, False, current_player)
                 board[i][j] = None
 
-                if current_player == 0 and eval > best_eval:
-                    best_eval = eval
+                if current_player == 0 and ev > best_eval:
+                    best_eval = ev
                     best_move = (i, j)
-                elif current_player == 1 and eval < best_eval:
-                    best_eval = eval
+                elif current_player == 1 and ev < best_eval:
+                    best_eval = ev
                     best_move = (i, j)
 
     return best_move
@@ -282,7 +282,7 @@ class TickTackToe:
 
 
 def main():
-    ttt = TickTackToe(solo_play=True, start=False)
+    ttt = TickTackToe(solo_play=True, start=1)
     ttt.self_play()
 
 
