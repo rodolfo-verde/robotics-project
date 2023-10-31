@@ -172,9 +172,32 @@ class dataprocessor:
         # convolvng array of the marked words with a sobel-like filter to get start and end of words
         self.convolved_wordmarkers = np.convolve(self.wordmarkers, testpattern2, 'same')
         # checking the convolved array and convert them to a matrix of word indeces
+
+        
+
         self.convolved_to_indeces()
 
-        print(self.wordindeces())
+        elch = 10000
+        last = 0
+        to_process = list()
+        
+        for i in self.wordindeces:
+            #print(i)
+            if i[0]>last+elch:
+                last = i[0]-elch
+                #print("move last")
+            while last<i[1]:
+                if last+32500>self.raw.shape[0]:
+                    self.wordfrompastblock = self.raw[last:]
+                    #print("I WANT TO BREAK FREEEEEEEEEEEEEE")
+                    break
+                to_process.append(self.gained[last:last+32500])
+                #print("add shit")
+                last+=elch
+        
+        #print(len(to_process))
+
+        return to_process
 
     
     # gives back the shape of the returned values

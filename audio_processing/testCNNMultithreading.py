@@ -8,6 +8,10 @@ import numpy as np
 import time
 import sounddevice as sd
 
+import WaveInterface
+
+import threading
+
 from dataprocessor import dataprocessor
 from mfcc_processor import mfcc_dataprocessor
 
@@ -54,18 +58,30 @@ starttime = 0
 
 workblocklength = 32500
 mfcc = np.zeros((11, 35))
-with stream:
-    wordlogic = WordLogic()
-    #tickTackToe = TickTackToe()
-    while True:
-        while(len(safe1)<workblocklength):
-            time.sleep(0.01)
-            continue
-        workblock = safe1[:workblocklength]
-        safe1 = safe1[workblocklength:]
-        oldstarttime = starttime
-        starttime = time.time()
 
-        #ticktacktoe = TickTackToe()
-        words = dp.processforMT(workblock)
-        
+x, r, w = WaveInterface.ReadWave("../resources/test2.wav")
+
+words = dp.processforMT(x)
+
+
+#words = dp.processdata(x, False)
+
+#sd.play(words[8])
+class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
+
+
+def predict(word: np.array):
+    #print(word.shape)
+    a = model_to_use.predict(word.reshape(-1,11,70,1), verbose=0)
+    a = np.argmax(a)
+    print(f"Prediction             : {class_names[a]}")
+
+
+for i in words:
+    mfcc = mp.mfcc_process(i)[1:]
+    #print(mfcc.shape)
+    threading.Thread(target=predict, args=([mfcc])).start()
+
+#a = model_to_use.predict(words, batch_size=len(words), workers = len(words), use_multiprocessing=True)
+#a = model_to_use.predict_on_batch(words)
+#print(a)
