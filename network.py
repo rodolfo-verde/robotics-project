@@ -16,7 +16,7 @@ import sounddevice as sd
 from audio_processing.dataprocessor import dataprocessor
 from audio_processing.mfcc_processor import mfcc_dataprocessor
 
-from robot_control.TickTackToe import TickTackToe
+#from robot_control.TickTackToe import TickTackToe
 
 from audio_processing.word_logic import WordLogic
 
@@ -134,15 +134,18 @@ class Network:
                 INPUTDEVICE = i['index']
                     
         #INPUTDEVICE = 7 # 1 for jonas usb mic
+        INPUTDEVICE = 6
+        INPUTDEVICE2 = 6
 
         stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
+        stream2 = sd.OutputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE2)
 
         class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 
         workblocklength = 32500
         mfcc = np.zeros((11, 35))
         return stream, safe1, workblocklength, mfcc, dp, mp, class_names
-    def prediction(self, to_process, wordlogic, class_names, tickTackToe): 
+    def prediction(self, to_process, wordlogic, class_names, tickTackToe = None): 
         # prediction
         prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
 
@@ -163,9 +166,10 @@ class Network:
 
     
     def main_loop(self, stream, workblocklength, mfcc, dp, mp, class_names):
+        print("main_loop started")
         with stream:
             wordlogic = WordLogic()
-            tickTackToe = TickTackToe()
+            #tickTackToe = TickTackToe()
             while True:
                 global safe1
                 while(len(safe1)<workblocklength):
@@ -181,7 +185,7 @@ class Network:
                     mfcc = mp.mfcc_process(i)[1:]
 
                     to_process = mfcc
-                    threading.Thread(target = self.prediction, args = (to_process, wordlogic, class_names, tickTackToe)).start()
+                    threading.Thread(target = self.prediction, args = (to_process, wordlogic, class_names)).start()
 
                     # prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
 
@@ -197,10 +201,22 @@ class Network:
                     #         tickTackToe.reset()
                             
                     #     wordlogic.reset_combination()
+        
+
 
     def run(self):
+        # this runs the game
+        # it should run 2 streams at the same time, stream and stream2
+        # it should run the main_loop function for both streams at the same time 
+
+        #stream, safe1, workblocklength, mfcc, dp, mp, class_names = self.pre_process()
+        #stream2, safe1, workblocklength, mfcc, dp, mp, class_names = self.pre_process()
+        #threading.Thread(target = self.main_loop, args = (stream, workblocklength, mfcc, dp, mp, class_names)).start()
+        #threading.Thread(target = self.main_loop, args = (stream2, workblocklength, mfcc, dp, mp, class_names)).start()
         stream, safe1, workblocklength, mfcc, dp, mp, class_names = self.pre_process()
+        #stream2, safe1, workblocklength, mfcc, dp, mp, class_names = self.pre_process()
         self.main_loop(stream, workblocklength, mfcc, dp, mp, class_names)
+        #self.main_loop(stream2, workblocklength, mfcc, dp, mp, class_names)
 
 if __name__ == '__main__':
     Network().run()
