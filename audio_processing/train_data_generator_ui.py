@@ -61,7 +61,7 @@ def select_labels(x):
     for i in buttons:
         i.destroy()
 
-    labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "zurück", "weiter", "other"]
+    labellistnames = ["a", "b", "c", "1", "2", "3", "stop", "rex", "other", "weiter", "zurück"]
     labels = [tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()]
 
     label_data(x, labellistnames, labels)
@@ -106,7 +106,7 @@ def label_data(x, labellistnames, labels):
                 a.place(relx=((j%divfactor)/(divfactor)+0.1), rely=(1/divfactor+((j//divfactor)*0.2)), anchor=tk.CENTER)
                 buttons.append(a)
             buttonpressed = tk.BooleanVar()
-            setlabel = tk.Button(master=root_tk, command=lambda: set_labels(i, labels), text=f"Set the labels")
+            setlabel = tk.Button(master=root_tk, command=lambda: set_labels(i, labels, labellistnames), text=f"Set the labels")
             setlabel.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
             buttons.append(setlabel)
 
@@ -124,7 +124,7 @@ def label_data(x, labellistnames, labels):
     select_save_data_set_name()
 
 
-def set_labels(x, butlab):
+def set_labels(x, butlab, labellistnames):
     global buttonpressed
 
     raw = x
@@ -133,7 +133,7 @@ def set_labels(x, butlab):
 
     mfcc = mp.mfcc_process(raw)
 
-    labels = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+    labels = np.zeros(len(labellistnames))
 
     for i in range(len(butlab)):
         if butlab[i].get()==1:

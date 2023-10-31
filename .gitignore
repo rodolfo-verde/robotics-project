@@ -408,3 +408,4 @@ settings.json
 *augmented.npy
 *combined.npy
 *CNN_More*.h5
+*.wav
