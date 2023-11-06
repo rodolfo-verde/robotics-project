@@ -138,7 +138,7 @@ class Network:
         INPUTDEVICE2 = 6
 
         stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
-        stream2 = sd.OutputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE2)
+        #stream2 = sd.OutputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE2)
 
         class_names = ["a", "b", "c", "1", "2", "3", "stopp", "rex", "other"]
 
