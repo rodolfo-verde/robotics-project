@@ -16,7 +16,7 @@ import sounddevice as sd
 from audio_processing.dataprocessor import dataprocessor
 from audio_processing.mfcc_processor import mfcc_dataprocessor
 
-#from robot_control.TickTackToe import TickTackToe
+from robot_control.TickTackToe import TickTackToe
 
 from audio_processing.word_logic import WordLogic
 
@@ -145,7 +145,7 @@ class Network:
         workblocklength = 32500
         mfcc = np.zeros((11, 35))
         return stream, safe1, workblocklength, mfcc, dp, mp, class_names
-    def prediction(self, to_process, wordlogic, class_names, tickTackToe = None): 
+    def prediction(self, to_process, wordlogic, class_names, tickTackToe): 
         # prediction
         prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
 
@@ -169,7 +169,7 @@ class Network:
         print("main_loop started")
         with stream:
             wordlogic = WordLogic()
-            #tickTackToe = TickTackToe()
+            tickTackToe = TickTackToe(solo_play=True, start=0)
             while True:
                 global safe1
                 while(len(safe1)<workblocklength):
@@ -185,22 +185,9 @@ class Network:
                     mfcc = mp.mfcc_process(i)[1:]
 
                     to_process = mfcc
-                    threading.Thread(target = self.prediction, args = (to_process, wordlogic, class_names)).start()
+                    threading.Thread(target = self.prediction, args = (to_process, wordlogic, class_names, tickTackToe)).start()
 
-                    # prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
 
-                    # index_pred = np.argmax(prediction) #tf.argmax geht auch
-
-                    # print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
-                
-                    # wordlogic.command(class_names[index_pred])
-                    # if wordlogic.get_combination() not in ["", None]:
-                    #     print(f"Das Wort ist = {wordlogic.get_combination()}")
-                    #     if tickTackToe.command(wordlogic.get_combination()) == 1:
-                    #         print("Game Over")
-                    #         tickTackToe.reset()
-                            
-                    #     wordlogic.reset_combination()
         
 
 
