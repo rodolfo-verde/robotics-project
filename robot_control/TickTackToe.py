@@ -1,3 +1,6 @@
+import threading
+import time
+
 from Controller import Controller, Command, PysicalConstants
 from typing import Union, Optional
 
@@ -84,6 +87,7 @@ def get_best_move(board):
 
 class TickTackToe:
     def __init__(self, *, solo_play=False, start=None):
+        self._playing = False
         self._controller = Controller()
         self._controller.goto_home_position()
         self._controller.process_command(Command(code=PysicalConstants.GRIPPER_MOVE, grasp=False))
@@ -113,11 +117,19 @@ class TickTackToe:
             board += "-" * 5 + "\n"
         return board
 
-    def reset(self):
+    @property
+    def game_over(self):
+        return self._game_over
+
+    @property
+    def playing(self):
+        return self._playing
+
+    def _reset(self):
         self._clear_board()
-        self._winner = None
-        self._game_over = False
-        self._current_player = PysicalConstants.WHITE
+        # self._winner = None
+        # self._game_over = False
+        # self._current_player = PysicalConstants.WHITE
 
     def _check_winner(self):
         for i in range(3):
@@ -192,7 +204,7 @@ class TickTackToe:
                 self._controller.process_command(
                     Command(code=PysicalConstants.PLACE_DOWN,
                             z_offset=PysicalConstants.PICK_UP_Z + (
-                                        PysicalConstants.BLOCK_HEIGHT * len(pos_arr)) + 0.004))
+                                    PysicalConstants.BLOCK_HEIGHT * len(pos_arr)) + 0.004))
 
         self._controller.goto_home_position()
 
@@ -210,80 +222,71 @@ class TickTackToe:
         self._turn += 1
         return True
 
-    def main_loop(self):
-        commands = [
-            "a2",
-            "a3",
-            "b2",
-            "b1",
-            "c2",
-        ]
-        commands = [
-            "a1",
-            "a2",
-            "a3",
-            "b1",
-            "b2",
-            "b3",
-            "c2",
-            "c1",
-            "c3"
-        ]
-        commands = [
-            "a1",
-            "a2",
-            "a3",
-            "b1",
-            "b2",
-            "b3",
-        ]
-
-        for cmd in commands:
-            print(cmd, self.command(cmd))
-            # time.sleep(1)
-        self.turn_off()
-
     # -1 = invalid move
     # 0 = all good
     # 1 = game over
     # 2 = invalid command
-    def command(self, cmd: str) -> int:
-        # print(self)
+    # 3 = playing
+    def _command_thread(self, cmd: str) -> None:
+        if self.game_over:
+            # raise Exception("Game is over. Create a new instance to play again :)")
+            print("Game is over. Create a new instance to play again :)")
+            return
+
         if cmd[0].lower() in ["a", "b", "c"]:
+            if self.playing:
+                print("Already playing a move wait for it to finish :)")
+                return
+            self._playing = True
             x = ord(cmd[0].lower()) - ord("a")
             y = int(cmd[1]) - 1
+            result = 0
             if not self._play(x, y):
-                return -1
-            if self._game_over:
-                return 1
-            self._play(*get_best_move(self._board))
-            # print(self)
-            return 0
-
+                result = -1
+            else:
+                if self._game_over:
+                    result = 1
+                elif self._solo_play:
+                    self._play(*get_best_move(self._board))
+                    if self._game_over:
+                        result = 1
+            if result == 1:
+                self.turn_off()
+            self._playing = False
+            print(f"Result for {cmd}: {result}")
         else:
             match cmd.lower():
                 case "stop":
                     self._controller.paused = True
-                    return 0
+                    return
                 case _:
-                    return 2
+                    return
+
+    def command(self, cmd: str) -> None:
+        threading.Thread(target=self._command_thread, args=(cmd,)).start()
 
     def turn_off(self):
-        self.reset()
+        if self.game_over:
+            print("Game is over. Create a new instance to play again :)")
+            return
+        while self._playing:
+            time.sleep(0.1)
+        self._reset()
         self._controller.shutdown()
 
-    def self_play(self):
-        input()
-        print(self.command("A2"))
-        input()
-        print(self.command("C1"))
-        self._clear_board()
-        self._controller.shutdown()
+    def demo(self):
+        move_list = ["A1", "A1", "B1"]
+        for move in move_list:
+            self.command(move)
+            while self.playing:
+                time.sleep(0.1)
+            time.sleep(1)
+        self.turn_off()
 
 
 def main():
-    ttt = TickTackToe(solo_play=True, start=1)
-    ttt.self_play()
+    ttt = TickTackToe()
+    ttt.demo()
 
 
 if __name__ == '__main__':

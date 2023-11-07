@@ -63,7 +63,20 @@ class Controller:
         #         print(
         #             f'Max delta: {np.rad2deg(np.max(np.abs(pos - self.get_joint_states())))}, '
         #             f'Average delta: {np.rad2deg(np.mean(np.abs(pos - self.get_joint_states())))}')
-        self._con.arm.set_trajectory_time(1.7, 1.7 / 2)
+
+        starting_pos = self.get_joint_states()
+        diff = final_pos - starting_pos
+        if np.all(np.abs(diff) < PysicalConstants.FINAL_POS_TOLERANCE):
+            # print('Warning: joint positions already reached, skipping...')
+            return
+        # find the max delta between the desired and actual joint positions
+        max_delta = np.max(np.abs(diff))
+
+        mv_t = max_delta / PysicalConstants.MAX_VEL
+        self._con.arm.set_trajectory_time(mv_t, mv_t / 2)
+        print(f"Moving time: {mv_t}")
+
+        # self._con.arm.set_trajectory_time(1.7, 1.7 / 2)
         self._con.arm.set_joint_positions(final_pos)
 
     def _move_cartesian(self, offset: float) -> None:
