@@ -74,7 +74,7 @@ class Controller:
 
         mv_t = max_delta / PysicalConstants.MAX_VEL
         self._con.arm.set_trajectory_time(mv_t, mv_t / 2)
-        print(f"Moving time: {mv_t}")
+        # print(f"Moving time: {mv_t}")
 
         # self._con.arm.set_trajectory_time(1.7, 1.7 / 2)
         self._con.arm.set_joint_positions(final_pos)
