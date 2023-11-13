@@ -274,7 +274,15 @@ class TickTackToe:
         self._reset()
         self._controller.shutdown()
 
-    def demo(self):
+    def demo_one_player(self):
+        while not self.game_over:
+            self.command(input("Enter move: "))
+            while self.playing:
+                time.sleep(0.1)
+            time.sleep(1)
+        self.turn_off()
+
+    def demo_two_players(self):
         move_list = ["A1", "A1", "B1"]
         for move in move_list:
             self.command(move)
@@ -284,9 +292,19 @@ class TickTackToe:
         self.turn_off()
 
 
-def main():
+def demo_two_players():
     ttt = TickTackToe()
-    ttt.demo()
+    ttt.demo_two_players()
+
+
+def demo_one_player():
+    ttt = TickTackToe(solo_play=True, start=True)
+    ttt.demo_one_player()
+
+
+def main():
+    # demo_two_players()
+    demo_one_player()
 
 
 if __name__ == '__main__':
