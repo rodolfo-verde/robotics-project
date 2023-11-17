@@ -279,7 +279,7 @@ class TickTackToe:
             self.command(input("Enter move: "))
             while self.playing:
                 time.sleep(0.1)
-            time.sleep(1)
+            # time.sleep(1)
         self.turn_off()
 
     def demo_two_players(self):
@@ -288,7 +288,7 @@ class TickTackToe:
             self.command(move)
             while self.playing:
                 time.sleep(0.1)
-            time.sleep(1)
+            # time.sleep(1)
         self.turn_off()
 
 
