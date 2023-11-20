@@ -251,7 +251,7 @@ class TickTackToe:
                     if self._game_over:
                         result = 1
             if result == 1:
-                self.turn_off()
+                self._clean_up()
             self._playing = False
             print(f"Result for {cmd}: {result}")
         else:
@@ -265,14 +265,17 @@ class TickTackToe:
     def command(self, cmd: str) -> None:
         threading.Thread(target=self._command_thread, args=(cmd,)).start()
 
+    def _clean_up(self):
+        self._reset()
+        self._controller.shutdown()
+
     def turn_off(self):
         if self.game_over:
             print("Game is over. Create a new instance to play again :)")
             return
         while self._playing:
             time.sleep(0.1)
-        self._reset()
-        self._controller.shutdown()
+        self._clean_up()
 
     def demo_one_player(self):
         while not self.game_over:
@@ -283,7 +286,7 @@ class TickTackToe:
         self.turn_off()
 
     def demo_two_players(self):
-        move_list = ["A1", "A1", "B1"]
+        move_list = ["A1", "A2", "A3", "B1", "B2", "B3", "C2", "C1", "C3"]
         for move in move_list:
             self.command(move)
             while self.playing:
@@ -303,8 +306,8 @@ def demo_one_player():
 
 
 def main():
-    # demo_two_players()
-    demo_one_player()
+    demo_two_players()
+    # demo_one_player()
 
 
 if __name__ == '__main__':

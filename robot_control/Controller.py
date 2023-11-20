@@ -192,7 +192,28 @@ def new_test(controller: Controller):
 def simple_test():
     controller = Controller()
 
-    new_test(controller)
+    # new_test(controller)
+
+
+    controller.process_command(Command(
+        code=PysicalConstants.SIMPLE_MOVE,
+        final_pos=PysicalConstants.PRE_PICK_UP
+    ))
+
+    controller.process_command(Command(
+        code=PysicalConstants.SIMPLE_MOVE,
+        final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[0])
+    )
+
+    # for fp in [PysicalConstants.A1, PysicalConstants.A2, PysicalConstants.A3, PysicalConstants.B1, PysicalConstants.B2,
+    #            PysicalConstants.B3,
+    #            PysicalConstants.C1, PysicalConstants.C2, PysicalConstants.C3]:
+    #     controller.process_command(Command(
+    #         code=PysicalConstants.SIMPLE_MOVE,
+    #         final_pos=fp
+    #     ))
+    #     input()
+    input()
 
     # pi = [0.01227185, 0.21015537, 0.15800002, 1.29621375, -0.00613592]
     #
