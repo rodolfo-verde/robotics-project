@@ -409,3 +409,5 @@ settings.json
 *combined.npy
 *CNN_More*.h5
 *.wav
+set_complete_test*.npy
+*complete_test.npy
