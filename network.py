@@ -134,8 +134,8 @@ class Network:
                 INPUTDEVICE = i['index']
                     
         #INPUTDEVICE = 7 # 1 for jonas usb mic
-        INPUTDEVICE = 6
-        INPUTDEVICE2 = 6
+        #INPUTDEVICE = 6
+        #INPUTDEVICE2 = 6
 
         stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
         #stream2 = sd.OutputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE2)
