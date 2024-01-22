@@ -164,10 +164,11 @@ class TickTackToe:
             Command(code=PysicalConstants.SIMPLE_MOVE,
                     final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[self._current_player]))
 
-        if (self._turn // 2) != 0:
-            self._controller.process_command(
-                Command(code=PysicalConstants.CARTESIAN_MOVE,
-                        z_offset=-PysicalConstants.BLOCK_HEIGHT * (self._turn // 2)))
+        index = (self._turn // 2) + 1
+
+        self._controller.process_command(
+            Command(code=PysicalConstants.CARTESIAN_MOVE,
+                    z_offset=-PysicalConstants.BLOCK_HEIGHT * index))
 
         self._controller.process_command(Command(code=PysicalConstants.PICK_UP, z_offset=PysicalConstants.PICK_UP_Z))
 
@@ -206,10 +207,9 @@ class TickTackToe:
                 self._controller.process_command(
                     Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[color]))
 
-                if len(pos_arr) != 0:
-                    self._controller.process_command(
-                        Command(code=PysicalConstants.CARTESIAN_MOVE,
-                                z_offset=-PysicalConstants.BLOCK_HEIGHT * len(pos_arr)))
+                self._controller.process_command(
+                    Command(code=PysicalConstants.CARTESIAN_MOVE,
+                            z_offset=-PysicalConstants.BLOCK_HEIGHT * (len(pos_arr) + 1)))
 
                 self._controller.process_command(
                     Command(code=PysicalConstants.PLACE_DOWN, z_offset=PysicalConstants.DROP_Z))
