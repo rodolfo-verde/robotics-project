@@ -163,17 +163,21 @@ class TickTackToe:
         self._controller.process_command(
             Command(code=PysicalConstants.SIMPLE_MOVE,
                     final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[self._current_player]))
-        self._controller.process_command(
-            Command(code=PysicalConstants.PICK_UP,
-                    z_offset=PysicalConstants.PICK_UP_Z + (PysicalConstants.BLOCK_HEIGHT * (self._turn // 2))))
+
+        if (self._turn // 2) != 0:
+            self._controller.process_command(
+                Command(code=PysicalConstants.CARTESIAN_MOVE,
+                        z_offset=-PysicalConstants.BLOCK_HEIGHT * (self._turn // 2)))
+
+        self._controller.process_command(Command(code=PysicalConstants.PICK_UP, z_offset=PysicalConstants.PICK_UP_Z))
 
         self._controller.process_command(
             Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
 
         self._controller.process_command(
-            Command(code=PysicalConstants.PARTS_MOVE, final_pos=PysicalConstants.BOARD[x][y][0]))
+            Command(code=PysicalConstants.PARTS_MOVE, final_pos=PysicalConstants.BOARD[x][y]["pos"]))
         self._controller.process_command(
-            Command(code=PysicalConstants.PLACE_DOWN, z_offset=PysicalConstants.BOARD[x][y][1]))
+            Command(code=PysicalConstants.PLACE_DOWN, z_offset=PysicalConstants.BOARD[x][y]["drop_z"]))
         self._controller.goto_home_position()
 
     def _clear_board(self):
@@ -192,19 +196,26 @@ class TickTackToe:
             while len(pos_arr) != 0:
                 x, y = pos_arr.pop()
                 self._controller.process_command(
-                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.BOARD[x][y][0]))
+                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.BOARD[x][y]["pos"]))
                 self._controller.process_command(
-                    Command(code=PysicalConstants.PICK_UP, z_offset=PysicalConstants.BOARD[x][y][1]))
+                    Command(code=PysicalConstants.PICK_UP, z_offset=PysicalConstants.BOARD[x][y]["pick_up_z"]))
 
                 self._controller.process_command(
                     Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
 
                 self._controller.process_command(
                     Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[color]))
+
+                if len(pos_arr) != 0:
+                    self._controller.process_command(
+                        Command(code=PysicalConstants.CARTESIAN_MOVE,
+                                z_offset=-PysicalConstants.BLOCK_HEIGHT * len(pos_arr)))
+
                 self._controller.process_command(
-                    Command(code=PysicalConstants.PLACE_DOWN,
-                            z_offset=PysicalConstants.PICK_UP_Z + (
-                                    PysicalConstants.BLOCK_HEIGHT * len(pos_arr)) + 0.004))
+                    Command(code=PysicalConstants.PLACE_DOWN, z_offset=PysicalConstants.DROP_Z))
+
+                self._controller.process_command(
+                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
 
         self._controller.goto_home_position()
 
