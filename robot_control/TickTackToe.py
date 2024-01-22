@@ -86,8 +86,9 @@ def get_best_move(board):
 
 
 class TickTackToe:
-    def __init__(self, *, solo_play=False, start=None):
+    def __init__(self, *, solo_play=False, start=None, display=None):
         self._playing = False
+        self._display = display
         self._controller = Controller()
         self._controller.goto_home_position()
         self._controller.process_command(Command(code=PysicalConstants.GRIPPER_MOVE, grasp=False))
@@ -317,8 +318,8 @@ def demo_one_player():
 
 
 def main():
-    demo_two_players()
-    # demo_one_player()
+    # demo_two_players()
+    demo_one_player()
 
 
 if __name__ == '__main__':
