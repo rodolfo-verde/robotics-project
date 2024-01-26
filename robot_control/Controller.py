@@ -76,6 +76,11 @@ class Controller:
         # self._con.arm.set_trajectory_time(mv_t, mv_t / 2)
         # # print(f"Moving time: {mv_t}")
 
+        # max_delta = np.max(np.abs(final_pos - self.get_joint_states()))
+        # mv_t = max_delta / PysicalConstants.MAX_VEL
+        # set the trajectory time
+        # self._con.arm.set_trajectory_time(mv_t, mv_t / 2)
+
         self._con.arm.set_trajectory_time(1.7, 1.7 / 2)
         self._con.arm.set_joint_positions(final_pos)
 
@@ -90,6 +95,10 @@ class Controller:
         #     self._con.arm.set_ee_cartesian_trajectory(z=increment)
         self._con.arm.set_trajectory_time(0.8, 0.8 / 2)
         self._con.arm.set_ee_cartesian_trajectory(z=offset)
+
+        # mv_t = abs(offset) / PysicalConstants.LINEAR_VELOCITY
+        # self._con.arm.set_trajectory_time(mv_t, mv_t / 2)
+        # self._con.arm.set_ee_cartesian_trajectory(z=offset)
 
     def process_command(self, command: Command):
         if command.code == PysicalConstants.SIMPLE_MOVE:
