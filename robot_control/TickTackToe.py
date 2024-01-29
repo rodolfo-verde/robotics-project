@@ -1,7 +1,7 @@
 import threading
 import time
 
-from Controller import Controller, Command, PysicalConstants
+from Controller import Controller, Command, PhysicalConstants
 from typing import Union, Optional
 
 
@@ -91,7 +91,7 @@ class TickTackToe:
         self._display = display
         self._controller = Controller()
         self._controller.goto_home_position()
-        self._controller.process_command(Command(code=PysicalConstants.GRIPPER_MOVE, grasp=False))
+        self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
         if center_pieces:
             self._center_pieces()
         self._board: list[[bool | None]] = [
@@ -99,8 +99,8 @@ class TickTackToe:
             [None, None, None],
             [None, None, None]
         ]
-        self._current_player: Union[PysicalConstants.WHITE, PysicalConstants.BLACK] = PysicalConstants.WHITE
-        self._winner: Optional[Union[PysicalConstants.WHITE, PysicalConstants.BLACK]] = None
+        self._current_player: Union[PhysicalConstants.WHITE, PhysicalConstants.BLACK] = PhysicalConstants.WHITE
+        self._winner: Optional[Union[PhysicalConstants.WHITE, PhysicalConstants.BLACK]] = None
         self._game_over: bool = False
         self._turn: int = 0
         self._solo_play = solo_play
@@ -115,7 +115,7 @@ class TickTackToe:
         board = ""
         for row in self._board:
             for cell in row:
-                board += f"{PysicalConstants.WHITE_BLACK[cell] if cell is not None else ' '}|"
+                board += f"{PhysicalConstants.WHITE_BLACK[cell] if cell is not None else ' '}|"
             board = board[:-1] + "\n"
             board += "-" * 5 + "\n"
         return board
@@ -133,7 +133,7 @@ class TickTackToe:
         self._center_pieces()
         # self._winner = None
         # self._game_over = False
-        # self._current_player = PysicalConstants.WHITE
+        # self._current_player = PhysicalConstants.WHITE
 
     def _check_winner(self):
         for i in range(3):
@@ -163,64 +163,64 @@ class TickTackToe:
 
     def _make_move(self, x, y):
         self._controller.process_command(
-            Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
+            Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
         self._controller.process_command(
-            Command(code=PysicalConstants.SIMPLE_MOVE,
-                    final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[self._current_player]))
+            Command(code=PhysicalConstants.SIMPLE_MOVE,
+                    final_pos=PhysicalConstants.WHITE_BLACK_PICK_UP[self._current_player]))
 
         index = (self._turn // 2) + 1
 
         self._controller.process_command(
-            Command(code=PysicalConstants.CARTESIAN_MOVE,
-                    z_offset=-PysicalConstants.BLOCK_HEIGHT * index))
+            Command(code=PhysicalConstants.CARTESIAN_MOVE,
+                    z_offset=-PhysicalConstants.BLOCK_HEIGHT * index))
 
-        self._controller.process_command(Command(code=PysicalConstants.PICK_UP, z_offset=PysicalConstants.PICK_UP_Z))
-
-        self._controller.process_command(
-            Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
+        self._controller.process_command(Command(code=PhysicalConstants.PICK_UP, z_offset=PhysicalConstants.PICK_UP_Z))
 
         self._controller.process_command(
-            Command(code=PysicalConstants.PARTS_MOVE, final_pos=PysicalConstants.BOARD[x][y]["pos"]))
+            Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
+
         self._controller.process_command(
-            Command(code=PysicalConstants.PLACE_DOWN, z_offset=PysicalConstants.BOARD[x][y]["drop_z"]))
+            Command(code=PhysicalConstants.PARTS_MOVE, final_pos=PhysicalConstants.BOARD[x][y]["pos"]))
+        self._controller.process_command(
+            Command(code=PhysicalConstants.PLACE_DOWN, z_offset=PhysicalConstants.BOARD[x][y]["drop_z"]))
         self._controller.goto_home_position()
 
     def _center_pieces(self):
-        self._controller.process_command(Command(code=PysicalConstants.GRIPPER_MOVE, grasp=False))
+        self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
 
-        down_z = PysicalConstants.PICK_UP_Z - (PysicalConstants.BLOCK_HEIGHT * 4)
+        down_z = PhysicalConstants.PICK_UP_Z - (PhysicalConstants.BLOCK_HEIGHT * 4)
         half_pi = 3.14 / 2
 
         def open_close_gripper():
-            self._controller.process_command(Command(code=PysicalConstants.GRIPPER_MOVE, grasp=True))
+            self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=True))
             time.sleep(0.5)
-            self._controller.process_command(Command(code=PysicalConstants.GRIPPER_MOVE, grasp=False))
+            self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
 
         for color in range(2):
             self._controller.process_command(
-                Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
+                Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
             self._controller.process_command(
-                Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[color]))
+                Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.WHITE_BLACK_PICK_UP[color]))
 
-            self._controller.process_command(Command(code=PysicalConstants.CARTESIAN_MOVE, z_offset=down_z))
+            self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=down_z))
 
             # close and open the gripper to "center" the pieces
             open_close_gripper()
 
-            # self._controller.process_command(Command(code=PysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
+            # self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
 
             # rotate the gripper by pi degrees to center the pieces
             # pos = self._controller.get_joint_states()
             # pos[4] = half_pi
-            # self._controller.process_command(Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=pos))
+            # self._controller.process_command(Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=pos))
             #
-            # self._controller.process_command(Command(code=PysicalConstants.CARTESIAN_MOVE, z_offset=down_z))
+            # self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=down_z))
             #
             # # close and open the gripper to "center" the pieces
             # open_close_gripper()
 
             # go back up
-            self._controller.process_command(Command(code=PysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
+            self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
 
         self._controller.goto_home_position()
 
@@ -241,25 +241,25 @@ class TickTackToe:
                 x, y = pos_arr.pop()
 
                 self._controller.process_command(
-                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
+                    Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
 
                 self._controller.process_command(
-                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.BOARD[x][y]["pos"]))
+                    Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.BOARD[x][y]["pos"]))
                 self._controller.process_command(
-                    Command(code=PysicalConstants.PICK_UP, z_offset=PysicalConstants.BOARD[x][y]["pick_up_z"]))
+                    Command(code=PhysicalConstants.PICK_UP, z_offset=PhysicalConstants.BOARD[x][y]["pick_up_z"]))
 
                 self._controller.process_command(
-                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.PRE_PICK_UP))
+                    Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
 
                 self._controller.process_command(
-                    Command(code=PysicalConstants.SIMPLE_MOVE, final_pos=PysicalConstants.WHITE_BLACK_PICK_UP[color]))
+                    Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.WHITE_BLACK_PICK_UP[color]))
 
                 self._controller.process_command(
-                    Command(code=PysicalConstants.CARTESIAN_MOVE,
-                            z_offset=-PysicalConstants.BLOCK_HEIGHT * (len(pos_arr) + 1)))
+                    Command(code=PhysicalConstants.CARTESIAN_MOVE,
+                            z_offset=-PhysicalConstants.BLOCK_HEIGHT * (len(pos_arr) + 1)))
 
                 self._controller.process_command(
-                    Command(code=PysicalConstants.PLACE_DOWN, z_offset=PysicalConstants.DROP_Z))
+                    Command(code=PhysicalConstants.PLACE_DOWN, z_offset=PhysicalConstants.DROP_Z))
 
         # self._controller.goto_home_position()
 
@@ -273,7 +273,7 @@ class TickTackToe:
         self._make_move(x, y)
         if self._check_game_over():
             self._game_over = True
-        self._current_player = PysicalConstants.WHITE if self._current_player == PysicalConstants.BLACK else PysicalConstants.BLACK
+        self._current_player = PhysicalConstants.WHITE if self._current_player == PhysicalConstants.BLACK else PhysicalConstants.BLACK
         self._turn += 1
         return True
 
@@ -311,7 +311,7 @@ class TickTackToe:
             print(f"Result for {cmd}: {result}")
         else:
             match cmd.lower():
-                case "stop":
+                case "stopp":
                     self._controller.paused = True
                     return
                 case _:
@@ -346,7 +346,6 @@ class TickTackToe:
             self.command(move)
             while self.playing:
                 time.sleep(0.1)
-            # time.sleep(1)
         self.turn_off()
 
 
@@ -356,7 +355,7 @@ def demo_two_players():
 
 
 def demo_one_player():
-    ttt = TickTackToe(solo_play=True, start=input("Start? (y/n): ").lower() == "y")
+    ttt = TickTackToe(solo_play=True, start=input("Robot Start? (y/n): ").lower() == "y")
     ttt.demo_one_player()
 
 
@@ -366,8 +365,8 @@ def test_center_pieces():
 
 
 def main():
-    demo_two_players()
-    # demo_one_player()
+    # demo_two_players()
+    demo_one_player()
     # test_center_pieces()
 
 
