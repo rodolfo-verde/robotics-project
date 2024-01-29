@@ -112,12 +112,10 @@ class Controller:
             self._move_joints(waist_movement)
             self._move_joints(command.final_pos)
         elif command.code == PhysicalConstants.GRIPPER_MOVE:
-            self._con.gripper.set_pressure(1.0)
             self._grasp() if command.grasp else self._release()
         elif command.code == PhysicalConstants.CARTESIAN_MOVE:
             self._move_cartesian(command.z_offset)
         elif command.code == PhysicalConstants.PICK_UP or command.code == PhysicalConstants.PLACE_DOWN:
-            self._con.gripper.set_pressure(1.0)
             self._move_cartesian(command.z_offset)
             self._grasp() if command.code == PhysicalConstants.PICK_UP else self._release()
             self._move_cartesian(-command.z_offset * 3)
@@ -143,3 +141,24 @@ class Controller:
 
     def print_joint_states(self):
         print(f"[{', '.join([str(round(x, 4)) for x in self.get_joint_states()])}]")
+
+
+def main():
+    con = Controller()
+    con.process_command(Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
+    con.process_command(
+        Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=[1.5156, -0.4126, 0.6489, 1.2947, 1.5524]))
+
+    # con._con.arm.set_ee_cartesian_trajectory(x=-0.016)
+
+    con.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-0.042))
+
+    con.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=True))
+    time.sleep(0.5)
+    con.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
+
+    con.shutdown()
+
+
+if __name__ == '__main__':
+    main()

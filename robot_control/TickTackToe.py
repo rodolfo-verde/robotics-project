@@ -207,20 +207,21 @@ class TickTackToe:
             # close and open the gripper to "center" the pieces
             open_close_gripper()
 
-            # self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
+            self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
 
             # rotate the gripper by pi degrees to center the pieces
-            # pos = self._controller.get_joint_states()
-            # pos[4] = half_pi
-            # self._controller.process_command(Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=pos))
-            #
-            # self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=down_z))
-            #
-            # # close and open the gripper to "center" the pieces
-            # open_close_gripper()
+            self._controller.process_command(
+                Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.WHITE_BLACK_CENTER[color]))
+
+            self._controller.process_command(
+                Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=PhysicalConstants.CENTER_Z))
+
+            # close and open the gripper to "center" the pieces
+            open_close_gripper()
 
             # go back up
-            self._controller.process_command(Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-down_z))
+            self._controller.process_command(
+                Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-PhysicalConstants.CENTER_Z))
 
         self._controller.goto_home_position()
 
@@ -365,8 +366,8 @@ def test_center_pieces():
 
 
 def main():
-    # demo_two_players()
-    demo_one_player()
+    demo_two_players()
+    # demo_one_player()
     # test_center_pieces()
 
 
