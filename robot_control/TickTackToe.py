@@ -1,8 +1,7 @@
 import threading
 import time
-
-from Controller import Controller, Command, PhysicalConstants
 from typing import Union, Optional
+from .Controller import Controller, Command, PhysicalConstants
 
 
 def get_best_move(board):
@@ -122,11 +121,23 @@ class TickTackToe:
 
     @property
     def game_over(self):
+        # return True if the game is over, False otherwise
         return self._game_over
 
     @property
     def playing(self):
+        # return True if the game is currently playing a move, False otherwise
         return self._playing
+
+    @property
+    def winner(self):
+        # return the winner of the game or None if the game is not over
+        return self._winner
+
+    @property
+    def current_player(self):
+        # return the current player (either 0 for the first player or 1 for the second player)
+        return self._current_player
 
     def _reset(self):
         self._clear_board()
@@ -180,7 +191,7 @@ class TickTackToe:
             Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
 
         self._controller.process_command(
-            Command(code=PhysicalConstants.PARTS_MOVE, final_pos=PhysicalConstants.BOARD[x][y]["pos"]))
+            Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.BOARD[x][y]["pos"]))
         self._controller.process_command(
             Command(code=PhysicalConstants.PLACE_DOWN, z_offset=PhysicalConstants.BOARD[x][y]["drop_z"]))
         self._controller.goto_home_position()
@@ -189,7 +200,6 @@ class TickTackToe:
         self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
 
         down_z = PhysicalConstants.PICK_UP_Z - (PhysicalConstants.BLOCK_HEIGHT * 4)
-        half_pi = 3.14 / 2
 
         def open_close_gripper():
             self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=True))
@@ -306,10 +316,10 @@ class TickTackToe:
                     self._play(*get_best_move(self._board))
                     if self._game_over:
                         result = 1
+            self._playing = False
             if result == 1:
                 self._clean_up()
-            self._playing = False
-            print(f"Result for {cmd}: {result}")
+            # print(f"Result for {cmd}: {result}")
         else:
             match cmd.lower():
                 case "stopp":
@@ -360,15 +370,9 @@ def demo_one_player():
     ttt.demo_one_player()
 
 
-def test_center_pieces():
-    ttt = TickTackToe()
-    ttt._center_pieces()
-
-
 def main():
     demo_two_players()
     # demo_one_player()
-    # test_center_pieces()
 
 
 if __name__ == '__main__':

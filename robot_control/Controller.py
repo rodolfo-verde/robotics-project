@@ -1,9 +1,8 @@
 from interbotix_xs_modules.xs_robot.arm import InterbotixManipulatorXS
 from rclpy.logging import LoggingSeverity
-
-import PhysicalConstants
 import numpy as np
 import time
+from . import PhysicalConstants
 
 
 class Command:
