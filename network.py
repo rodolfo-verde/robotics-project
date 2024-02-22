@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 import numpy as np
 import tensorflow as tf 
 from tensorflow import keras
@@ -21,7 +20,7 @@ from robot_control.TickTackToe import TickTackToe
 from audio_processing.word_logic import WordLogic
 
 from scipy.io import wavfile
-
+import I2C_LCD_driver
 import threading
 # This will be the main class for the Speech Recognition + TickTackToe game
 # It will import the CNN model and the TickTackToe game and then run the game
@@ -35,7 +34,7 @@ import threading
 
 # CNN
 # CNN
-
+"""
 model = Sequential()
 a = 100
 
@@ -88,9 +87,20 @@ model.add(Dense(a, activation="sigmoid", kernel_regularizer=L2(0.01), bias_regul
 model.add(Dense(9, activation="softmax"))
 
 model.compile(optimizer="Adam", loss="categorical_crossentropy", metrics=["accuracy"]) # optimizer = rmsprop, Adam     loss = categorical_crossentropy, CTCLoss
-
+"""
 # import big speech model
-model.load_weights("audio_processing//CNN_Models//CNN_More_100_weights.h5")
+#model.load_weights("audio_processing//CNN_Models//CNN_Model_Rex_simple.h5")
+# Load the saved model
+print("Loading model...")
+
+try:
+    model = tf.keras.models.load_model('audio_processing//CNN_Models//CNN_Model_Rex_simple.h5')
+    model.summary()
+except Exception as e:
+    print(e)
+    quit()
+
+print("Model loaded.")
 
 #safe1 stores the input from the stream to be processed later
         
@@ -104,8 +114,11 @@ class Network:
     def __init__(self):
         # this is the constructor of the class
         # it will initialize the CNN model and the TickTackToe game
-        self.word_logic = WordLogic()
-        #self.tick_tack_toe = TickTackToe()
+        self.start = True
+        self.mylcd = I2C_LCD_driver.lcd()
+        self.mylcd.lcd_clear()
+        self.wordlogic = WordLogic(self.mylcd)
+        self.ticktacktoe = TickTackToe(solo_play=False, display = None)
 
     
     def pre_process(self):
@@ -128,15 +141,13 @@ class Network:
         def callback(indata, frame_count, time_info, status):
             global safe1
             safe1 = np.append(safe1, indata)
+            #print(len(safe1))
         INPUTDEVICE = 1
         for i in devices:
             if i['name'] == 'default':
                 INPUTDEVICE = i['index']
                     
         #INPUTDEVICE = 7 # 1 for jonas usb mic
-        #INPUTDEVICE = 6
-        #INPUTDEVICE2 = 6
-
         stream = sd.InputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE)
         #stream2 = sd.OutputStream(channels=1, samplerate=SAMPLERATE, callback=callback, device=INPUTDEVICE2)
 
@@ -145,22 +156,28 @@ class Network:
         workblocklength = 32500
         mfcc = np.zeros((11, 35))
         return stream, safe1, workblocklength, mfcc, dp, mp, class_names
-    def prediction(self, to_process, wordlogic, class_names, tickTackToe): 
+    def prediction(self, to_process, class_names): 
         # prediction
         prediction = model.predict(to_process.reshape(-1, 11, 70, 1))
 
         index_pred = np.argmax(prediction) #tf.argmax geht auch
 
         print(f"Prediction             : {class_names[index_pred]} and {prediction[0][index_pred]*100} %")
+        # write empty string to word index = 2
                 
-        wordlogic.command(class_names[index_pred])
-        if wordlogic.get_combination() not in ["", None]:
-            print(f"Das Wort ist = {wordlogic.get_combination()}")
-            if tickTackToe.command(wordlogic.get_combination()) == 1:
-                print("Game Over")
-                tickTackToe.reset()
-                            
-            wordlogic.reset_combination()
+        self.wordlogic.command(class_names[index_pred])
+        if self.wordlogic.get_combination() not in ["", None]:
+            #self.mylcd.lcd_display_string(" "*5+wordlogic.get_combination(), 1)
+		
+            #print(f"Das Wort ist = {wordlogic.get_combination()}")
+            self.ticktacktoe.command(self.wordlogic.get_combination())
+            starttime = time.time()
+            while self.ticktacktoe.playing:
+            	self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
+            	time.sleep(.21)
+            	self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}      ",2)
+            	time.sleep(.21)                
+            self.wordlogic.reset_combination()
 
 
 
@@ -168,8 +185,6 @@ class Network:
     def main_loop(self, stream, workblocklength, mfcc, dp, mp, class_names):
         print("main_loop started")
         with stream:
-            wordlogic = WordLogic()
-            tickTackToe = TickTackToe(solo_play=True, start=0)
             while True:
                 global safe1
                 while(len(safe1)<workblocklength):
@@ -185,8 +200,8 @@ class Network:
                     mfcc = mp.mfcc_process(i)[1:]
 
                     to_process = mfcc
-                    threading.Thread(target = self.prediction, args = (to_process, wordlogic, class_names, tickTackToe)).start()
-
+                    self.prediction(to_process, class_names)
+                    
 
         
 
@@ -207,5 +222,7 @@ class Network:
 
 if __name__ == '__main__':
     Network().run()
+
+
 
 
