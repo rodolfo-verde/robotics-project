@@ -119,6 +119,7 @@ class Network:
         self.mylcd.lcd_clear()
         self.wordlogic = WordLogic(self.mylcd)
         self.ticktacktoe = TickTackToe(solo_play=False, display = None)
+        self.display = False
 
     
     def pre_process(self):
@@ -171,15 +172,28 @@ class Network:
 		
             #print(f"Das Wort ist = {wordlogic.get_combination()}")
             self.ticktacktoe.command(self.wordlogic.get_combination())
+            self.display = True
+            self.lcd_display()
+            """starttime = time.time()
+            while self.ticktacktoe.playing:
+                self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
+                time.sleep(.21)
+                self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}      ",2)
+                time.sleep(.21)                
+            self.wordlogic.reset_combination()"""
+    
+    def lcd_display(self):
+        if self.display == True:
             starttime = time.time()
             while self.ticktacktoe.playing:
-            	self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
-            	time.sleep(.21)
-            	self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}      ",2)
-            	time.sleep(.21)                
+                self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
+                time.sleep(.21)
+                self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}      ",2)
+                time.sleep(.21)                
             self.wordlogic.reset_combination()
-
-
+            self.display = False
+        else:
+            pass
 
     
     def main_loop(self, stream, workblocklength, mfcc, dp, mp, class_names):
@@ -200,7 +214,10 @@ class Network:
                     mfcc = mp.mfcc_process(i)[1:]
 
                     to_process = mfcc
-                    self.prediction(to_process, class_names)
+                    # thread prediction function
+                    threading.Thread(target = self.prediction, args = (to_process, class_names)).start()
+                    #self.prediction(to_process, class_names)
+                    
                     
 
         
@@ -222,7 +239,5 @@ class Network:
 
 if __name__ == '__main__':
     Network().run()
-
-
 
 
