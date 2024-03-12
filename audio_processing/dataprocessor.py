@@ -59,6 +59,24 @@ class dataprocessor:
         self._filter = self.BandpassFilter(300, 3400, self.samplerate)
 
     
+    # just gain the block
+    def gaindata(self, data: np.array):
+
+        # storing raw data and then filtering it
+        self.raw = np.append(self.wordfrompastblock, data)
+        #print(self.raw.shape)
+        self.filtered = np.array(np.convolve(self.raw, self._filter)[250:-250])
+
+        # applying the automatic gain
+        A = 1
+        block_mean = np.max([np.mean(self.filtered), 0.0002])
+        block_variance = np.max([np.mean(self.filtered**2), 0.003016]) # 0.00016 is the variance of the raw_distance_commands_testt.wav
+        #print(f"mean {block_mean} and variance {block_variance}")
+
+        self.gained = np.array(np.sqrt(A*A/2*(10**(self.targetlvl / 10))/(block_variance - block_mean**2))*(self.filtered-block_mean))
+        return self.gained
+
+
     # processing data
     def processdata(self, data: np.array, returnall: bool = True):
 
@@ -195,6 +213,8 @@ class dataprocessor:
                 #print("add shit")
                 last+=elch
         
+        self.wordfrompastblock = self.wordfrompastblock[30000:]
+
         #print(len(to_process))
 
         return to_process

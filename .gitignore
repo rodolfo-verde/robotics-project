@@ -411,3 +411,6 @@ settings.json
 *.wav
 set_complete_test*.npy
 *complete_test.npy
+
+# CNN Models
+*Rex_simple.h5
