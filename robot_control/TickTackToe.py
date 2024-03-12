@@ -180,7 +180,7 @@ class TickTackToe:
 
         # romans adjustments for resuming after pause
         if not self._pickedup:
-            self._pickedup = True
+            
             self._controller.process_command(
                 Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
             self._controller.process_command(
@@ -194,7 +194,8 @@ class TickTackToe:
                         z_offset=-PhysicalConstants.BLOCK_HEIGHT * index))
 
             self._controller.process_command(Command(code=PhysicalConstants.PICK_UP, z_offset=PhysicalConstants.PICK_UP_Z))
-
+            self._pickedup = True
+            
         self._controller.process_command(
             Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
 

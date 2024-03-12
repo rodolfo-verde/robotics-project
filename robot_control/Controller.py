@@ -87,8 +87,6 @@ class Controller:
             while self.paused:
                 time.sleep(0.5)
             
-            self.goto_home_position()
-
         else:
             self._con.arm.set_trajectory_time(1.7, 1.7 / 2)
             self._con.arm.set_joint_positions(final_pos)
