@@ -358,6 +358,7 @@ class TickTackToe:
                 case "stopp":
                     self._controller.paused = True
                     time.sleep(0.5)
+                    self._controller.paused = False
                     self._playing = False
                     return
                 case _:
