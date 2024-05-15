@@ -88,12 +88,14 @@ class TickTackToe:
     def __init__(self, *, solo_play=False, start=None, display=None, center_pieces=False):
         self._playing = False
         self._display = display
+        self._rex_playing = False
         self._controller = Controller()
         self._controller.goto_home_position()
         self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
         
         # romans adjustments for resuming after pause
         self._pickedup = False
+        self._finished_moving = True
 
         if center_pieces:
             self._center_pieces()
@@ -107,6 +109,8 @@ class TickTackToe:
         self._game_over: bool = False
         self._turn: int = 0
         self._solo_play = solo_play
+        self._resetplay = 0
+        self.cmd = ""
         if solo_play:
             if start is None:
                 raise Exception("Must specify start if solo_play is True\n0 = you start\n1 = computer starts")
@@ -132,6 +136,10 @@ class TickTackToe:
     def playing(self):
         # return True if the game is currently playing a move, False otherwise
         return self._playing
+        
+    @property
+    def rex_playing(self):
+        return self._rex_playing
 
     @property
     def winner(self):
@@ -144,8 +152,36 @@ class TickTackToe:
         return self._current_player
 
     def _reset(self):
+        self._resetplay = 1
+        time.sleep(2)
         self._clear_board()
         self._center_pieces()
+        
+        self._controller.goto_home_position()
+        self._resetplay = 0
+        self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
+        
+        self._pickedup = False
+        self._finished_moving = True
+
+        self._board: list[[bool | None]] = [
+            [None, None, None],
+            [None, None, None],
+            [None, None, None]
+        ]
+        self._current_player: Union[PhysicalConstants.WHITE, PhysicalConstants.BLACK] = PhysicalConstants.WHITE
+        self._winner: Optional[Union[PhysicalConstants.WHITE, PhysicalConstants.BLACK]] = None
+        self._game_over: bool = False
+        self._turn: int = 0
+        """
+        if self._solo_play:
+            if start is None:
+                raise Exception("Must specify start if solo_play is True\n0 = you start\n1 = computer starts")
+            if start:
+                self._play(*get_best_move(self._board))"""
+        self._resetplay = 0
+                
+        
         # self._winner = None
         # self._game_over = False
         # self._current_player = PhysicalConstants.WHITE
@@ -167,8 +203,12 @@ class TickTackToe:
         return False
 
     def _check_draw(self):
+        print(self._board)
+        print(len(self._board))
+        print(len(self._board[0]))
         for row in self._board:
             for cell in row:
+                print(cell)
                 if cell is None:
                     return False
         return True
@@ -177,35 +217,49 @@ class TickTackToe:
         return self._check_winner() or self._check_draw()
 
     def _make_move(self, x, y):
+        self._finished_moving = False
 
         # romans adjustments for resuming after pause
         if not self._pickedup:
+        
+            if not self._controller.paused:	
             
+                self._controller.process_command(
+                    Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
+                
+            if not self._controller.paused:
+            
+                self._controller.process_command(
+                    Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.WHITE_BLACK_PICK_UP[self._current_player]))
+                        
+            if not self._controller.paused:
+
+                index = (self._turn // 2) + 1
+
+                self._controller.process_command(
+                    Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-PhysicalConstants.BLOCK_HEIGHT * index))
+            if not self._controller.paused:
+            
+                self._controller.process_command(Command(code=PhysicalConstants.PICK_UP, z_offset=PhysicalConstants.PICK_UP_Z))
+                self._pickedup = True
+        
+        if not self._controller.paused: 
             self._controller.process_command(
                 Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
+
+        if not self._controller.paused: 
+        
             self._controller.process_command(
-                Command(code=PhysicalConstants.SIMPLE_MOVE,
-                        final_pos=PhysicalConstants.WHITE_BLACK_PICK_UP[self._current_player]))
-
-            index = (self._turn // 2) + 1
-
-            self._controller.process_command(
-                Command(code=PhysicalConstants.CARTESIAN_MOVE,
-                        z_offset=-PhysicalConstants.BLOCK_HEIGHT * index))
-
-            self._controller.process_command(Command(code=PhysicalConstants.PICK_UP, z_offset=PhysicalConstants.PICK_UP_Z))
-            self._pickedup = True
+                Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.BOARD[x][y]["pos"]))
             
-        self._controller.process_command(
-            Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.PRE_PICK_UP))
-
-        self._controller.process_command(
-            Command(code=PhysicalConstants.SIMPLE_MOVE, final_pos=PhysicalConstants.BOARD[x][y]["pos"]))
-        self._controller.process_command(
-            Command(code=PhysicalConstants.PLACE_DOWN, z_offset=PhysicalConstants.BOARD[x][y]["drop_z"]))
+        if not self._controller.paused:
+        
+            self._controller.process_command(
+                Command(code=PhysicalConstants.PLACE_DOWN, z_offset=PhysicalConstants.BOARD[x][y]["drop_z"]))
 
         # romans adjustments for resuming after pause
-        self._pickedup = False
+            self._pickedup = False
+            self._finished_moving = True
 
         self._controller.goto_home_position()
 
@@ -247,6 +301,7 @@ class TickTackToe:
                 Command(code=PhysicalConstants.CARTESIAN_MOVE, z_offset=-PhysicalConstants.CENTER_Z))
 
         self._controller.goto_home_position()
+        self._game_over = False
 
     def _clear_board(self):
         white_pick_up, black_pick_up = [], []
@@ -292,13 +347,14 @@ class TickTackToe:
             raise Exception("Game is over")
         if self._board[x][y] is not None:
             return False
-        self._board[x][y] = self._current_player
-        print(self)
         self._make_move(x, y)
-        if self._check_game_over():
-            self._game_over = True
-        self._current_player = PhysicalConstants.WHITE if self._current_player == PhysicalConstants.BLACK else PhysicalConstants.BLACK
-        self._turn += 1
+        if self._finished_moving:
+            self._board[x][y] = self._current_player
+            print(self)
+            if self._check_game_over():
+                self._game_over = True
+            self._current_player = PhysicalConstants.WHITE if self._current_player == PhysicalConstants.BLACK else PhysicalConstants.BLACK
+            self._turn += 1
         return True
 
     # -1 = invalid move
@@ -307,10 +363,10 @@ class TickTackToe:
     # 2 = invalid command
     # 3 = playing
     def _command_thread(self, cmd: str) -> None:
-        if self.game_over:
-            # raise Exception("Game is over. Create a new instance to play again :)")
-            print("Game is over. Create a new instance to play again :)")
-            return
+        #if self.game_over:
+        #    # raise Exception("Game is over. Create a new instance to play again :)")
+        #    print("Game is over. Create a new instance to play again :)")
+        #    return
 
         if cmd[0].lower() in ["a", "b", "c"]:
             if self.playing:
@@ -326,9 +382,12 @@ class TickTackToe:
                 if self._game_over:
                     result = 1
                 elif self._solo_play:
+                    self._playing = False
+                    self._rex_playing = True
                     self._play(*get_best_move(self._board))
                     if self._game_over:
                         result = 1
+            self._rex_playing = False
             self._playing = False
             if result == 1:
                 self._clean_up()
@@ -346,31 +405,48 @@ class TickTackToe:
             else:
                 if self._game_over:
                     result = 1
+                    self._playing = False
                 elif self._solo_play:
+                    self._playing = False
+                    self._rex_playing = True
                     self._play(*get_best_move(self._board))
                     if self._game_over:
                         result = 1
+                        self._playing = False
+            self._rex_playing = False
             self._playing = False
             if result == 1:
+                self._playing = False
                 self._clean_up()
             # print(f"Result for {cmd}: {result}")
         else:
             match cmd.lower():
                 case "stopp":
-                    self._controller.paused = True
-                    time.sleep(0.5)
-                    self._controller.paused = False
-                    self._playing = False
+                    if self._solo_play:
+                        self._rex_playing = True
+                        print("Rex stop")
+                        self._controller.paused = True
+                        #time.sleep(2)
+                        self._controller.paused = False
+                        print(self._rex_playing)
+                    else:
+                        self._controller.paused = True
+                        time.sleep(2)
+                        self._controller.paused = False
+                        self._playing = False
                     return
                 case _:
                     return
 
     def command(self, cmd: str) -> None:
+        self.cmd = cmd
         threading.Thread(target=self._command_thread, args=(cmd,)).start()
 
     def _clean_up(self):
+        #time.sleep(2)
         self._reset()
         self._controller.shutdown()
+        print("Shutdown!")
 
     def turn_off(self):
         if self.game_over:
@@ -395,6 +471,7 @@ class TickTackToe:
             while self.playing:
                 time.sleep(0.1)
         self.turn_off()
+        self.demo_two_players()
 
 
 def demo_two_players():
@@ -412,5 +489,7 @@ def main():
     # demo_one_player()
 
 
+if __name__ == '__main__':
+    main()
 if __name__ == '__main__':
     main()
