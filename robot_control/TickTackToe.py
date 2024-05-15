@@ -89,6 +89,7 @@ class TickTackToe:
         self._playing = False
         self._display = display
         self._rex_playing = False
+        self._rex_stopp = False
         self._controller = Controller()
         self._controller.goto_home_position()
         self._controller.process_command(Command(code=PhysicalConstants.GRIPPER_MOVE, grasp=False))
@@ -133,6 +134,12 @@ class TickTackToe:
         return self._game_over
 
     @property
+    def rex_stopp(self):
+        # return True if the game is over, False otherwise
+        return self._rex_stopp
+
+
+    @property
     def playing(self):
         # return True if the game is currently playing a move, False otherwise
         return self._playing
@@ -150,7 +157,22 @@ class TickTackToe:
     def current_player(self):
         # return the current player (either 0 for the first player or 1 for the second player)
         return self._current_player
-
+        
+    def rex_play(self):
+        result = 0
+        self._playing = False
+        self._rex_playing = True
+        print("Rex playing 2")
+        self._play(*get_best_move(self._board))
+        if self._game_over:
+            result = 1
+            self._playing = False
+        self._rex_playing = False
+        self._playing = False
+        if result == 1:
+            self._playing = False
+            self._clean_up()
+    
     def _reset(self):
         self._resetplay = 1
         time.sleep(2)
@@ -203,12 +225,8 @@ class TickTackToe:
         return False
 
     def _check_draw(self):
-        print(self._board)
-        print(len(self._board))
-        print(len(self._board[0]))
         for row in self._board:
             for cell in row:
-                print(cell)
                 if cell is None:
                     return False
         return True
@@ -350,12 +368,13 @@ class TickTackToe:
         self._make_move(x, y)
         if self._finished_moving:
             self._board[x][y] = self._current_player
-            print(self)
             if self._check_game_over():
                 self._game_over = True
             self._current_player = PhysicalConstants.WHITE if self._current_player == PhysicalConstants.BLACK else PhysicalConstants.BLACK
             self._turn += 1
-        return True
+            return True
+        return False
+        
 
     # -1 = invalid move
     # 0 = all good
@@ -382,9 +401,12 @@ class TickTackToe:
                 if self._game_over:
                     result = 1
                 elif self._solo_play:
+                    print(self._current_player)
+                    print("Rex playing 1")
                     self._playing = False
                     self._rex_playing = True
                     self._play(*get_best_move(self._board))
+                    print("move played")
                     if self._game_over:
                         result = 1
             self._rex_playing = False
@@ -409,6 +431,7 @@ class TickTackToe:
                 elif self._solo_play:
                     self._playing = False
                     self._rex_playing = True
+                    print("Rex playing 2")
                     self._play(*get_best_move(self._board))
                     if self._game_over:
                         result = 1
@@ -422,18 +445,25 @@ class TickTackToe:
         else:
             match cmd.lower():
                 case "stopp":
-                    if self._solo_play:
-                        self._rex_playing = True
+                    if self._rex_playing:
                         print("Rex stop")
-                        self._controller.paused = True
-                        #time.sleep(2)
-                        self._controller.paused = False
-                        print(self._rex_playing)
-                    else:
+                        self._rex_stopp = True
                         self._controller.paused = True
                         time.sleep(2)
                         self._controller.paused = False
                         self._playing = False
+                        self._rex_playing = False
+                        print("outside stop")
+                    else:
+                        print(self._current_player)                        
+                        self._rex_playing = False
+                        self._controller.paused = True
+                        print("Stop recieved")
+                        time.sleep(2)
+                        self._controller.paused = False
+                        self._playing = False
+                        self._rex_playing = False
+                        print("outside stop")
                     return
                 case _:
                     return
@@ -489,7 +519,5 @@ def main():
     # demo_one_player()
 
 
-if __name__ == '__main__':
-    main()
 if __name__ == '__main__':
     main()
