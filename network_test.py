@@ -54,13 +54,14 @@ class Network:
                     command = self.audio_stream.command_queue.get_nowait()
                     if command == "1":
                         command = None
-                        #print("I got here")
+                        print("I heared 1")
                         self.ticktacktoe = TickTackToe(solo_play=True, start = 0, display = None)
                         #print("I got even further")
                         self.mylcd.lcd_clear()
                         self.game_type = True
                     elif command == "2":
                         command = None
+                        print("I heared 2")
                         self.ticktacktoe = TickTackToe(solo_play=False, display = None)
                         self.mylcd.lcd_clear()
                         self.game_type = True
@@ -76,7 +77,8 @@ class Network:
                         command = self.audio_stream.stopp_command_queue.get_nowait()
                         if command == "stopp":
                             print("Stopping the robot...")
-                            self.ticktacktoe.command("Stopp")                            
+                            self.ticktacktoe.command("Stopp")
+                                                    
                     except queue.Empty:
                         time.sleep(0.1)
             
@@ -84,15 +86,26 @@ class Network:
             stop_thread = threading.Thread(target=check_for_stop_command, daemon=True)
             stop_thread.start()
             while self.game_type == True:
-            #while True:
                 try:
                     if not self.ticktacktoe._game_over:
-                        self.switch_player()
-                        
+                        self.switch_player()                        
                         command = self.audio_stream.command_queue.get_nowait()
                         #print(f"Command from audio_queue: {command}")
-                        self.wordlogic.command(command)                        
-                        if self.wordlogic.get_combination() not in ["", None] and not self.ticktacktoe.rex_playing:
+                        self.wordlogic.command(command)
+                        if self.ticktacktoe.rex_stopp:
+                            print("im here")                               
+                            while command != "rex":                                    
+                                try:
+                                    command = self.audio_stream.command_queue.get_nowait()
+                                    print(f'Got {command}')
+                                except queue.Empty:
+                                    command = ""
+                                time.sleep(0.1)
+                            print("im here aswell")
+                            self.mylcd.lcd_display_string(f"REX          %",2)
+                            self.ticktacktoe.rex_play()
+                            self.ticktacktoe._rex_stopp = False                       
+                        if self.wordlogic.get_combination() not in ["", None]:
                             self.ticktacktoe.command(self.wordlogic.get_combination())
                             while self.ticktacktoe.playing:
                                 self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
@@ -153,8 +166,10 @@ class Network:
         if self.ticktacktoe.rex_playing:
             self.mylcd.lcd_display_string(f"Rex spielt!",1)
         elif self.ticktacktoe._current_player == 0:
+            #self.ticktacktoe_rex_playing=False
             self.mylcd.lcd_display_string(f"Rot Spielt!",1)
         else:
+            #self.ticktacktoe_rex_playing=False
             self.mylcd.lcd_display_string(f"Blau Spielt!",1)
             
         
@@ -166,6 +181,9 @@ if __name__ == '__main__':
     network.run()
     
     
+    
+
+
     
 
 
