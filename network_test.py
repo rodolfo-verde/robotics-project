@@ -92,20 +92,20 @@ class Network:
                         command = self.audio_stream.command_queue.get_nowait()
                         #print(f"Command from audio_queue: {command}")
                         self.wordlogic.command(command)                        
-                            if self.wordlogic.get_combination() not in ["", None] && not self.ticktacktoe.rex_playing:
-                                self.ticktacktoe.command(self.wordlogic.get_combination())
-                                while self.ticktacktoe.playing:
-                                    self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
-                                    time.sleep(.21)
-                                    self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}      ",2)
-                                    time.sleep(.21)
-                                self.wordlogic.reset_combination()
-                                if self.ticktacktoe.cmd == "Stopp":
-                                    self.mylcd.lcd_display_string(f"REX     Stoppt!     %",2)
-                                    time.sleep(2)                
-                                self.mylcd.lcd_clear()
-                            elif command == "Other":
-                                pass
+                        if self.wordlogic.get_combination() not in ["", None] and not self.ticktacktoe.rex_playing:
+                            self.ticktacktoe.command(self.wordlogic.get_combination())
+                            while self.ticktacktoe.playing:
+                                self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}     %",2)
+                                time.sleep(.21)
+                                self.mylcd.lcd_display_string(f"REX     {self.wordlogic.get_combination().upper()}      ",2)
+                                time.sleep(.21)
+                            self.wordlogic.reset_combination()
+                            if self.ticktacktoe.cmd == "Stopp":
+                                self.mylcd.lcd_display_string(f"REX     Stoppt!     %",2)
+                                time.sleep(2)                
+                            self.mylcd.lcd_clear()
+                        elif command == "Other":
+                            pass
                     else:
                         print(self.ticktacktoe._check_draw())
                         if self.ticktacktoe._check_draw():
@@ -167,3 +167,5 @@ if __name__ == '__main__':
     
     
     
+
+
